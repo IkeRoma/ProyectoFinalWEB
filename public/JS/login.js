@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     try {
       // 🔥 RUTA CORREGIDA
-    const res = await fetch("http://localhost:3000/api/login", {
+    const res = await fetch("/api/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/register", {
+      const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre, apellidos, email, telefono, password }),
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     try {
-      const res = await fetch("http://localhost:3000/api/reset", {
+      const res = await fetch("/api/reset", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, passwordNueva: password }),
