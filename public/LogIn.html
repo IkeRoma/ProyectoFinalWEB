@@ -4,17 +4,19 @@
     <meta charset="UTF-8" />
     <title>Vista Voyages | Iniciar sesión</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- Fuentes e iconos -->
+
+    <!-- Fuentes -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a2e0f1f6e9.js" crossorigin="anonymous"></script>
+
+    <!-- Íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Estilos -->
     <link rel="stylesheet" href="CSS/variables.css" />
     <link rel="stylesheet" href="CSS/style.css" />
 </head>
+
 <body class="body--auth">
     <header class="header header--auth">
         <nav class="nav glass" id="mainNav">
@@ -22,9 +24,8 @@
                 <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
                 <span class="nav__title">Vista Voyages</span>
             </div>
-            <ul class="nav__links" data-nav="links">
-                <!-- navbar dinámico -->
-            </ul>
+
+            <ul class="nav__links" data-nav="links"></ul>
         </nav>
     </header>
 
@@ -32,18 +33,19 @@
         <div class="auth__card glass">
             <div class="auth__left">
                 <h1 class="auth__title">Bienvenido de vuelta</h1>
-                <p class="auth__subtitle">
-                    Inicia sesión para gestionar tus reservas y seguir explorando nuevos destinos.
-                </p>
+                <p class="auth__subtitle">Accede a tu cuenta para continuar tu viaje.</p>
+
                 <div class="auth__highlight">
                     <i class="fa-solid fa-plane-circle-check"></i>
-                    <span>Accede rápidamente a tus vuelos recientes.</span>
+                    <span>Encuentra tus vuelos guardados fácilmente.</span>
                 </div>
             </div>
 
             <div class="auth__right">
                 <h2 class="auth__form-title">Iniciar sesión</h2>
+
                 <form id="loginForm" novalidate class="form">
+
                     <div class="form-group">
                         <label for="usuario">Correo electrónico</label>
                         <div class="input-icon">
@@ -60,7 +62,7 @@
                         </div>
                     </div>
 
-                    <p id="resultado" class="form__message"></p>
+                    <p id="resultado" class="form-message"></p>
 
                     <button type="submit" class="btn btn--primary btn--full">
                         <i class="fa-solid fa-right-to-bracket"></i> Entrar
@@ -71,19 +73,19 @@
                         <span>·</span>
                         <a href="Registro.html">Crear una cuenta</a>
                     </div>
+
                 </form>
             </div>
         </div>
     </main>
 
     <footer class="footer footer--auth">
-        <p>© <span id="year"></span> Vista Voyages.</p>
+        <p>© <span id="year"></span> Vista Voyages</p>
     </footer>
 
     <script src="JS/navbar.js"></script>
     <script src="JS/login.js"></script>
-    <script>
-        document.getElementById("year").textContent = new Date().getFullYear();
-    </script>
+    <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+
 </body>
 </html>
