@@ -1,46 +1,58 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // ============================
-    //     FUNCIONES DE VALIDACIÓN
-    // ============================
+    /* ============================
+       VALIDACIONES
+       ============================ */
     function validarEmail(email) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     }
 
     function validarContrasena(password) {
-        const tieneEspacios = /\s/.test(password);
-        if (tieneEspacios) return false;
-        if (password.length < 8) return false;
-        if (!/[A-Z]/.test(password)) return false;
-        if (!/[^a-zA-Z0-9]/.test(password)) return false;
-        return true;
+        return (
+            password.length >= 8 &&
+            !/\s/.test(password) &&
+            /[A-Z]/.test(password) &&
+            /[^a-zA-Z0-9]/.test(password)
+        );
     }
 
     function validarTelefono(telefono) {
         return /^[0-9]{10}$/.test(telefono);
     }
 
-    // ============================
-    //            LOGIN
-    // ============================
+    function mostrarMensaje(elemento, mensaje, tipo = "error") {
+        elemento.textContent = mensaje;
+        elemento.className = `form-message ${tipo}`;
+        elemento.style.display = "block";
+
+        // Auto ocultar después de 4s
+        setTimeout(() => {
+            elemento.classList.add("fade-out");
+        }, 3500);
+    }
+
+    /* ============================
+       LOGIN
+       ============================ */
     const loginForm = document.getElementById("loginForm");
+
     if (loginForm) {
+        loginForm.setAttribute("novalidate", "true");
+
         loginForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const email = document.getElementById("usuario").value.trim();
             const password = document.getElementById("contrasena").value.trim();
-            const resultado = document.getElementById("resultado");
+            const msg = document.getElementById("resultado");
 
             if (!validarEmail(email)) {
-                resultado.textContent = "⚠️ Ingresa un correo válido.";
-                resultado.style.color = "red";
+                mostrarMensaje(msg, "⚠️ Ingresa un correo válido.");
                 return;
             }
 
-            if (password.length === 0) {
-                resultado.textContent = "⚠️ Ingresa una contraseña.";
-                resultado.style.color = "red";
+            if (!password) {
+                mostrarMensaje(msg, "⚠️ Ingresa una contraseña.");
                 return;
             }
 
@@ -53,14 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await res.json();
 
             if (data.error) {
-                resultado.textContent = data.message;
-                resultado.style.color = "red";
+                mostrarMensaje(msg, data.message, "error");
             } else {
-                // Guardamos el usuario con su Rol
                 localStorage.setItem("usuario", JSON.stringify(data.user));
-
-                resultado.textContent = "Inicio de sesión exitoso.";
-                resultado.style.color = "green";
+                mostrarMensaje(msg, "Inicio de sesión exitoso.", "success");
 
                 setTimeout(() => {
                     window.location.href = "Index.html";
@@ -69,11 +77,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ============================
-    //          REGISTRO
-    // ============================
+    /* ============================
+       REGISTRO
+       ============================ */
     const registroForm = document.getElementById("registroForm");
+
     if (registroForm) {
+        registroForm.setAttribute("novalidate", "true");
+
         registroForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -85,29 +96,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const password2 = document.getElementById("regPassword2").value.trim();
             const msg = document.getElementById("registroMsg");
 
-            if (!validarEmail(email)) {
-                msg.textContent = "⚠️ Ingresa un correo válido.";
-                msg.style.color = "red";
-                return;
-            }
-
-            if (!validarTelefono(telefono)) {
-                msg.textContent = "⚠️ El teléfono debe tener 10 dígitos.";
-                msg.style.color = "red";
-                return;
-            }
-
-            if (!validarContrasena(password)) {
-                msg.textContent = "⚠️ La contraseña no cumple los requisitos.";
-                msg.style.color = "red";
-                return;
-            }
-
-            if (password !== password2) {
-                msg.textContent = "⚠️ Las contraseñas no coinciden.";
-                msg.style.color = "red";
-                return;
-            }
+            if (!validarEmail(email)) return mostrarMensaje(msg, "⚠️ Ingresa un correo válido.");
+            if (!validarTelefono(telefono)) return mostrarMensaje(msg, "⚠️ El teléfono debe tener 10 dígitos.");
+            if (!validarContrasena(password)) return mostrarMensaje(msg, "⚠️ La contraseña no cumple los requisitos.");
+            if (password !== password2) return mostrarMensaje(msg, "⚠️ Las contraseñas no coinciden.");
 
             const res = await fetch("/api/register", {
                 method: "POST",
@@ -117,63 +109,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            msg.textContent = data.message;
-            msg.style.color = data.error ? "red" : "green";
+            mostrarMensaje(msg, data.message, data.error ? "error" : "success");
 
             if (!data.error) {
-                setTimeout(() => {
-                    window.location.href = "LogIn.html";
-                }, 1500);
+                setTimeout(() => window.location.href = "LogIn.html", 1500);
             }
         });
     }
 
-    // ============================
-    //     RESET DE CONTRASEÑA
-    // ============================
+    /* ============================
+       RESET PASSWORD
+       ============================ */
     const passwordForm = document.getElementById("passwordForm");
+
     if (passwordForm) {
+        passwordForm.setAttribute("novalidate", "true");
+
         passwordForm.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const email = document.getElementById("resetEmail").value.trim();
-            const passwordNueva = document.getElementById("resetPassword").value.trim();
-            const passwordNueva2 = document.getElementById("resetPassword2").value.trim();
+            const p1 = document.getElementById("resetPassword").value.trim();
+            const p2 = document.getElementById("resetPassword2").value.trim();
             const msg = document.getElementById("resetMsg");
 
-            if (!validarEmail(email)) {
-                msg.textContent = "⚠️ Ingresa un correo válido.";
-                msg.style.color = "red";
-                return;
-            }
-
-            if (!validarContrasena(passwordNueva)) {
-                msg.textContent = "⚠️ La contraseña no cumple los requisitos.";
-                msg.style.color = "red";
-                return;
-            }
-
-            if (passwordNueva !== passwordNueva2) {
-                msg.textContent = "⚠️ Las contraseñas no coinciden.";
-                msg.style.color = "red";
-                return;
-            }
+            if (!validarEmail(email)) return mostrarMensaje(msg, "⚠️ Ingresa un correo válido.");
+            if (!validarContrasena(p1)) return mostrarMensaje(msg, "⚠️ La contraseña no cumple los requisitos.");
+            if (p1 !== p2) return mostrarMensaje(msg, "⚠️ Las contraseñas no coinciden.");
 
             const res = await fetch("/api/reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, passwordNueva })
+                body: JSON.stringify({ email, passwordNueva: p1 })
             });
 
             const data = await res.json();
 
-            msg.textContent = data.message;
-            msg.style.color = data.error ? "red" : "green";
+            mostrarMensaje(msg, data.message, data.error ? "error" : "success");
 
             if (!data.error) {
-                setTimeout(() => {
-                    window.location.href = "login.html";
-                }, 1500);
+                setTimeout(() => window.location.href = "LogIn.html", 1800);
             }
         });
     }

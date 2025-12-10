@@ -1,27 +1,37 @@
 :root {
-    --color-bg: #050816;
-    --color-bg-soft: #0b1020;
-    --color-primary: #1e88e5;
-    --color-primary-soft: rgba(30, 136, 229, 0.14);
-    --color-secondary: #00bcd4;
-    --color-accent: #ff9800;
-    --color-danger: #ff5252;
-    --color-success: #4caf50;
+    /* Paleta renovada (menos negra, más viva) */
+    --color-bg: #0f1a2b;
+    --color-bg-light: #1b2a41;
+    --color-bg-soft: #23344f;
 
-    --color-text: #f9fbff;
-    --color-text-soft: #c5c8d4;
-    --color-border: rgba(255, 255, 255, 0.12);
+    --color-primary: #4db5ff;
+    --color-primary-dark: #3389c4;
+    --color-secondary: #00c9b7;
+    --color-accent: #ffb347;
 
-    --radius-sm: 0.6rem;
-    --radius-md: 1rem;
-    --radius-lg: 1.6rem;
-    --radius-xl: 2.4rem;
+    --color-danger: #ff6b6b;
+    --color-success: #51ffb0;
+    --color-warning: #ffcc66;
 
-    --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.35);
-    --shadow-strong: 0 26px 80px rgba(0, 0, 0, 0.7);
+    --color-text: #f4f8ff;
+    --color-text-soft: #c9d7ec;
 
-    --transition-fast: 0.2s ease-out;
-    --transition-med: 0.35s ease-out;
+    --element-glass: rgba(255, 255, 255, 0.08);
+
+    /* Sombras */
+    --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.25);
+    --shadow-strong: 0 18px 45px rgba(0, 0, 0, 0.5);
+
+    /* Bordes */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 28px;
+
+    /* Animaciones */
+    --transition-fast: 0.2s ease;
+    --transition-med: 0.35s ease;
+    --transition-slow: 0.7s ease;
 
     --nav-height: 72px;
 }
