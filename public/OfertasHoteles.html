@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Hotel Paraíso - Vista Voyages</title>
+  <link rel="stylesheet" href="CSS/variables.css">
+  <link rel="stylesheet" href="CSS/reset.css">
+  <link rel="stylesheet" href="CSS/base.css">
+  <link rel="stylesheet" href="CSS/navbar.css">
+  <link rel="stylesheet" href="CSS/productos.css">
+  <link rel="stylesheet" href="CSS/responsive.css">
+  <link rel="stylesheet" href="CSS/ofertas.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="logo">
+      <img src="imagenes/logosinletras.png" alt="Logo"> Vista Voyages
+    </div>
+        <div class="menu">
+      <a href="Hoteles.html"><i class="fas fa-hotel"></i> Hoteles</a>
+      <a href="Vuelos.html"><i class="fas fa-plane"></i> Vuelos</a>
+      <a href="Paquetes.html"><i class="fas fa-suitcase-rolling"></i> Paquetes</a>
+      <a href="#"><i class="fas fa-globe"></i> Idioma</a>
+      <a href="#"><i class="fas fa-user-circle"></i> Sesión</a>
+    </div>
+  </nav>
+
+  <div class="contenedor">
+    <div class="galeria">
+      <img id="imagenPrincipal" src="imagenes/hotel1.jpeg" alt="Principal" class="principal">
+      <div class="galeria-mini">
+        <img src="imagenes/hotel1.jpeg" alt="Mini 1" class="miniatura" onclick="cambiarImagen(this)">
+        <img src="imagenes/hotel1_1.jpeg" alt="Mini 2" class="miniatura" onclick="cambiarImagen(this)">
+        <img src="imagenes/hotel1_2.jpeg" alt="Mini 3" class="miniatura" onclick="cambiarImagen(this)">
+        <img src="imagenes/hotel_3.jpeg" alt="Mini 4" class="miniatura" onclick="cambiarImagen(this)">
+      </div>
+    </div>
+
+    <div class="info">
+      <h2>Hotel 1</h2>
+        <p><i class="fas fa-location-dot"></i> Calle Principal #123, Ciudad</p>
+        <p><b>Costo:</b> $120/noche</p>
+      <div class="estrellas">
+        <span class="estrella" onclick="calificar(1)">☆</span>
+        <span class="estrella" onclick="calificar(2)">☆</span>
+        <span class="estrella" onclick="calificar(3)">☆</span>
+        <span class="estrella" onclick="calificar(4)">☆</span>
+        <span class="estrella" onclick="calificar(5)">☆</span>
+      </div>
+      <p>Ubicado en el centro de la ciudad con todas las comodidades.</p>
+      <form class="form-fechas">
+        <label>Fecha de entrada:</label>
+        <input type="date" name="entrada">
+        <label>Fecha de salida:</label>
+        <input type="date" name="salida">
+      </form>
+      <button class="btn-comprar">Comprar</button>
+    </div>
+  </div>
+
+  <script>
+    function cambiarImagen(img) {
+      document.getElementById('imagenPrincipal').src = img.src;
+    }
+
+    function calificar(valor) {
+      let estrellas = document.querySelectorAll('.estrella');
+      estrellas.forEach((estrella, index) => {
+        estrella.textContent = index < valor ? '★' : '☆';
+      });
+    }
+  </script>
+
+</body>
+</html>

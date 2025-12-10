@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Vista Voyages</title>
+  <link rel="stylesheet" href="CSS/variables.css">
+  <link rel="stylesheet" href="CSS/reset.css">
+  <link rel="stylesheet" href="CSS/base.css">
+  <link rel="stylesheet" href="CSS/navbar.css">
+  <link rel="stylesheet" href="CSS/auth.css">
+  <link rel="stylesheet" href="CSS/responsive.css">
+</head>
+<body class="login-page">
+
+  <div class="wrapper">
+    <div class="left-section">
+      <img src="imagenes/logosinfondo.png" alt="Vista Voyages Logo">
+    </div>
+
+    <div class="right-section">
+      <h2>Accede a tu cuenta</h2>
+      <p>Inicia sesión para continuar en Vista Voyages</p>
+
+      <form id="loginForm">
+        <input type="text" id="usuario" name="correo" placeholder="Correo electrónico" required>
+        <input type="password" id="contrasena" name="password" placeholder="Contraseña" required>
+        <input type="submit" value="Ingresar">
+      </form>
+
+      <p id="resultado" style="transition: opacity 0.5s;"></p>
+
+      <div class="links">
+        <a href="Password.html">Olvidé mi contraseña</a> | 
+        <a href="Registro.html">Registrarse</a>
+      </div>
+    </div>
+  </div>
+  <script src="JS/login.js"></script>
+</body>
+</html>

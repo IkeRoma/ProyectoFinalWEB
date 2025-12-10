@@ -1,0 +1,22 @@
+@media (max-width:900px) {
+  .products { grid-template-columns: 1fr; gap: 18px; padding: 18px; }
+  .product-card { grid-template-columns: 1fr; height: 140px; }
+  .product-card img { height: 100%; }
+  .search-bar .search-wrap { width: 92%; }
+  .wrapper { flex-direction: column; }
+  .left-section, .right-section { padding: 20px; }
+  .service { width: 90%; }
+}
+
+@media (max-width:768px) {
+  .wrapper { flex-direction: column; text-align: center; }
+  .right-section { padding: 30px; }
+  .left-section { padding: 20px; }
+}
+
+@media (max-width: 900px) {
+    .contenedor { flex-direction: column; align-items: center; }
+    .principal { height: 350px; }
+    .miniatura { width: 70px; height: 50px; }
+    .info { width: 100%; text-align: center; }
+}
