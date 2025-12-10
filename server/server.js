@@ -3,33 +3,32 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const path = require("path");
-const { fileURLToPath } = require("url");
-const { dirname } = require("path");
 
 const auth = require("./authController");
 
-
-// Necesario para rutas absolutas
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 
-// Middlewares
+// ========================
+//  Middlewares
+// ========================
 app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos (tu HTML, JS, CSS)
+// ========================
+//  Archivos estáticos
+//  (sirve tu carpeta public directamente)
+// ========================
+
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Ruta de prueba
+// Ruta de prueba opcional
 app.get("/", (req, res) => {
-    res.json({ mensaje: "Servidor funcionando correctamente" });
+    res.send("Servidor funcionando correctamente");
 });
 
-// ========================================================
-//      RUTAS QUE EXIGE TU FRONTEND (LOGIN / REGISTER)
-// ========================================================
+// ========================
+//  Rutas API
+// ========================
 
 // LOGIN
 app.post("/api/login", auth.login);
@@ -40,21 +39,20 @@ app.post("/api/register", auth.registrar);
 // RESET PASSWORD
 app.post("/api/reset", auth.resetPassword);
 
-// ELIMINAR
+// ELIMINAR USUARIO
 app.post("/api/eliminar", auth.eliminarUsuario);
 
-// LISTAR
+// LISTAR USUARIOS
 app.get("/api/listar", auth.listarUsuarios);
 
-// ========================================================
-//     FIN DE RUTAS
-// ========================================================
+// ========================
+//  Servidor HTTP
+// ========================
 
-// Configuración del servidor
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 
-// Crear servidor HTTP
+// Crear servidor HTTP para soportar despliegues en la VM
 const server = http.createServer(app);
 
 // Manejo de errores
@@ -64,5 +62,5 @@ server.on("error", (err) => {
 
 // Iniciar servidor
 server.listen(PORT, HOST, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`🚀 Servidor corriendo en http://${HOST}:${PORT}`);
 });
