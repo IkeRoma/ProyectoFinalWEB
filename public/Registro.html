@@ -1,43 +1,123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro - Vista Voyages</title>
-  <link rel="stylesheet" href="CSS/variables.css">
-  <link rel="stylesheet" href="CSS/reset.css">
-  <link rel="stylesheet" href="CSS/base.css">
-  <link rel="stylesheet" href="CSS/navbar.css">
-  <link rel="stylesheet" href="CSS/auth.css">
-  <link rel="stylesheet" href="CSS/responsive.css">
+    <meta charset="UTF-8" />
+    <title>Vista Voyages | Registro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fuentes e iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2e0f1f6e9.js" crossorigin="anonymous"></script>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="CSS/variables.css" />
+    <link rel="stylesheet" href="CSS/style.css" />
 </head>
-<body class="register-page">
+<body class="body--auth">
+    <header class="header header--auth">
+        <nav class="nav glass" id="mainNav">
+            <div class="nav__brand">
+                <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
+                <span class="nav__title">Vista Voyages</span>
+            </div>
+            <ul class="nav__links" data-nav="links">
+                <!-- navbar dinámico -->
+            </ul>
+        </nav>
+    </header>
 
-  <div class="wrapper">
-    <div class="left-section">
-      <img src="imagenes/logosinfondo.png" alt="Vista Voyages Logo">
-    </div>
+    <main class="auth">
+        <div class="auth__card glass auth__card--reverse">
+            <div class="auth__left">
+                <h1 class="auth__title">Crea tu cuenta</h1>
+                <p class="auth__subtitle">
+                    Regístrate para reservar más rápido, guardar tus vuelos favoritos y recibir ofertas personalizadas.
+                </p>
+                <ul class="auth__list">
+                    <li><i class="fa-solid fa-circle-check"></i> Historial de vuelos</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Datos de pasajero guardados</li>
+                    <li><i class="fa-solid fa-circle-check"></i> Experiencia personalizada</li>
+                </ul>
+            </div>
 
-    <div class="right-section">
-      <h2>Regístrate en Vista Voyages</h2>
-      <p>Completa tus datos para crear una cuenta</p>
+            <div class="auth__right">
+                <h2 class="auth__form-title">Registro</h2>
+                <form id="registroForm" class="form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regNombre">Nombre</label>
+                            <div class="input-icon">
+                                <i class="fa-regular fa-user"></i>
+                                <input type="text" id="regNombre" placeholder="Tu nombre" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="regApellidos">Apellidos</label>
+                            <div class="input-icon">
+                                <i class="fa-regular fa-id-card"></i>
+                                <input type="text" id="regApellidos" placeholder="Tus apellidos" required>
+                            </div>
+                        </div>
+                    </div>
 
-      <form id="registroForm">
-        <input type="text" id="regNombre" name="nombre" placeholder="Nombre" required>
-        <input type="text" id="regApellidos" name="apellidos" placeholder="Apellidos" required>
-        <input type="email" id="regEmail" name="correo" placeholder="Correo electrónico" required>
-        <input type="tel" id="regTelefono" name="telefono" placeholder="Teléfono" required>
-        <input type="password" id="regPassword" name="password" placeholder="Contraseña" required>
-        <input type="password" id="regPassword2" name="confirmar" placeholder="Confirmar contraseña" required>
-        <input type="submit" value="Registrarse">
-      </form>
+                    <div class="form-group">
+                        <label for="regEmail">Correo electrónico</label>
+                        <div class="input-icon">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" id="regEmail" placeholder="correo@ejemplo.com" required>
+                        </div>
+                    </div>
 
-      <p id="registroMsg"></p>
+                    <div class="form-group">
+                        <label for="regTelefono">Teléfono</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-phone"></i>
+                            <input type="tel" id="regTelefono" placeholder="10 dígitos" required>
+                        </div>
+                    </div>
 
-      <div class="links">
-        <a href="Login.html">¿Ya tienes una cuenta? Inicia sesión aquí</a>
-      </div>
-    </div>
-  </div>  
-  <script src="JS/login.js"></script>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="regPassword">Contraseña</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="regPassword" placeholder="Mín. 8 caracteres" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword2">Confirmar contraseña</label>
+                            <div class="input-icon">
+                                <i class="fa-solid fa-lock"></i>
+                                <input type="password" id="regPassword2" placeholder="Repite la contraseña" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p id="registroMsg" class="form__message"></p>
+
+                    <button type="submit" class="btn btn--primary btn--full">
+                        <i class="fa-solid fa-user-plus"></i> Crear cuenta
+                    </button>
+
+                    <div class="form__links">
+                        <span>¿Ya tienes una cuenta?</span>
+                        <a href="LogIn.html">Inicia sesión</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer--auth">
+        <p>© <span id="year"></span> Vista Voyages.</p>
+    </footer>
+
+    <script src="JS/navbar.js"></script>
+    <script src="JS/login.js"></script>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

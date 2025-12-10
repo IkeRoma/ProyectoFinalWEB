@@ -6,13 +6,11 @@ CREATE TABLE Usuarios (
     Apellido VARCHAR(50) NOT NULL,
     Nombre VARCHAR(50) NOT NULL,
     Correo VARCHAR(50) NOT NULL UNIQUE,
-    Contrasena VARCHAR(16) NOT NULL,
+    Contrasena VARCHAR(255) NOT NULL,
     Telefono VARCHAR(10) NOT NULL,
+    Rol TINYINT(1) NOT NULL DEFAULT 0, -- 0 = normal, 1 = admin
     CONSTRAINT chk_Correo_Extension CHECK (Correo LIKE '%@%')
 );
-
--- Ajustamos el AUTO_INCREMENT para que inicie en 100000
-ALTER TABLE Usuarios AUTO_INCREMENT = 100000;
 
 INSERT INTO Usuarios (Apellido, Nombre, Correo, Contrasena, Telefono) VALUES
 ('Hernández', 'Carlos', 'carlos.hernandez@gmail.com', 'Abc123!@#Def456', '5544332211'),

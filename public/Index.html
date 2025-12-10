@@ -1,58 +1,162 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Vista Voyages - Inicio</title>
-  <!-- CSS divididos -->
-  <link rel="stylesheet" href="CSS/variables.css">
-  <link rel="stylesheet" href="CSS/reset.css">
-  <link rel="stylesheet" href="CSS/base.css">
-  <link rel="stylesheet" href="CSS/navbar.css">
-  <link rel="stylesheet" href="CSS/index.css">
-  <link rel="stylesheet" href="CSS/responsive.css">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <title>Vista Voyages | Inicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Fuentes y iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2e0f1f6e9.js" crossorigin="anonymous"></script>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="CSS/variables.css" />
+    <link rel="stylesheet" href="CSS/style.css" />
 </head>
-<body class="index-page">
+<body>
+    <!-- NAVBAR -->
+    <header class="header">
+        <nav class="nav glass" id="mainNav">
+            <div class="nav__brand">
+                <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
+                <span class="nav__title">Vista Voyages</span>
+            </div>
+            <ul class="nav__links" data-nav="links">
+                <!-- Se rellena dinámicamente con navbar.js -->
+            </ul>
+        </nav>
 
-  <nav class="navbar">
-    <div class="logo">
-      <img src="imagenes/logosinletras.png" alt="Logo"> Vista Voyages
-    </div>
-    <div class="menu">
-      <a href="Hoteles.html"><i class="fas fa-hotel"></i> Hoteles</a>
-      <a href="Vuelos.html"><i class="fas fa-plane"></i> Vuelos</a>
-      <a href="Paquetes.html"><i class="fas fa-suitcase-rolling"></i> Paquetes</a>
-      <a href="#"><i class="fas fa-globe"></i> Idioma</a>
-      <a href="login.html"><i class="fas fa-user-circle"></i> Sesión</a>
-    </div>
-  </nav>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero__overlay"></div>
+            <div class="hero__content">
+                <div class="hero__text">
+                    <h1 class="hero__title">
+                        Explora el cielo con <span>Vista Voyages</span>
+                    </h1>
+                    <p class="hero__subtitle">
+                        Encuentra los mejores vuelos, vive nuevas experiencias y despega hacia tu próximo destino.
+                    </p>
+                    <div class="hero__actions">
+                        <a href="Vuelos.html" class="btn btn--primary">
+                            <i class="fa-solid fa-plane-departure"></i> Buscar vuelos
+                        </a>
+                        <a href="#beneficios" class="btn btn--ghost">
+                            <i class="fa-regular fa-circle-play"></i> Ver más
+                        </a>
+                    </div>
+                    <div class="hero__stats">
+                        <div class="stat">
+                            <span class="stat__number">+120</span>
+                            <span class="stat__label">Destinos</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat__number">24/7</span>
+                            <span class="stat__label">Atención</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat__number">+50k</span>
+                            <span class="stat__label">Viajeros</span>
+                        </div>
+                    </div>
+                </div>
 
-  <main class="main-content">
-    <h1>Bienvenido a Vista Voyages</h1>
-    <p>Explora nuestras ofertas y destinos increíbles.<br> ¿Qué esperas para reservar tus vacaciones?</p>
-    <img src="imagenes/logosinletras.png" alt="Logo grande" width="220">
+                <div class="hero__card glass">
+                    <h2 class="hero__card-title">Encuentra tu próximo vuelo</h2>
+                    <form action="Vuelos.html" class="hero__form">
+                        <div class="form-group">
+                            <label>Origen</label>
+                            <input type="text" placeholder="Ciudad de origen" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Destino</label>
+                            <input type="text" placeholder="Ciudad de destino" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Salida</label>
+                                <input type="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Pasajeros</label>
+                                <input type="number" min="1" value="1" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn--full">
+                            <i class="fa-solid fa-magnifying-glass"></i> Buscar vuelos
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </header>
 
-    <div class="services">
-      <div class="service">
-        <i class="fas fa-hotel"></i>
-        <h3>Hoteles</h3>
-        <p>Encuentra hospedaje en los mejores hoteles con precios únicos.</p>
-      </div>
+    <!-- BENEFICIOS -->
+    <main>
+        <section class="section" id="beneficios">
+            <div class="section__header">
+                <h2>¿Por qué volar con Vista Voyages?</h2>
+                <p>Una experiencia pensada para que disfrutes desde el primer clic hasta el aterrizaje.</p>
+            </div>
+            <div class="grid grid--3">
+                <article class="card card--feature">
+                    <div class="card__icon">
+                        <i class="fa-solid fa-plane-up"></i>
+                    </div>
+                    <h3 class="card__title">Vuelos a tu medida</h3>
+                    <p class="card__text">
+                        Filtra por precio, duración, escala y aerolínea para encontrar el vuelo perfecto para ti.
+                    </p>
+                </article>
 
-      <div class="service">
-        <i class="fas fa-plane"></i>
-        <h3>Vuelos</h3>
-        <p>Reserva vuelos nacionales e internacionales al mejor precio.</p>
-      </div>
+                <article class="card card--feature">
+                    <div class="card__icon">
+                        <i class="fa-solid fa-shield-heart"></i>
+                    </div>
+                    <h3 class="card__title">Viaja con tranquilidad</h3>
+                    <p class="card__text">
+                        Soporte 24/7 y notificaciones para que siempre tengas el control de tu viaje.
+                    </p>
+                </article>
 
-      <div class="service">
-        <i class="fas fa-suitcase-rolling"></i>
-        <h3>Paquetes</h3>
-        <p>Combina vuelos y hoteles en un solo paquete para ahorrar tiempo y dinero.</p>
-      </div>
-    </div>
-  </main>
+                <article class="card card--feature">
+                    <div class="card__icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <h3 class="card__title">Experiencia premium</h3>
+                    <p class="card__text">
+                        Interfaz moderna, ágil y agradable para que reservar sea tan fácil como soñar el destino.
+                    </p>
+                </article>
+            </div>
+        </section>
 
+        <!-- CALL TO ACTION -->
+        <section class="section section--cta">
+            <div class="section__content glass">
+                <h2>¿Listo para despegar?</h2>
+                <p>Crea una cuenta y guarda tus vuelos favoritos, historial de viajes y más.</p>
+                <div class="section__actions">
+                    <a href="Registro.html" class="btn btn--primary">
+                        <i class="fa-solid fa-user-plus"></i> Crear cuenta
+                    </a>
+                    <a href="LogIn.html" class="btn btn--ghost">
+                        <i class="fa-solid fa-right-to-bracket"></i> Iniciar sesión
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="JS/navbar.js"></script>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

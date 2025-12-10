@@ -1,9 +1,27 @@
 :root {
-  --white: #FFFFFF;
-  --white-soft: #FEFEFE;
-  --nav-blue: #233d63;
-  --accent: #FF8C69;
-  --deep-blue: #051B3C;
-  --text-dark: #041A3B;
-  --card-border: #c8deff;
+    --color-bg: #050816;
+    --color-bg-soft: #0b1020;
+    --color-primary: #1e88e5;
+    --color-primary-soft: rgba(30, 136, 229, 0.14);
+    --color-secondary: #00bcd4;
+    --color-accent: #ff9800;
+    --color-danger: #ff5252;
+    --color-success: #4caf50;
+
+    --color-text: #f9fbff;
+    --color-text-soft: #c5c8d4;
+    --color-border: rgba(255, 255, 255, 0.12);
+
+    --radius-sm: 0.6rem;
+    --radius-md: 1rem;
+    --radius-lg: 1.6rem;
+    --radius-xl: 2.4rem;
+
+    --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.35);
+    --shadow-strong: 0 26px 80px rgba(0, 0, 0, 0.7);
+
+    --transition-fast: 0.2s ease-out;
+    --transition-med: 0.35s ease-out;
+
+    --nav-height: 72px;
 }

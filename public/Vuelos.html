@@ -1,71 +1,202 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>Vuelos - Vista Voyages</title>
-  <link rel="stylesheet" href="CSS/variables.css">
-  <link rel="stylesheet" href="CSS/reset.css">
-  <link rel="stylesheet" href="CSS/base.css">
-  <link rel="stylesheet" href="CSS/navbar.css">
-  <link rel="stylesheet" href="CSS/productos.css">
-  <link rel="stylesheet" href="CSS/responsive.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <title>Vista Voyages | Vuelos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Fuentes e iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2e0f1f6e9.js" crossorigin="anonymous"></script>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="CSS/variables.css" />
+    <link rel="stylesheet" href="CSS/style.css" />
 </head>
-<body class="vuelos-page">
-  <nav class="navbar">
-    <div class="logo">
-      <img src="imagenes/logosinletras.png" alt="Logo"> Vista Voyages
-    </div>
-    <div class="menu">
-      <a href="Hoteles.html"><i class="fas fa-hotel"></i> Hoteles</a>
-      <a href="Vuelos.html"><i class="fas fa-plane"></i> Vuelos</a>
-      <a href="Paquetes.html"><i class="fas fa-suitcase-rolling"></i> Paquetes</a>
-      <a href="#"><i class="fas fa-globe"></i> Idioma</a>
-      <a href="#"><i class="fas fa-user-circle"></i> Sesión</a>
-    </div>
-  </nav>
+<body>
+    <header class="header header--compact">
+        <nav class="nav glass" id="mainNav">
+            <div class="nav__brand">
+                <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
+                <span class="nav__title">Vista Voyages</span>
+            </div>
+            <ul class="nav__links" data-nav="links">
+                <!-- Navbar dinámico -->
+            </ul>
+        </nav>
 
-  <div class="search-bar">
-    <div class="search-wrap">
-      <input type="text" placeholder="Buscar...">
-      <button><i class="fas fa-search"></i></button>
-    </div>
-  </div>
+        <section class="subhero">
+            <div class="subhero__content">
+                <h1 class="subhero__title">Encuentra tu vuelo ideal</h1>
+                <p class="subhero__subtitle">Compara opciones, elige el horario perfecto y despega sin complicaciones.</p>
+            </div>
+        </section>
+    </header>
 
-  <div class="products">
-    <div class="product-card">
-      <img src="imagenes/AEROMEXICO.jpg" alt="Vuelo 1">
-      <div class="product-info">
-        <h3>Vuelo Ciudad de México - Cancún</h3>
-        <p><b>Empresa:</b> AEROMEXICO</p>
-        <p><b>Costo:</b> $850</p>
-        <div class="rating">
-          <i class="fas fa-star"></i><i class="fas fa-star"></i>
-          <i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-          <i class="far fa-star"></i>
-        </div>
-      </div>
-      <div class="product-btn">
-        <a href="#">Ver oferta <i class="fas fa-arrow-right"></i></a>
-      </div>
-    </div>
+    <main class="main">
+        <!-- Barra de búsqueda -->
+        <section class="section section--search">
+            <div class="search-card glass">
+                <form class="search-form">
+                    <div class="form-group">
+                        <label>Origen</label>
+                        <input type="text" placeholder="Ej. CDMX" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Destino</label>
+                        <input type="text" placeholder="Ej. Cancún" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha de salida</label>
+                            <input type="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Regreso (opcional)</label>
+                            <input type="date">
+                        </div>
+                        <div class="form-group">
+                            <label>Pasajeros</label>
+                            <input type="number" min="1" value="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn--full">
+                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                    </button>
+                </form>
+            </div>
+        </section>
 
-    <div class="product-card">
-      <img src="imagenes/Volaris.jpeg" alt="Vuelo 2">
-      <div class="product-info">
-        <h3>Vuelo Guadalajara - Madrid</h3>
-        <p><br>Empresa:</b> VOLARIS</p>
-        <p><b>Costo:</b> $900</p>
-        <div class="rating">
-          <i class="fas fa-star"></i><i class="fas fa-star"></i>
-          <i class="fas fa-star"></i><i class="fas fa-star"></i>
-          <i class="far fa-star"></i>
-        </div>
-      </div>
-      <div class="product-btn">
-        <a href="#">Ver oferta <i class="fas fa-arrow-right"></i></a>
-      </div>
-    </div>
-  </div>
+        <!-- Resultados de vuelos (maqueta estática, lista para conectar a backend si luego quieres) -->
+        <section class="section">
+            <div class="section__header section__header--inline">
+                <div>
+                    <h2>Vuelos destacados</h2>
+                    <p>Basado en rutas populares y mejores horarios.</p>
+                </div>
+                <div class="chips">
+                    <button class="chip chip--active">Todos</button>
+                    <button class="chip">Directos</button>
+                    <button class="chip">Menor precio</button>
+                    <button class="chip">Menor duración</button>
+                </div>
+            </div>
+
+            <div class="flight-list">
+                <!-- Tarjeta 1 -->
+                <article class="flight-card glass">
+                    <div class="flight-card__airline">
+                        <img src="imagenes/AEROMEXICO.jpg" alt="Aeroméxico">
+                        <div>
+                            <h3>Aeroméxico</h3>
+                            <span class="flight-card__tag">Vuelo directo</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__route">
+                        <div>
+                            <span class="flight-card__city">CDMX</span>
+                            <span class="flight-card__time">06:30</span>
+                        </div>
+                        <div class="flight-card__line">
+                            <span class="flight-card__duration">2h 15m</span>
+                            <span class="flight-card__dots"></span>
+                        </div>
+                        <div>
+                            <span class="flight-card__city">CUN</span>
+                            <span class="flight-card__time">08:45</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__info">
+                        <div class="flight-card__price">
+                            <span>Desde</span>
+                            <strong>$2,499 MXN</strong>
+                        </div>
+                        <button class="btn btn--primary btn--sm">
+                            Seleccionar vuelo
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Tarjeta 2 -->
+                <article class="flight-card glass">
+                    <div class="flight-card__airline">
+                        <img src="imagenes/Volaris.jpeg" alt="Volaris">
+                        <div>
+                            <h3>Volaris</h3>
+                            <span class="flight-card__tag flight-card__tag--secondary">Escala en GDL</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__route">
+                        <div>
+                            <span class="flight-card__city">CDMX</span>
+                            <span class="flight-card__time">09:10</span>
+                        </div>
+                        <div class="flight-card__line">
+                            <span class="flight-card__duration">4h 40m</span>
+                            <span class="flight-card__dots"></span>
+                        </div>
+                        <div>
+                            <span class="flight-card__city">MTY</span>
+                            <span class="flight-card__time">13:50</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__info">
+                        <div class="flight-card__price">
+                            <span>Desde</span>
+                            <strong>$1,899 MXN</strong>
+                        </div>
+                        <button class="btn btn--primary btn--sm">
+                            Seleccionar vuelo
+                        </button>
+                    </div>
+                </article>
+
+                <!-- Tarjeta 3 -->
+                <article class="flight-card glass">
+                    <div class="flight-card__airline">
+                        <img src="imagenes/AEROMEXICO2.jpg" alt="Aeroméxico">
+                        <div>
+                            <h3>Aeroméxico</h3>
+                            <span class="flight-card__tag">Directo</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__route">
+                        <div>
+                            <span class="flight-card__city">GDL</span>
+                            <span class="flight-card__time">14:20</span>
+                        </div>
+                        <div class="flight-card__line">
+                            <span class="flight-card__duration">1h 05m</span>
+                            <span class="flight-card__dots"></span>
+                        </div>
+                        <div>
+                            <span class="flight-card__city">CDMX</span>
+                            <span class="flight-card__time">15:25</span>
+                        </div>
+                    </div>
+                    <div class="flight-card__info">
+                        <div class="flight-card__price">
+                            <span>Desde</span>
+                            <strong>$1,299 MXN</strong>
+                        </div>
+                        <button class="btn btn--primary btn--sm">
+                            Seleccionar vuelo
+                        </button>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="JS/navbar.js"></script>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

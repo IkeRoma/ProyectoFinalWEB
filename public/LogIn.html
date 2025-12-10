@@ -1,40 +1,89 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Login - Vista Voyages</title>
-  <link rel="stylesheet" href="CSS/variables.css">
-  <link rel="stylesheet" href="CSS/reset.css">
-  <link rel="stylesheet" href="CSS/base.css">
-  <link rel="stylesheet" href="CSS/navbar.css">
-  <link rel="stylesheet" href="CSS/auth.css">
-  <link rel="stylesheet" href="CSS/responsive.css">
+    <meta charset="UTF-8" />
+    <title>Vista Voyages | Iniciar sesión</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Fuentes e iconos -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a2e0f1f6e9.js" crossorigin="anonymous"></script>
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="CSS/variables.css" />
+    <link rel="stylesheet" href="CSS/style.css" />
 </head>
-<body class="login-page">
+<body class="body--auth">
+    <header class="header header--auth">
+        <nav class="nav glass" id="mainNav">
+            <div class="nav__brand">
+                <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
+                <span class="nav__title">Vista Voyages</span>
+            </div>
+            <ul class="nav__links" data-nav="links">
+                <!-- navbar dinámico -->
+            </ul>
+        </nav>
+    </header>
 
-  <div class="wrapper">
-    <div class="left-section">
-      <img src="imagenes/logosinfondo.png" alt="Vista Voyages Logo">
-    </div>
+    <main class="auth">
+        <div class="auth__card glass">
+            <div class="auth__left">
+                <h1 class="auth__title">Bienvenido de vuelta</h1>
+                <p class="auth__subtitle">
+                    Inicia sesión para gestionar tus reservas y seguir explorando nuevos destinos.
+                </p>
+                <div class="auth__highlight">
+                    <i class="fa-solid fa-plane-circle-check"></i>
+                    <span>Accede rápidamente a tus vuelos recientes.</span>
+                </div>
+            </div>
 
-    <div class="right-section">
-      <h2>Accede a tu cuenta</h2>
-      <p>Inicia sesión para continuar en Vista Voyages</p>
+            <div class="auth__right">
+                <h2 class="auth__form-title">Iniciar sesión</h2>
+                <form id="loginForm" class="form">
+                    <div class="form-group">
+                        <label for="usuario">Correo electrónico</label>
+                        <div class="input-icon">
+                            <i class="fa-regular fa-envelope"></i>
+                            <input type="email" id="usuario" placeholder="correo@ejemplo.com" required>
+                        </div>
+                    </div>
 
-      <form id="loginForm">
-        <input type="text" id="usuario" name="correo" placeholder="Correo electrónico" required>
-        <input type="password" id="contrasena" name="password" placeholder="Contraseña" required>
-        <input type="submit" value="Ingresar">
-      </form>
+                    <div class="form-group">
+                        <label for="contrasena">Contraseña</label>
+                        <div class="input-icon">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" id="contrasena" placeholder="Tu contraseña" required>
+                        </div>
+                    </div>
 
-      <p id="resultado" style="transition: opacity 0.5s;"></p>
+                    <p id="resultado" class="form__message"></p>
 
-      <div class="links">
-        <a href="Password.html">Olvidé mi contraseña</a> | 
-        <a href="Registro.html">Registrarse</a>
-      </div>
-    </div>
-  </div>
-  <script src="JS/login.js"></script>
+                    <button type="submit" class="btn btn--primary btn--full">
+                        <i class="fa-solid fa-right-to-bracket"></i> Entrar
+                    </button>
+
+                    <div class="form__links">
+                        <a href="Password.html">¿Olvidaste tu contraseña?</a>
+                        <span>·</span>
+                        <a href="Registro.html">Crear una cuenta</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer footer--auth">
+        <p>© <span id="year"></span> Vista Voyages.</p>
+    </footer>
+
+    <script src="JS/navbar.js"></script>
+    <script src="JS/login.js"></script>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>
