@@ -1,0 +1,48 @@
+/* ============================================================
+   PANEL ADMINISTRATIVO
+===============================================================*/
+
+.admin-body {
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.admin-container {
+    width: 95%;
+    margin: 6rem auto;
+}
+
+.admin-header {
+    padding: 1.6rem;
+    border-radius: 18px;
+    margin-bottom: 2rem;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+.admin-card {
+    padding: 1.6rem;
+    border-radius: 18px;
+    backdrop-filter: blur(8px);
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: .8rem;
+    background: #ffffff08;
+    border-bottom: 1px solid #ffffff20;
+}
+
+.admin-table th {
+    background: #ffffff15;
+}

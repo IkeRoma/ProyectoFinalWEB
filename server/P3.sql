@@ -19,3 +19,22 @@ CREATE TABLE Reseñas (
     Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UsuarioID) REFERENCES Usuarios(ID) ON DELETE CASCADE
 );
+
+CREATE TABLE wallet (
+    id_wallet INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+
+    bin VARCHAR(6) NOT NULL,              -- primeros 6 dígitos
+    ultimos4 VARCHAR(4) NOT NULL,         -- últimos 4 dígitos
+    tipo VARCHAR(15) NOT NULL,            -- Visa o Mastercard
+
+    nombre_titular VARCHAR(100) NOT NULL,
+    fecha_expiracion CHAR(7) NOT NULL,    -- MM/AAAA
+
+    hash_tarjeta CHAR(64) NOT NULL,       -- SHA-256 del número completo
+    
+    activo BOOLEAN DEFAULT 1,
+
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID)
+);
+

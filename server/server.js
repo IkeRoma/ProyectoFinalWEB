@@ -49,6 +49,12 @@ app.get("/api/listar", auth.listarUsuarios);
 app.post("/api/reviews/add", reviews.crearReseña);
 app.get("/api/reviews/list", reviews.obtenerReseñas);
 
+// WALLET´S
+app.get("/api/wallet/list/:id_usuario", auth.listarWallet);
+app.post("/api/wallet/add", auth.agregarTarjeta);
+app.post("/api/wallet/delete", auth.eliminarTarjeta);
+app.post("/api/wallet/update", auth.actualizarTarjeta);
+
 
 // ========================
 //  Servidor HTTP

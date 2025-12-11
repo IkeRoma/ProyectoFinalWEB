@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Perfil - Vista Voyages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="CSS/variables.css">
+    <link rel="stylesheet" href="CSS/style.css">
+
+    <!-- Estilos del panel -->
+    <link rel="stylesheet" href="CSS/perfil.css">
+    <link rel="stylesheet" href="CSS/wallet.css">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body class="perfil-body">
+
+    <!-- NAVBAR -->
+    <nav id="mainNav" class="nav">
+        <div class="nav__brand">
+            <img src="imagenes/logosinfondo.png" class="nav__logo">
+            <span class="nav__title">Vista Voyages</span>
+        </div>
+        <ul class="nav__links" data-nav="links"></ul>
+    </nav>
+
+    <!-- PROTECCIÓN DE ACCESO -->
+    <script>
+        const usr = JSON.parse(localStorage.getItem("usuario") || "null");
+        if (!usr) window.location.href = "LogIn.html";
+    </script>
+
+    <main class="perfil-container">
+
+        <!-- HEADER -->
+        <section class="perfil-header glass">
+            <div>
+                <h1>Mi Perfil</h1>
+                <p>Bienvenido(a), <strong id="perfilNombre"></strong></p>
+            </div>
+
+            <button id="btnEditarPerfil" class="btn btn--primary">
+                <i class="fa-solid fa-user-pen"></i> Editar Perfil
+            </button>
+        </section>
+
+        <!-- PANEL DE CONTENIDO -->
+        <section class="perfil-secciones">
+
+            <!-- Información del usuario -->
+            <div class="perfil-card glass">
+                <h2><i class="fa-solid fa-user"></i> Información personal</h2>
+
+                <div class="perfil-info">
+                    <p><strong>Nombre:</strong> <span id="perfilNombreComp"></span></p>
+                    <p><strong>Correo:</strong> <span id="perfilCorreo"></span></p>
+                    <p><strong>Teléfono:</strong> <span id="perfilTelefono"></span></p>
+                </div>
+
+                <button id="btnEditarInfo" class="btn btn--ghost btn--sm">
+                    Editar información
+                </button>
+            </div>
+
+            <!-- Wallet -->
+            <div class="perfil-card glass">
+                <h2><i class="fa-solid fa-wallet"></i> My Wallet</h2>
+
+                <!-- Contenedor de tarjetas -->
+                <div id="walletLista" class="wallet-container"></div>
+
+                <!-- Botón para añadir tarjeta -->
+                <button id="btnAgregarTarjeta" class="wallet-add-btn">
+                    <i class="fa-solid fa-circle-plus"></i> Añadir tarjeta
+                </button>
+            </div>
+
+            <!-- Reseñas -->
+            <div class="perfil-card glass">
+                <h2><i class="fa-solid fa-star"></i> Mis reseñas</h2>
+                <p>Aquí aparecerán tus reseñas creadas.</p>
+
+                <button class="btn btn--ghost btn--sm">Ver reseñas</button>
+            </div>
+
+            <!-- Historial de vuelos -->
+            <div class="perfil-card glass">
+                <h2><i class="fa-solid fa-plane"></i> Historial de vuelos</h2>
+                <p>Las reservas aparecerán próximamente.</p>
+
+                <button class="btn btn--ghost btn--sm">Ver historial</button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="JS/navbar.js"></script>
+    <script src="JS/perfil.js"></script>
+    <script src="JS/wallet.js"></script>
+
+</body>
+</html>
