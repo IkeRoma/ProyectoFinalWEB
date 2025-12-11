@@ -1282,122 +1282,89 @@ input:focus,
    CARRUSEL DE RESEÑAS — ESTILO VIBRANTE
 ================================== */
 
-.carousel-wrapper {
-    position: relative;
-    width: 100%;
-    overflow: hidden;
-    margin-top: 2rem;
-}
+/* ============================================
+      CARRUSEL RESEÑAS — SUPER PREMIUM
+============================================ */
 
 .carousel {
     display: flex;
-    gap: 1.6rem;
+    gap: 28px;
     overflow-x: auto;
     scroll-behavior: smooth;
-    padding: 1rem;
+    padding: 25px 0;
 }
-
-.carousel::-webkit-scrollbar {
-    height: 6px;
-}
-
-.carousel::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #00C6FF, #0072FF);
-    border-radius: 5px;
-}
-
-.review-card {
-    min-width: 280px;
-    max-width: 320px;
-    background: rgba(255,255,255,0.12);
-    padding: 1.3rem;
-    border-radius: 18px;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: white;
-    transition: .25s ease;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0,140,255,0.15);
-}
-
-/* Hover interactivo */
-.review-card:hover {
-    transform: translateY(-6px) scale(1.03);
-    box-shadow: 0 0 18px rgba(0,200,255,0.45);
-    border-color: rgba(0,200,255,0.7);
-}
-
-/* Tarjeta seleccionada */
-.review-card.selected {
-    transform: scale(1.07);
-    border: 2px solid #00E1FF;
-    box-shadow: 0 0 25px #00E1FF;
-    background: rgba(0,255,255,0.18);
-}
-
-.carousel {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 20px 0;
-}
-
 .carousel::-webkit-scrollbar {
     display: none;
 }
 
-/* Tarjetas */
+/* --- TARJETA BASE --- */
 .review-card {
-    min-width: 250px;
-    max-width: 250px;
-    background: white;
-    padding: 18px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    min-width: 350px;
+    max-width: 380px;
+    min-height: 240px;
+
+    padding: 25px;
+    border-radius: 18px;
+
+    /* 🌟 EFECTO GLASS */
+    background: rgba(0, 153, 255, 0.08);
+    border: 1.8px solid rgba(0, 153, 255, 0.35);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* SOMBRA BASE */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    transition: 
+        transform 0.35s ease,
+        box-shadow 0.35s ease,
+        background 0.35s ease,
+        border 0.35s ease;
+    
     cursor: pointer;
+
+    /* 💫 Efecto 3D inicial */
+    transform-style: preserve-3d;
 }
 
+/* --- EFECTO HOVER (3D + BRILLO SUAVE) --- */
 .review-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    transform: translateY(-10px) scale(1.07) rotate3d(1, 1, 0, 6deg);
+    box-shadow: 
+        0 12px 25px rgba(0, 0, 0, 0.35),
+        0 0 12px rgba(0, 153, 255, 0.55); /* brillo azul */
 }
 
+/* --- SELECCIONADA (COLOR DEL BOTÓN "ENVIAR RESEÑA") --- */
 .review-card.selected {
-    outline: 3px solid var(--primary);
-    transform: scale(1.07);
+    background: #0099ff; /* Color botón Enviar reseña */
+    border: 2px solid #00c3ff;
+
+    transform: translateY(-12px) scale(1.1);
+    box-shadow:
+        0 15px 28px rgba(0,0,0,0.4),
+        0 0 20px rgba(0, 195, 255, 0.85); /* brillo intenso */
 }
 
-/* Texto */
+/* --- TEXTO INTERNO --- */
 .review-text {
     font-style: italic;
-    margin-bottom: 8px;
+    font-size: 1.1rem;
+    line-height: 1.4rem;
+    color: #fff;
 }
+
 .review-author {
     font-weight: bold;
+    color: #fff;
 }
+
 .review-date {
-    font-size: 0.8rem;
-    color: gray;
-}
-
-/* Botones */
-.carousel-btn {
-    background: var(--primary);
-    border: none;
-    color: white;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.carousel-btn:hover {
-    transform: scale(1.15);
-}
-
-.no-resenas {
-    font-size: 1.1rem;
-    color: gray;
+    font-size: 0.85rem;
+    color: #d9d9d9;
+    text-align: right;
 }
