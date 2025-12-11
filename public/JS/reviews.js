@@ -20,7 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch("/api/reviews/list");
         const data = await res.json();
 
-        contenedor.innerHTML = "";
+        const carrusel = document.getElementById("carouselResenas");
+
+        if (!carrusel) return;
+
+        // limpiar carrusel
+        carrusel.innerHTML = "";
 
         data.reseñas.forEach(r => {
             const div = document.createElement("div");
@@ -32,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <p class="review-date">${new Date(r.Fecha).toLocaleDateString()}</p>
             `;
 
-            contenedor.appendChild(div);
+            carrusel.appendChild(div);
         });
     }
 
