@@ -1,39 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
-       FORZAR NUEVA SESIÓN SIEMPRE AL ABRIR EL SITIO
-    ====================================================== */
-    localStorage.removeItem("usuario");
-    localStorage.removeItem("lastActivity");
-
-
-    /* ======================================================
-       LIMPIAR SESIÓN AL CERRAR PESTAÑA / NAVEGADOR
-    ====================================================== */
-    window.addEventListener("beforeunload", () => {
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("lastActivity");
-    });
-
-
-    /* ======================================================
        BANNER DE COOKIES
     ====================================================== */
     if (!localStorage.getItem("cookiesAceptadas")) {
-        document.getElementById("cookieBanner").style.display = "block";
+        const banner = document.getElementById("cookieBanner");
+        if (banner) {
+            banner.style.display = "block";
+        }
     }
 
-    document.getElementById("aceptarCookies").addEventListener("click", () => {
-        localStorage.setItem("cookiesAceptadas", "true");
-        document.getElementById("cookieBanner").style.display = "none";
-    });
-
+    const btnAceptarCookies = document.getElementById("aceptarCookies");
+    if (btnAceptarCookies) {
+        btnAceptarCookies.addEventListener("click", () => {
+            localStorage.setItem("cookiesAceptadas", "true");
+            const banner = document.getElementById("cookieBanner");
+            if (banner) {
+                banner.style.display = "none";
+            }
+        });
+    }
 
     /* ======================================================
        SISTEMA DE EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
     ====================================================== */
 
-    const SESSION_TIMEOUT = 1/6 * 60 * 60 * 1000; // 10 minutos
+    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
 
     function actualizarActividad() {
         localStorage.setItem("lastActivity", Date.now().toString());
@@ -41,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validarExpiracion() {
         const last = localStorage.getItem("lastActivity");
-        if (!last) return;
+        if (!last) return; // Si nunca se ha registrado actividad, no expirar.
 
         const diff = Date.now() - parseInt(last);
 
@@ -58,7 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     validarExpiracion();
-
 
     /* ======================================================
        NAVBAR DINÁMICO
@@ -92,12 +83,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
+        const usuario = JSON.parse(localStorage.getItem("usuario"));
+
+        // Links visibles para todos
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
-        const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-        // USUARIO NO LOGUEADO
+        // No hay sesión → Mostrar login/registro
         if (!usuario) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
@@ -108,29 +100,29 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ADMIN
+        // Usuario autenticado
         if (usuario.Rol === 1) {
+            // Admin
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
-        }
-
-        // USUARIO NORMAL
-        else {
+        } else {
+            // Usuario normal
             navLinksContainer.appendChild(
-                crearLink("Mi Perfil", "MiPerfil.html")
+                crearLink("Mi Perfil", "MiPerfil.html", "nav__link--primary")
             );
         }
 
+        // Botón logout
         navLinksContainer.appendChild(crearBotonLogout());
     }
 
     construirNavbar();
 
-
     /* ======================================================
-       EFECTO NAV AL DESPLAZAR
+       EFECTO DEL NAV AL HACER SCROLL
     ====================================================== */
+
     window.addEventListener("scroll", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");
