@@ -92,3 +92,64 @@
 .btn-azul:hover {
     transform: scale(1.06);
 }
+
+/* ============================
+   ESTILO UNIFORME PARA TARJETAS
+============================= */
+.perfil-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+}
+
+
+/* ============================
+   MODALES
+============================= */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.modal-content {
+    width: 360px;
+    padding: 25px;
+    border-radius: 20px;
+}
+
+.input-modal {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+}
+
+.btn-cerrar {
+    background: #222;
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: none;
+    color: white;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.lista-reseñas-modal p {
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    margin-bottom: 10px;
+}
+
+/* Campos de contraseña */
+.input-modal[type="password"] {
+    letter-spacing: 1px;
+}

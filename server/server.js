@@ -55,6 +55,8 @@ app.post("/api/wallet/add", auth.agregarTarjeta);
 app.post("/api/wallet/delete", auth.eliminarTarjeta);
 app.post("/api/wallet/update", auth.actualizarTarjeta);
 
+app.post("/api/updateUser", authController.updateUser);
+app.post("/api/updatePassword", authController.updatePassword);
 
 // ========================
 //  Servidor HTTP

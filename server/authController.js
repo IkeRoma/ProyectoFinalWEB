@@ -215,3 +215,65 @@ exports.actualizarTarjeta = (req, res) => {
         res.json({ error: false, message: "Tarjeta actualizada" });
     });
 };
+
+// =====================================================
+// ACTUALIZAR INFORMACIÓN DEL USUARIO
+// =====================================================
+exports.updateUser = (req, res) => {
+    const { ID, Nombre, Apellido, Correo, Telefono } = req.body;
+
+    if (!ID)
+        return res.status(400).json({ message: "ID requerido" });
+
+    const sql = `
+        UPDATE usuarios 
+        SET Nombre = ?, Apellido = ?, Correo = ?, Telefono = ?
+        WHERE ID = ?
+    `;
+
+    db.query(sql, [Nombre, Apellido, Correo, Telefono, ID], (err) => {
+        if (err) {
+            console.error("Error al actualizar usuario:", err);
+            return res.status(500).json({ message: "Error en el servidor" });
+        }
+
+        return res.json({ message: "Información actualizada correctamente" });
+    });
+};
+
+
+// =====================================================
+// ACTUALIZAR CONTRASEÑA
+// =====================================================
+exports.updatePassword = (req, res) => {
+    const { ID, actual, nueva } = req.body;
+
+    if (!ID || !actual || !nueva)
+        return res.status(400).json({ success: false, message: "Datos incompletos" });
+
+    // 1. Obtener contraseña actual
+    db.query("SELECT Password FROM usuarios WHERE ID = ?", [ID], (err, results) => {
+        if (err || results.length === 0) {
+            return res.json({ success: false, message: "Usuario no encontrado" });
+        }
+
+        const passBD = results[0].Password;
+
+        // 2. Comparar contra contraseña ingresada
+        bcrypt.compare(actual, passBD, (err, match) => {
+            if (!match)
+                return res.json({ success: false, message: "La contraseña actual es incorrecta" });
+
+            // 3. Hashear nueva contraseña
+            const nuevoHash = bcrypt.hashSync(nueva, 10);
+
+            // 4. Actualizar en la BD
+            db.query("UPDATE usuarios SET Password = ? WHERE ID = ?", [nuevoHash, ID], (err2) => {
+                if (err2)
+                    return res.json({ success: false, message: "Error al actualizar contraseña" });
+
+                return res.json({ success: true, message: "Contraseña actualizada correctamente" });
+            });
+        });
+    });
+};

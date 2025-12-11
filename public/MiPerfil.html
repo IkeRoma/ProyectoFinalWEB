@@ -34,6 +34,7 @@
         if (!usr) window.location.href = "LogIn.html";
     </script>
 
+
     <main class="perfil-container">
 
         <!-- HEADER -->
@@ -43,10 +44,11 @@
                 <p>Bienvenido(a), <strong id="perfilNombre"></strong></p>
             </div>
 
-            <button id="btnEditarPerfil" class="btn btn--primary">
+            <button id="btnEditarPerfil" class="btn-azul">
                 <i class="fa-solid fa-user-pen"></i> Editar Perfil
             </button>
         </section>
+
 
         <!-- PANEL DE CONTENIDO -->
         <section class="perfil-secciones">
@@ -61,45 +63,104 @@
                     <p><strong>Teléfono:</strong> <span id="perfilTelefono"></span></p>
                 </div>
 
-                <button id="btnEditarInfo" class="btn-azul">
-                    Editar información
-                </button>
+                <button id="btnEditarInfo" class="btn-azul">Editar información</button>
+                <button id="btnCambiarPassword" class="btn-azul">Cambiar contraseña</button>
             </div>
+
 
             <!-- Wallet -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-wallet"></i> My Wallet</h2>
 
-                <!-- Contenedor de tarjetas -->
                 <div id="walletLista" class="wallet-container"></div>
 
-                <!-- Botón para añadir tarjeta -->
-                <button id="btnAgregarTarjeta" class="wallet-add-btn">
+                <button id="btnAgregarTarjeta" class="btn-azul">
                     <i class="fa-solid fa-circle-plus"></i> Añadir tarjeta
                 </button>
             </div>
 
-            <!-- Reseñas -->
+
+            <!-- Mis reseñas -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-star"></i> Mis reseñas</h2>
-                <p>Aquí aparecerán tus reseñas creadas.</p>
+                <p>Aquí puedes ver todas tus reseñas creadas.</p>
 
-                <button class="btn btn--ghost btn--sm">Ver reseñas</button>
+                <button id="btnVerReseñas" class="btn-azul">Ver reseñas</button>
             </div>
+
 
             <!-- Historial de vuelos -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-plane"></i> Historial de vuelos</h2>
-                <p>Las reservas aparecerán próximamente.</p>
+                <p>Próximamente podrás ver tus viajes.</p>
 
-                <button class="btn btn--ghost btn--sm">Ver historial</button>
+                <button id="btnHistorial" class="btn-azul">Ver historial</button>
             </div>
 
         </section>
-
     </main>
 
-    <!-- Scripts -->
+
+
+    <!-- ==========================================================
+            MODAL — Editar información personal
+    ========================================================== -->
+    <div class="modal" id="modalEditarInfo">
+        <div class="modal-content glass">
+            <h3>Editar información personal</h3>
+
+            <input id="inputNombre" class="input-modal" placeholder="Nombre completo">
+            <input id="inputCorreo" class="input-modal" placeholder="Correo electrónico">
+            <input id="inputTelefono" class="input-modal" placeholder="Teléfono">
+
+            <button id="guardarInfo" class="btn-azul">Guardar</button>
+            <button class="btn-cerrar" data-close>Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================================
+            MODAL — Cambiar contraseña
+    ========================================================== -->
+    <div class="modal" id="modalPassword">
+        <div class="modal-content glass">
+            <h3>Cambiar contraseña</h3>
+
+            <input id="passActual" class="input-modal" type="password" placeholder="Contraseña actual">
+            <input id="passNueva" class="input-modal" type="password" placeholder="Nueva contraseña">
+            <input id="passConfirm" class="input-modal" type="password" placeholder="Confirmar contraseña">
+
+            <button id="guardarPassword" class="btn-azul">Guardar</button>
+            <button class="btn-cerrar" data-close>Cerrar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================================
+            MODAL — Ver reseñas del usuario
+    ========================================================== -->
+    <div class="modal" id="modalReseñas">
+        <div class="modal-content glass">
+            <h3>Mis reseñas</h3>
+
+            <div id="listaReseñasUser" class="lista-reseñas-modal"></div>
+
+            <button class="btn-cerrar" data-close>Cerrar</button>
+        </div>
+    </div>
+
+
+    <!-- MODAL — Historial -->
+    <div class="modal" id="modalHistorial">
+        <div class="modal-content glass">
+            <h3>Historial de vuelos</h3>
+            <p>Aún no implementado.</p>
+            <button class="btn-cerrar" data-close>Cerrar</button>
+        </div>
+    </div>
+
+
+    <!-- SCRIPTS -->
     <script src="JS/navbar.js"></script>
     <script src="JS/perfil.js"></script>
     <script src="JS/wallet.js"></script>
