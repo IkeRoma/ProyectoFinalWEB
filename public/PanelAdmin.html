@@ -55,6 +55,7 @@
                     <button class="btn-azul btn-azul--xs" id="btnFiltrarUsuarios">Filtrar</button>
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosUsuarios">Ver todos</button>
                 </div>
+                <button class="btnVV" onclick="abrirModalCrearUsuario()">+ Nuevo usuario</button>
             </div>
             <table class="admin-table" id="tablaUsuarios">
                 <thead>
@@ -425,6 +426,69 @@
                 <button type="submit" class="btn-azul">Guardar boleto</button>
             </form>
         </div>
+        <div id="modalCrearUsuario" class="modalVV oculto">
+            <div class="modalVV-content glass">
+                <h2>Crear usuario</h2>
+
+                <label>Nombre</label>
+                <input id="crearNombre" class="input-modal" type="text">
+
+                <label>Apellido</label>
+                <input id="crearApellido" class="input-modal" type="text">
+
+                <label>Correo</label>
+                <input id="crearCorreo" class="input-modal" type="email">
+
+                <label>Teléfono</label>
+                <input id="crearTelefono" class="input-modal" type="text">
+
+                <label>Rol</label>
+                <select id="crearRol" class="input-modal">
+                    <option value="0">Usuario</option>
+                    <option value="1">Administrador</option>
+                </select>
+
+                <label>Contraseña</label>
+                <input id="crearPassword" class="input-modal" type="password">
+
+                <div class="modalVV-actions">
+                    <button class="btnVV" onclick="guardarNuevoUsuario()">Guardar</button>
+                    <button class="btnVV-cerrar" onclick="cerrarModalCrearUsuario()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="modalEditarUsuario" class="modalVV oculto">
+            <div class="modalVV-content glass">
+                <h2>Editar usuario</h2>
+
+                <input type="hidden" id="editID">
+
+                <label>Nombre</label>
+                <input id="editNombre" class="input-modal" type="text">
+
+                <label>Apellido</label>
+                <input id="editApellido" class="input-modal" type="text">
+
+                <label>Correo</label>
+                <input id="editCorreo" class="input-modal" type="email">
+
+                <label>Teléfono</label>
+                <input id="editTelefono" class="input-modal" type="text">
+
+                <label>Rol</label>
+                <select id="editRol" class="input-modal">
+                    <option value="0">Usuario</option>
+                    <option value="1">Administrador</option>
+                </select>
+
+                <div class="modalVV-actions">
+                    <button class="btnVV" onclick="guardarEdicionUsuario()">Guardar cambios</button>
+                    <button class="btnVV-cerrar" onclick="cerrarModalEditarUsuario()">Cerrar</button>
+                </div>
+            </div>
+        </div>
+
     </section>
 </main>
 

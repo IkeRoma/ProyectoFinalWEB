@@ -132,7 +132,8 @@ async function cargarUsuarios(idFiltro = null) {
                 <td>${u.Nombre} ${u.Apellido}</td>
                 <td>${u.Correo}</td>
                 <td>${u.Rol === 1 ? "Admin" : "Usuario"}</td>
-                <td><button onclick="eliminarUsuario(${u.ID})">Eliminar</button></td>
+                <button class="btnVV" onclick='abrirModalEditarUsuario(${JSON.stringify(u)})'>Editar</button>
+                <button class="btnVV-cerrar" onclick="eliminarUsuario(${u.ID})">Eliminar</button>
             </tr>
         `;
     });
@@ -929,4 +930,129 @@ async function guardarBoletoAdmin(e) {
     e.target.reset();
     document.getElementById("boletoId").value = "";
     cargarBoletos();
+}
+
+    // =====================
+    // CREAR USUARIO (modal)
+    // =====================
+    function abrirModalCrearUsuario() {
+        document.getElementById("modalCrearUsuario").classList.remove("oculto");
+    }
+
+    function cerrarModalCrearUsuario() {
+        document.getElementById("modalCrearUsuario").classList.add("oculto");
+    }
+
+    // =====================
+    // EDITAR USUARIO (modal)
+    // =====================
+    function abrirModalEditarUsuario() {
+        document.getElementById("modalEditarUsuario").classList.remove("oculto");
+    }
+
+    function cerrarModalEditarUsuario() {
+        document.getElementById("modalEditarUsuario").classList.add("oculto");
+    }
+
+    // =============================================
+// CREAR USUARIO
+// =============================================
+async function crearUsuario() {
+    const usuario = {
+        Nombre: document.getElementById("nuevoNombre").value.trim(),
+        Apellido: document.getElementById("nuevoApellido").value.trim(),
+        Correo: document.getElementById("nuevoCorreo").value.trim(),
+        Telefono: document.getElementById("nuevoTelefono").value.trim(),
+        Contrasena: document.getElementById("nuevoPassword").value,
+        Rol: Number(document.getElementById("nuevoRol").value)
+    };
+
+    if (!usuario.Nombre || !usuario.Apellido || !usuario.Correo || !usuario.Contrasena) {
+        return alert("Completa todos los campos obligatorios.");
+    }
+
+    alert("Aquí llamas a tu endpoint para crear usuario.");
+
+    cerrarModalCrearUsuario();
+    cargarUsuarios();
+}
+
+    // =============================================
+    // CARGAR USUARIO EN MODAL DE EDICIÓN
+    // =============================================
+    async function editarUsuario(id) {
+        const res = await secureFetch("/api/listar");
+        const data = await res.json();
+
+        const u = data.usuarios.find(x => x.ID === id);
+        if (!u) return alert("Usuario no encontrado.");
+
+        document.getElementById("editUserId").value = u.ID;
+        document.getElementById("editNombre").value = u.Nombre;
+        document.getElementById("editApellido").value = u.Apellido;
+        document.getElementById("editCorreo").value = u.Correo;
+        document.getElementById("editTelefono").value = u.Telefono || "";
+        document.getElementById("editRol").value = u.Rol;
+
+        abrirModalEditarUsuario();
+    }
+
+    // =============================================
+    // GUARDAR CAMBIOS DE USUARIO
+    // =============================================
+    async function guardarEdicionUsuario() {
+        const usuario = {
+            ID: Number(document.getElementById("editUserId").value),
+            Nombre: document.getElementById("editNombre").value.trim(),
+            Apellido: document.getElementById("editApellido").value.trim(),
+            Correo: document.getElementById("editCorreo").value.trim(),
+            Telefono: document.getElementById("editTelefono").value.trim(),
+            Rol: Number(document.getElementById("editRol").value)
+        };
+
+        alert("Aquí llamas a tu endpoint para actualizar usuario.");
+
+        cerrarModalEditarUsuario();
+        cargarUsuarios();
+    }
+
+    /* ============================
+   MODALES: ABRIR / CERRAR
+============================ */
+
+function abrirModalCrearUsuario() {
+    document.getElementById("modalCrearUsuario").classList.remove("oculto");
+}
+
+function cerrarModalCrearUsuario() {
+    document.getElementById("modalCrearUsuario").classList.add("oculto");
+}
+
+function abrirModalEditarUsuario(u) {
+    document.getElementById("modalEditarUsuario").classList.remove("oculto");
+
+    document.getElementById("editID").value = u.ID;
+    document.getElementById("editNombre").value = u.Nombre;
+    document.getElementById("editApellido").value = u.Apellido;
+    document.getElementById("editCorreo").value = u.Correo;
+    document.getElementById("editTelefono").value = u.Telefono;
+    document.getElementById("editRol").value = u.Rol;
+}
+
+function cerrarModalEditarUsuario() {
+    document.getElementById("modalEditarUsuario").classList.add("oculto");
+}
+
+/* ============================
+    GUARDAR USUARIO (FRONT ONLY)
+============================ */
+
+function guardarNuevoUsuario() {
+    alert("Aquí llamas a tu endpoint /add para crear usuario.");
+    cerrarModalCrearUsuario();
+}
+
+function guardarEdicionUsuario() {
+    alert("Aquí llamas a tu endpoint /update para editar usuario.");
+    cerrarModalEditarUsuario();
 }

@@ -102,3 +102,83 @@
     padding: .25rem .6rem;
     font-size: .75rem;
 }
+
+/* --------------------
+   MODALES Vista Voyages
+----------------------*/
+
+.modalVV {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    backdrop-filter: blur(5px);
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modalVV.oculto {
+    display: none;
+}
+
+.modalVV-content {
+    width: 380px;
+    padding: 25px;
+    border-radius: 18px;
+    background: rgba(30, 41, 59, 0.8);
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+.modalVV-content h2 {
+    margin-bottom: 15px;
+}
+
+.modalVV-content .input-modal {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.modalVV-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+/* --------------------
+   BOTONES ESTILO VV
+----------------------*/
+.btnVV {
+    padding: 10px 18px;
+    background: linear-gradient(90deg, #0ea5e9, #06d6a0);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.25s;
+}
+
+.btnVV:hover {
+    filter: brightness(1.15);
+}
+
+.btnVV-cerrar {
+    padding: 10px 18px;
+    background: #475569;
+    color: white;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.btnVV-cerrar:hover {
+    background: #64748b;
+}

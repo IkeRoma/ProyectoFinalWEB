@@ -6,7 +6,7 @@ const db = require("./conexion");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+module.exports = router;
 // =========================================
 // CONFIGURACIÓN JWT
 // =========================================
@@ -1257,5 +1257,61 @@ exports.eliminarBoletoAdmin = (req, res) => {
     db.query("DELETE FROM boletos WHERE id_boleto = ?", [id_boleto], (err) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar boleto" });
         res.json({ error: false, message: "Boleto eliminado" });
+    });
+};
+
+// Obtener todos los usuarios
+router.get('/list', (req, res) => {
+    db.query("SELECT * FROM usuarios", (err, rows) => {
+        if (err) return res.status(500).json({ error: true });
+        res.json({ usuarios: rows });
+    });
+});
+
+// Buscar usuario por ID
+router.get('/id/:id', (req, res) => {
+    db.query("SELECT * FROM Usuarios WHERE ID = ?", [req.params.id], (err, rows) => {
+        if (err) return res.status(500).json({ error: true });
+        res.json({ usuario: rows[0] });
+    });
+});
+
+// Crear usuario
+router.post('/add', (req, res) => {
+    const usr = req.body;
+    db.query("INSERT INTO Usuarios SET ?", usr, (err) => {
+        if (err) return res.status(500).json({ error: true });
+        res.json({ message: "Usuario creado correctamente" });
+    });
+});
+
+// Editar usuario
+router.put('/update/:id', (req, res) => {
+    db.query(
+        "UPDATE Usuarios SET ? WHERE ID = ?",
+        [req.body, req.params.id],
+        (err) => {
+            if (err) return res.status(500).json({ error: true });
+            res.json({ message: "Usuario actualizado" });
+        }
+    );
+});
+
+// Eliminar usuario
+router.delete('/delete/:id', (req, res) => {
+    db.query("DELETE FROM Usuarios WHERE ID = ?", [req.params.id], (err) => {
+        if (err) return res.status(500).json({ error: true });
+        res.json({ message: "Usuario eliminado" });
+    });
+});
+
+exports.crearUsuario = (req, res) => {
+    const usuario = req.body;
+
+    db.query("INSERT INTO Usuarios SET ?", usuario, (err) => {
+        if (err)
+            return res.json({ error: true, message: "Error al crear usuario" });
+
+        res.json({ error: false, message: "Usuario creado correctamente" });
     });
 };

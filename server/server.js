@@ -43,6 +43,7 @@ app.post("/api/wallet/update", verificarToken, auth.actualizarTarjeta);
 // PERFIL
 app.post("/api/updateUser", verificarToken, auth.updateUser);
 app.post("/api/updatePassword", verificarToken, auth.updatePassword);
+app.post("/api/admin/usuarios/add", verificarToken, soloAdmin, auth.crearUsuario);
 
 // ADMIN
 app.get("/api/listar", verificarToken, soloAdmin, auth.listarUsuarios);
