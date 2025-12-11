@@ -1,0 +1,186 @@
+/* ============================================================
+   carrito.js — Resumen del pedido + pago + ticket virtual
+===============================================================*/
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    function secureHeaders() {
+        return {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        };
+    }
+
+    async function secureFetch(url, options = {}) {
+        options.headers = secureHeaders();
+        const res = await fetch(url, options);
+
+        if (res.status === 401) {
+            alert("Tu sesión expiró. Vuelve a iniciar sesión.");
+            localStorage.clear();
+            window.location.href = "LogIn.html";
+            throw new Error("401");
+        }
+
+        return res;
+    }
+
+    const usr = JSON.parse(localStorage.getItem("usuario") || "null");
+    if (!usr) {
+        alert("Debes iniciar sesión para ver tu carrito.");
+        window.location.href = "LogIn.html";
+        return;
+    }
+
+    const tbody = document.querySelector("#tablaCarrito tbody");
+    const textoVacio = document.getElementById("carritoVacio");
+    const totalSpan = document.getElementById("carritoTotal");
+    const selectMetodoPago = document.getElementById("selectMetodoPago");
+    const btnPagar = document.getElementById("btnPagar");
+    const ticketContainer = document.getElementById("ticketContainer");
+
+    let carrito = [];
+
+    function cargarCarritoLocal() {
+        carrito = JSON.parse(localStorage.getItem("carrito") || "[]");
+        tbody.innerHTML = "";
+        let total = 0;
+
+        if (!carrito.length) {
+            textoVacio.style.display = "block";
+        } else {
+            textoVacio.style.display = "none";
+        }
+
+        carrito.forEach((item, index) => {
+            const precioAsiento = Number(item.precio_asiento || 0);
+            const precioEquipaje = Number(item.precio_equipaje || 0);
+            const pasajeros = Number(item.pasajeros || 1);
+            const subtotal = (precioAsiento + precioEquipaje) * pasajeros;
+            total += subtotal;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${item.origen} → ${item.destino}</td>
+                <td>${new Date(item.fecha_salida).toLocaleString()}</td>
+                <td>${item.tipo_asiento}<br><small>${item.descripcion_equipaje || ""}</small></td>
+                <td>${pasajeros}</td>
+                <td>$${subtotal.toFixed(2)}</td>
+                <td>
+                    <button class="btn-cerrar btn-cerrar--sm" data-index="${index}">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        totalSpan.textContent = total.toFixed(2);
+    }
+
+    tbody.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-index]");
+        if (!btn) return;
+
+        const idx = Number(btn.dataset.index);
+        carrito.splice(idx, 1);
+        localStorage.setItem("carrito", JSON.stringify(carrito));
+        cargarCarritoLocal();
+        ticketContainer.innerHTML = "";
+    });
+
+    async function cargarMetodosPago() {
+        try {
+            const res = await secureFetch(`/api/wallet/list/${usr.ID}`);
+            const data = await res.json();
+            selectMetodoPago.innerHTML = `<option value="">Selecciona una tarjeta guardada</option>`;
+
+            if (data.error) {
+                return;
+            }
+
+            (data.wallet || []).forEach(w => {
+                const opt = document.createElement("option");
+                opt.value = w.id_wallet;
+                opt.textContent = `${w.tipo} •••• ${w.ultimos4} (exp. ${w.fecha_expiracion})`;
+                selectMetodoPago.appendChild(opt);
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function mostrarTickets(boletos, pedido) {
+        ticketContainer.innerHTML = "";
+
+        if (!boletos || !boletos.length) {
+            ticketContainer.innerHTML = `<p class="texto-muted">No fue posible generar el ticket.</p>`;
+            return;
+        }
+
+        boletos.forEach(b => {
+            const div = document.createElement("div");
+            div.className = "ticket-card glass";
+            div.innerHTML = `
+                <div class="ticket-card__header">
+                    <span class="ticket-route">${b.origen_ciudad} → ${b.destino_ciudad}</span>
+                    <span class="ticket-code">Código: ${b.codigo_boleto}</span>
+                </div>
+                <p><strong>Vuelo:</strong> #${b.id_vuelo} | <strong>Asiento:</strong> ${b.tipo_asiento}</p>
+                <p><strong>Salida:</strong> ${new Date(b.fecha_salida).toLocaleString()}</p>
+                <p><strong>Precio:</strong> $${Number(b.precio_total).toFixed(2)} MXN</p>
+                <p class="texto-muted">Estado del boleto: ${b.estado || "Activo"} | Pedido #${pedido.id_pedido}</p>
+            `;
+            ticketContainer.appendChild(div);
+        });
+    }
+
+    btnPagar.addEventListener("click", async () => {
+        if (!carrito.length) {
+            alert("Tu carrito está vacío.");
+            return;
+        }
+
+        const id_wallet = selectMetodoPago.value;
+        if (!id_wallet) {
+            alert("Selecciona un método de pago.");
+            return;
+        }
+
+        const items = carrito.map(item => ({
+            id_vuelo: item.id_vuelo,
+            id_asiento: item.id_asiento,
+            id_equipaje: item.id_equipaje || null,
+            cantidad: item.pasajeros || 1
+        }));
+
+        try {
+            const res = await secureFetch("/api/carrito/pagar", {
+                method: "POST",
+                body: JSON.stringify({
+                    id_usuario: usr.ID,
+                    id_wallet,
+                    items
+                })
+            });
+
+            const data = await res.json();
+            if (data.error) {
+                alert(data.message || "No se pudo procesar el pago.");
+                return;
+            }
+
+            alert("Pago realizado correctamente. Se generó tu ticket virtual.");
+            localStorage.removeItem("carrito");
+            cargarCarritoLocal();
+            mostrarTickets(data.boletos || [], data.pedido || { id_pedido: "N/A" });
+        } catch (e) {
+            console.error(e);
+            alert("Error al procesar el pago.");
+        }
+    });
+
+    // Inicio
+    cargarCarritoLocal();
+    cargarMetodosPago();
+});

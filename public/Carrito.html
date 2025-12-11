@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carrito - Vista Voyages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Estilos globales -->
+    <link rel="stylesheet" href="CSS/variables.css">
+    <link rel="stylesheet" href="CSS/style.css">
+    <link rel="stylesheet" href="CSS/perfil.css">
+</head>
+<body class="perfil-body">
+<div id="navTrigger"></div>
+
+<nav id="mainNav" class="nav">
+    <div class="nav__brand">
+        <img src="imagenes/logosinfondo.png" class="nav__logo" alt="Vista Voyages">
+        <span class="nav__title">Vista Voyages</span>
+    </div>
+    <ul class="nav__links" data-nav="links"></ul>
+</nav>
+
+<main class="carrito-main">
+    <!-- Carrito -->
+    <section class="carrito-card glass">
+        <h2><i class="fa-solid fa-plane-departure"></i> Vuelos en tu carrito</h2>
+
+        <table class="carrito-table" id="tablaCarrito">
+            <thead>
+                <tr>
+                    <th>Ruta</th>
+                    <th>Salida</th>
+                    <th>Asiento</th>
+                    <th>Pasajeros</th>
+                    <th>Subtotal</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <p id="carritoVacio" class="carrito-vacio texto-muted">
+            Aún no tienes vuelos en tu carrito. Ve a <strong>Vuelos</strong> y selecciona uno.
+        </p>
+    </section>
+
+    <!-- Resumen / Pago -->
+    <section class="carrito-card glass">
+        <h2><i class="fa-solid fa-credit-card"></i> Pago</h2>
+
+        <div class="carrito-resumen-row">
+            <span>Total del carrito</span>
+            <span class="carrito-total">$<span id="carritoTotal">0.00</span> MXN</span>
+        </div>
+
+        <div class="carrito-resumen-row">
+            <span>Método de pago</span>
+        </div>
+        <select id="selectMetodoPago" class="input-modal" style="width:100%; margin-bottom:1rem;">
+            <option value="">Selecciona una tarjeta guardada</option>
+        </select>
+
+        <button id="btnPagar" class="btn btn--primary" style="width:100%; margin-top:.5rem;">
+            Confirmar pago
+        </button>
+
+        <div id="ticketContainer" class="ticket-container">
+            <!-- Aquí se mostrará el ticket virtual después de pagar -->
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" crossorigin="anonymous"></script>
+<script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+<script src="JS/navbar.js"></script>
+<script src="JS/carrito.js"></script>
+</body>
+</html>

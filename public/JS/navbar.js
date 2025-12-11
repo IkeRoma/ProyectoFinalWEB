@@ -11,46 +11,26 @@ document.addEventListener("DOMContentLoaded", () => {
             const payload = JSON.parse(atob(token.split(".")[1]));
             const exp = payload.exp * 1000;
 
-            // Si ya expiró
             if (Date.now() >= exp) {
                 localStorage.removeItem("usuario");
                 localStorage.removeItem("token");
+                localStorage.removeItem("lastActivity");
                 return false;
             }
-
             return true;
-        } catch (e) {
+        } catch {
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
+            localStorage.removeItem("lastActivity");
             return false;
         }
     }
 
     /* ======================================================
-       LIMPIEZA BÁSICA AL CARGAR
-    ====================================================== */
-    if (!tokenValido()) {
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("token");
-    }
-
-    /* ======================================================
-       CERRAR SESIÓN SOLO AL CERRAR PESTAÑA (NO EN REFRESH)
-    ====================================================== */
-    window.addEventListener("pagehide", (event) => {
-        // Si la página se mantiene en caché (back/forward), no borramos nada
-        if (event.persisted) return;
-
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("lastActivity");
-        localStorage.removeItem("token");
-    });
-
-    /* ======================================================
-       BANNER COOKIES (NO ROMPE EN PÁGINAS SIN BANNER)
+       COOKIES
     ====================================================== */
     const cookieBanner = document.getElementById("cookieBanner");
-    const btnCookies   = document.getElementById("aceptarCookies");
+    const btnCookies = document.getElementById("aceptarCookies");
 
     if (cookieBanner && btnCookies) {
         if (!localStorage.getItem("cookiesAceptadas")) {
@@ -72,33 +52,35 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lastActivity", Date.now().toString());
     }
 
-    function validarExpiracion() {
-        const last = localStorage.getItem("lastActivity");
-        if (!last) return;
+    document.addEventListener("mousemove", actualizarActividad);
+    document.addEventListener("keydown", actualizarActividad);
+    document.addEventListener("click", actualizarActividad);
 
-        const diff = Date.now() - parseInt(last, 10);
+    function verificarInactividad() {
+        const last = Number(localStorage.getItem("lastActivity") || "0");
+        if (!last) {
+            actualizarActividad();
+            return;
+        }
 
-        if (diff >= SESSION_TIMEOUT) {
-            localStorage.removeItem("usuario");
-            localStorage.removeItem("token");
-            localStorage.removeItem("lastActivity");
-            alert("Tu sesión ha expirado por inactividad. Por favor inicia sesión nuevamente.");
+        if (Date.now() - last > SESSION_TIMEOUT) {
+            alert("Tu sesión ha expirado por inactividad.");
+            localStorage.clear();
             window.location.href = "LogIn.html";
         }
     }
 
-    ["mousemove", "keydown", "click", "touchstart"].forEach(ev =>
-        document.addEventListener(ev, actualizarActividad)
-    );
-    validarExpiracion();
+    setInterval(verificarInactividad, 60 * 1000);
 
     /* ======================================================
-       NAVBAR DINÁMICO
+       CONSTRUCCIÓN DEL NAVBAR
     ====================================================== */
-    const nav = document.getElementById("mainNav");
-    const navLinksContainer = document.querySelector('[data-nav="links"]');
+    const navBar = document.getElementById("mainNav");
+    const navLinksContainer = document.querySelector("[data-nav='links']");
+    const trigger = document.getElementById("navTrigger");
+    let hideTimeout = null;
 
-    if (!nav || !navLinksContainer) return;
+    if (!navBar || !navLinksContainer) return;
 
     function crearLink(texto, href, extraClass = "") {
         const a = document.createElement("a");
@@ -142,6 +124,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // Carrito disponible para usuarios con sesión
+        navLinksContainer.appendChild(crearLink("Carrito", "Carrito.html"));
+
         // ADMIN
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
@@ -165,16 +150,11 @@ document.addEventListener("DOMContentLoaded", () => {
     construirNavbar();
 
     /* ======================================================
-       NAVBAR QUE APARECE AL ACERCAR EL CURSOR
+       NAVBAR FLOTANTE (mostrar al acercar el mouse arriba)
     ====================================================== */
-    const navBar   = document.getElementById("mainNav");
-    const trigger  = document.getElementById("navTrigger");
-    let hideTimeout;
-
     function mostrarNavbar() {
-        if (!navBar) return;
-
         navBar.classList.add("nav--visible");
+
         if (hideTimeout) clearTimeout(hideTimeout);
 
         hideTimeout = setTimeout(() => {
@@ -183,11 +163,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (trigger) {
-        // Mostrar navbar cuando el cursor toca el área superior
         trigger.addEventListener("mousemove", mostrarNavbar);
     }
 
-    // También mostrarlo si el usuario mueve la rueda estando arriba
     window.addEventListener("scroll", () => {
         if (window.scrollY < 20) mostrarNavbar();
     });

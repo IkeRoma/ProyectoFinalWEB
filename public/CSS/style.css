@@ -1572,3 +1572,176 @@ select.input-modal {
 body {
     padding-top: 90px !important;
 }
+
+/* ============================================================
+   CARRITO DE VUELOS
+===============================================================*/
+
+.carrito-main {
+    max-width: 1100px;
+    margin: 6rem auto 3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1.2fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .carrito-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+.carrito-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-xl);
+}
+
+.carrito-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .95rem;
+    margin-top: .8rem;
+}
+
+.carrito-table th,
+.carrito-table td {
+    padding: .7rem .5rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.carrito-table th {
+    text-align: left;
+    font-weight: 500;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: rgba(226, 232, 240, 0.9);
+}
+
+.carrito-vacio {
+    padding: 1rem 0;
+    font-size: .9rem;
+}
+
+.carrito-resumen-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: .6rem;
+}
+
+.carrito-total {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+/* Ticket virtual */
+
+.ticket-container {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.ticket-card {
+    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    border: 1px dashed rgba(148, 163, 184, 0.7);
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.25), rgba(15, 23, 42, 0.98));
+    font-size: .9rem;
+}
+
+.ticket-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: .5rem;
+}
+
+.ticket-route {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.ticket-code {
+    font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: .8rem;
+}
+
+/* Modal de detalle de vuelo */
+
+.flight-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.flight-modal__content {
+    width: min(480px, 95vw);
+    border-radius: 20px;
+    padding: 1.5rem 1.8rem;
+}
+
+.flight-modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.flight-modal__body h4 {
+    margin-top: .5rem;
+    margin-bottom: .4rem;
+}
+
+.flight-modal__close {
+    border: none;
+    background: transparent;
+    color: #e5e7eb;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.flight-modal__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: .8rem;
+}
+
+.option-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .4rem .7rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(148, 163, 184, 0.7);
+    font-size: .8rem;
+    cursor: pointer;
+}
+
+.option-pill input {
+    accent-color: var(--color-primary);
+}
+
+.flight-modal__footer {
+    margin-top: .8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Un pequeño helper */
+.texto-muted {
+    color: rgba(148, 163, 184, 0.9);
+    font-size: .85rem;
+}

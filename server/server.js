@@ -59,6 +59,37 @@ app.post("/api/envio/agregarDireccion", verificarToken, auth.agregarDireccion);
 app.post("/api/envio/editarDireccion", verificarToken, auth.editarDireccion);
 app.post("/api/envio/eliminarDireccion", verificarToken, auth.eliminarDireccion);
 
+// VUELOS (públicos para la página de Vuelos)
+app.get("/api/vuelos", auth.listarVuelosPublico);
+app.get("/api/vuelos/:id", auth.detalleVuelo);
+
+// ADMIN – aeropuertos
+app.get("/api/admin/aeropuertos", verificarToken, soloAdmin, auth.listarAeropuertos);
+app.post("/api/admin/aeropuertos/add", verificarToken, soloAdmin, auth.crearAeropuerto);
+app.post("/api/admin/aeropuertos/update", verificarToken, soloAdmin, auth.actualizarAeropuerto);
+app.post("/api/admin/aeropuertos/delete", verificarToken, soloAdmin, auth.eliminarAeropuerto);
+
+// ADMIN – vuelos
+app.get("/api/admin/vuelos", verificarToken, soloAdmin, auth.listarVuelosAdmin);
+app.post("/api/admin/vuelos/add", verificarToken, soloAdmin, auth.crearVuelo);
+app.post("/api/admin/vuelos/update", verificarToken, soloAdmin, auth.actualizarVuelo);
+app.post("/api/admin/vuelos/delete", verificarToken, soloAdmin, auth.eliminarVuelo);
+
+// ADMIN – asientos
+app.get("/api/admin/asientos", verificarToken, soloAdmin, auth.listarAsientos);
+app.post("/api/admin/asientos/add", verificarToken, soloAdmin, auth.crearAsiento);
+app.post("/api/admin/asientos/update", verificarToken, soloAdmin, auth.actualizarAsiento);
+app.post("/api/admin/asientos/delete", verificarToken, soloAdmin, auth.eliminarAsiento);
+
+// ADMIN – equipaje
+app.get("/api/admin/equipaje", verificarToken, soloAdmin, auth.listarEquipaje);
+app.post("/api/admin/equipaje/add", verificarToken, soloAdmin, auth.crearEquipaje);
+app.post("/api/admin/equipaje/update", verificarToken, soloAdmin, auth.actualizarEquipaje);
+app.post("/api/admin/equipaje/delete", verificarToken, soloAdmin, auth.eliminarEquipaje);
+
+// CARRITO / PAGOS
+app.post("/api/carrito/pagar", verificarToken, auth.crearPedidoDesdeCarrito);
+
 // RESEÑAS
 app.post("/api/reviews/add", reviews.crearReseña);
 app.get("/api/reviews/list", reviews.obtenerReseñas);

@@ -13,6 +13,15 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "CAMBIA_ESTA_CLAVE_EN_PRODUCCION_123";
 const JWT_EXPIRES_IN = "2h";
 
+const query = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+        db.query(sql, params, (err, rows) => {
+            if (err) reject(err);
+            else resolve(rows);
+        });
+    });
+};
+
 // Estados válidos de México
 const ESTADOS_MX = new Set([
     "Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas",
@@ -520,4 +529,477 @@ exports.eliminarDireccion = (req, res) => {
 
         res.json({ error: false, message: "Dirección eliminada" });
     });
+};
+
+// ================================================================
+// VUELOS PÚBLICOS
+// ================================================================
+exports.listarVuelosPublico = async (req, res) => {
+    try {
+        const sql = `
+            SELECT 
+                v.*,
+                ao.ciudad AS origen_ciudad,
+                ad.ciudad AS destino_ciudad,
+                MIN(a.precio) AS precio_desde,
+                TIMESTAMPDIFF(MINUTE, v.fecha_salida, v.fecha_llegada) AS duracion_min
+            FROM vuelos v
+            JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
+            JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
+            LEFT JOIN asientos a ON a.id_vuelo = v.id_vuelo AND a.activo = 1
+            WHERE v.activo = 1
+            GROUP BY v.id_vuelo
+            ORDER BY v.fecha_salida ASC
+        `;
+        const vuelos = await query(sql);
+        res.json({ error: false, vuelos });
+    } catch (err) {
+        console.error(err);
+        res.json({ error: true, message: "Error al listar vuelos" });
+    }
+};
+
+exports.detalleVuelo = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const vueloRows = await query(
+            `
+            SELECT 
+                v.*,
+                ao.ciudad AS origen_ciudad,
+                ad.ciudad AS destino_ciudad,
+                TIMESTAMPDIFF(MINUTE, v.fecha_salida, v.fecha_llegada) AS duracion_min
+            FROM vuelos v
+            JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
+            JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
+            WHERE v.id_vuelo = ?
+            `,
+            [id]
+        );
+
+        if (!vueloRows.length) {
+            return res.json({ error: true, message: "Vuelo no encontrado" });
+        }
+
+        const asientos = await query(
+            "SELECT id_asiento, tipo_asiento, precio, stock FROM asientos WHERE id_vuelo = ? AND activo = 1",
+            [id]
+        );
+
+        const equipaje = await query(
+            "SELECT id_equipaje, tipo, precio_extra FROM equipaje WHERE id_vuelo = ? AND activo = 1",
+            [id]
+        );
+
+        res.json({
+            error: false,
+            vuelo: vueloRows[0],
+            asientos,
+            equipaje
+        });
+    } catch (err) {
+        console.error(err);
+        res.json({ error: true, message: "Error al obtener detalle del vuelo" });
+    }
+};
+
+// ================================================================
+// ADMIN – Aeropuertos
+// ================================================================
+exports.listarAeropuertos = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM aeropuertos";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_aeropuerto = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar aeropuertos" });
+        res.json({ error: false, aeropuertos: rows });
+    });
+};
+
+exports.crearAeropuerto = (req, res) => {
+    const { nombre, ciudad, estado } = req.body;
+
+    if (!nombre || !ciudad || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO aeropuertos (nombre, ciudad, estado, activo)
+        VALUES (?, ?, ?, 1)
+    `;
+    db.query(sql, [nombre, ciudad, estado], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear aeropuerto" });
+        res.json({ error: false, message: "Aeropuerto creado correctamente" });
+    });
+};
+
+exports.actualizarAeropuerto = (req, res) => {
+    const { id_aeropuerto, nombre, ciudad, estado } = req.body;
+
+    if (!id_aeropuerto || !nombre || !ciudad || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE aeropuertos
+        SET nombre = ?, ciudad = ?, estado = ?
+        WHERE id_aeropuerto = ?
+    `;
+    db.query(sql, [nombre, ciudad, estado, id_aeropuerto], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar aeropuerto" });
+        res.json({ error: false, message: "Aeropuerto actualizado" });
+    });
+};
+
+exports.eliminarAeropuerto = (req, res) => {
+    const { id_aeropuerto } = req.body;
+    if (!id_aeropuerto) return res.json({ error: true, message: "ID faltante" });
+
+    db.query(
+        "UPDATE aeropuertos SET activo = 0 WHERE id_aeropuerto = ?",
+        [id_aeropuerto],
+        (err) => {
+            if (err) return res.json({ error: true, message: "No se pudo eliminar" });
+            res.json({ error: false, message: "Aeropuerto desactivado" });
+        }
+    );
+};
+
+// ================================================================
+// ADMIN – Vuelos
+// ================================================================
+exports.listarVuelosAdmin = (req, res) => {
+    const { id } = req.query;
+    let sql = `
+        SELECT 
+            v.*,
+            ao.ciudad AS origen_ciudad,
+            ad.ciudad AS destino_ciudad,
+            TIMESTAMPDIFF(MINUTE, v.fecha_salida, v.fecha_llegada) AS duracion_min
+        FROM vuelos v
+        JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
+        JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
+    `;
+    const params = [];
+
+    if (id) {
+        sql += " WHERE v.id_vuelo = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar vuelos" });
+        res.json({ error: false, vuelos: rows });
+    });
+};
+
+exports.crearVuelo = (req, res) => {
+    const { id_origen, id_destino, fecha_salida, fecha_llegada, escala, numero_escalas } = req.body;
+
+    if (!id_origen || !id_destino || !fecha_salida || !fecha_llegada) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO vuelos (id_origen, id_destino, fecha_salida, fecha_llegada, escala, numero_escalas, activo)
+        VALUES (?, ?, ?, ?, ?, ?, 1)
+    `;
+
+    db.query(sql, [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear vuelo" });
+        res.json({ error: false, message: "Vuelo creado correctamente" });
+    });
+};
+
+exports.actualizarVuelo = (req, res) => {
+    const { id_vuelo, id_origen, id_destino, fecha_salida, fecha_llegada, escala, numero_escalas } = req.body;
+
+    if (!id_vuelo || !id_origen || !id_destino || !fecha_salida || !fecha_llegada) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE vuelos
+        SET id_origen = ?, id_destino = ?, fecha_salida = ?, fecha_llegada = ?, escala = ?, numero_escalas = ?
+        WHERE id_vuelo = ?
+    `;
+
+    db.query(sql, [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0, id_vuelo], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar vuelo" });
+        res.json({ error: false, message: "Vuelo actualizado" });
+    });
+};
+
+exports.eliminarVuelo = (req, res) => {
+    const { id_vuelo } = req.body;
+    if (!id_vuelo) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("UPDATE vuelos SET activo = 0 WHERE id_vuelo = ?", [id_vuelo], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar vuelo" });
+        res.json({ error: false, message: "Vuelo desactivado" });
+    });
+};
+
+// ================================================================
+// ADMIN – Asientos
+// ================================================================
+exports.listarAsientos = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM asientos";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_asiento = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar asientos" });
+        res.json({ error: false, asientos: rows });
+    });
+};
+
+exports.crearAsiento = (req, res) => {
+    const { id_vuelo, tipo_asiento, precio, stock } = req.body;
+
+    if (!id_vuelo || !tipo_asiento || !precio || stock == null) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO asientos (id_vuelo, tipo_asiento, precio, stock, activo)
+        VALUES (?, ?, ?, ?, 1)
+    `;
+
+    db.query(sql, [id_vuelo, tipo_asiento, precio, stock], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear asiento" });
+        res.json({ error: false, message: "Asiento creado correctamente" });
+    });
+};
+
+exports.actualizarAsiento = (req, res) => {
+    const { id_asiento, id_vuelo, tipo_asiento, precio, stock } = req.body;
+
+    if (!id_asiento || !id_vuelo || !tipo_asiento || !precio || stock == null) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE asientos
+        SET id_vuelo = ?, tipo_asiento = ?, precio = ?, stock = ?
+        WHERE id_asiento = ?
+    `;
+
+    db.query(sql, [id_vuelo, tipo_asiento, precio, stock, id_asiento], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar asiento" });
+        res.json({ error: false, message: "Asiento actualizado" });
+    });
+};
+
+exports.eliminarAsiento = (req, res) => {
+    const { id_asiento } = req.body;
+    if (!id_asiento) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("UPDATE asientos SET activo = 0 WHERE id_asiento = ?", [id_asiento], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar asiento" });
+        res.json({ error: false, message: "Asiento desactivado" });
+    });
+};
+
+// ================================================================
+// ADMIN – Equipaje
+// ================================================================
+exports.listarEquipaje = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM equipaje";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_equipaje = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar equipaje" });
+        res.json({ error: false, equipaje: rows });
+    });
+};
+
+exports.crearEquipaje = (req, res) => {
+    const { id_vuelo, tipo, precio_extra } = req.body;
+
+    if (!id_vuelo || !tipo || !precio_extra) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO equipaje (id_vuelo, tipo, precio_extra, activo)
+        VALUES (?, ?, ?, 1)
+    `;
+
+    db.query(sql, [id_vuelo, tipo, precio_extra], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear equipaje" });
+        res.json({ error: false, message: "Equipaje creado correctamente" });
+    });
+};
+
+exports.actualizarEquipaje = (req, res) => {
+    const { id_equipaje, id_vuelo, tipo, precio_extra } = req.body;
+
+    if (!id_equipaje || !id_vuelo || !tipo || !precio_extra) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE equipaje
+        SET id_vuelo = ?, tipo = ?, precio_extra = ?
+        WHERE id_equipaje = ?
+    `;
+
+    db.query(sql, [id_vuelo, tipo, precio_extra, id_equipaje], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar equipaje" });
+        res.json({ error: false, message: "Equipaje actualizado" });
+    });
+};
+
+exports.eliminarEquipaje = (req, res) => {
+    const { id_equipaje } = req.body;
+
+    if (!id_equipaje) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("UPDATE equipaje SET activo = 0 WHERE id_equipaje = ?", [id_equipaje], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar equipaje" });
+        res.json({ error: false, message: "Equipaje desactivado" });
+    });
+};
+
+// ================================================================
+// CARRITO / PEDIDOS / PAGOS / BOLETOS
+// ================================================================
+exports.crearPedidoDesdeCarrito = async (req, res) => {
+    const { id_usuario, id_wallet, items } = req.body;
+
+    if (!id_usuario || !id_wallet || !Array.isArray(items) || !items.length) {
+        return res.json({ error: true, message: "Datos incompletos del carrito" });
+    }
+
+    try {
+        const idsAsientos = [...new Set(items.map(i => i.id_asiento))];
+        const idsEquipaje = [...new Set(items.map(i => i.id_equipaje).filter(Boolean))];
+
+        const asientosRows = idsAsientos.length
+            ? await query("SELECT id_asiento, id_vuelo, precio FROM asientos WHERE id_asiento IN (?)", [idsAsientos])
+            : [];
+
+        const equipajeRows = idsEquipaje.length
+            ? await query("SELECT id_equipaje, precio_extra FROM equipaje WHERE id_equipaje IN (?)", [idsEquipaje])
+            : [];
+
+        const mapAsientos = new Map(asientosRows.map(a => [a.id_asiento, a]));
+        const mapEquipaje = new Map(equipajeRows.map(e => [e.id_equipaje, e]));
+
+        let total = 0;
+        const detalles = [];
+
+        for (const item of items) {
+            const asiento = mapAsientos.get(item.id_asiento);
+            if (!asiento) {
+                return res.json({ error: true, message: "Asiento no válido en el carrito" });
+            }
+
+            const equip = item.id_equipaje ? mapEquipaje.get(item.id_equipaje) : null;
+            const cantidad = item.cantidad || 1;
+
+            const precioUnit = Number(asiento.precio) + (equip ? Number(equip.precio_extra) : 0);
+            const subtotal = precioUnit * cantidad;
+
+            total += subtotal;
+
+            detalles.push({
+                id_vuelo: asiento.id_vuelo,
+                id_asiento: item.id_asiento,
+                id_equipaje: item.id_equipaje || null,
+                cantidad,
+                precioUnit,
+                subtotal
+            });
+        }
+
+        const pedidoRes = await query(
+            "INSERT INTO pedidos (id_usuario, id_wallet, total, estado) VALUES (?, ?, ?, 'PAGADO')",
+            [id_usuario, id_wallet, total]
+        );
+        const id_pedido = pedidoRes.insertId;
+
+        const boletosCreados = [];
+
+        for (const det of detalles) {
+            await query(
+                "INSERT INTO detalles_pedido (id_pedido, id_vuelo, id_asiento, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?, ?)",
+                [id_pedido, det.id_vuelo, det.id_asiento, det.cantidad, det.precioUnit, det.subtotal]
+            );
+
+            await query(
+                "UPDATE asientos SET stock = GREATEST(stock - ?, 0) WHERE id_asiento = ?",
+                [det.cantidad, det.id_asiento]
+            );
+
+            for (let i = 0; i < det.cantidad; i++) {
+                const boletoRes = await query(
+                    "INSERT INTO boletos (id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total) VALUES (?, ?, ?, ?, ?, ?)",
+                    [id_usuario, det.id_vuelo, det.id_asiento, det.id_equipaje, id_pedido, det.precioUnit]
+                );
+                const id_boleto = boletoRes.insertId;
+
+                const infoBoleto = await query(
+                    `
+                    SELECT 
+                        b.id_boleto,
+                        b.codigo_boleto,
+                        b.precio_total,
+                        b.estado,
+                        v.id_vuelo,
+                        v.fecha_salida,
+                        v.fecha_llegada,
+                        ao.ciudad AS origen_ciudad,
+                        ad.ciudad AS destino_ciudad,
+                        a.tipo_asiento
+                    FROM boletos b
+                    JOIN vuelos v ON b.id_vuelo = v.id_vuelo
+                    JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
+                    JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
+                    JOIN asientos a ON b.id_asiento = a.id_asiento
+                    WHERE b.id_boleto = ?
+                    `,
+                    [id_boleto]
+                );
+
+                if (infoBoleto.length) {
+                    boletosCreados.push(infoBoleto[0]);
+                }
+            }
+        }
+
+        await query(
+            "INSERT INTO pagos (id_usuario, id_pedido, monto, estado) VALUES (?, ?, ?, 'APROBADO')",
+            [id_usuario, id_pedido, total]
+        );
+
+        res.json({
+            error: false,
+            message: "Pedido creado y pago registrado",
+            pedido: { id_pedido, total },
+            boletos: boletosCreados
+        });
+    } catch (err) {
+        console.error(err);
+        res.json({ error: true, message: "Error al procesar el carrito" });
+    }
 };

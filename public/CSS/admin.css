@@ -46,3 +46,59 @@
 .admin-table th {
     background: #ffffff15;
 }
+
+
+.admin-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: .6rem;
+}
+
+.admin-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    font-size: .85rem;
+}
+
+.admin-filters input {
+    padding: .3rem .5rem;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+}
+
+/* Formularios dentro del panel admin */
+
+.admin-form {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .7rem .9rem;
+    font-size: .85rem;
+}
+
+.admin-form label {
+    display: block;
+    margin-bottom: .2rem;
+    font-weight: 500;
+}
+
+.admin-form input,
+.admin-form select {
+    width: 100%;
+    padding: .4rem .55rem;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    background: rgba(15, 23, 42, 0.9);
+    color: #e5e7eb;
+}
+
+.btn-azul--xs,
+.btn-cerrar--xs {
+    padding: .25rem .6rem;
+    font-size: .75rem;
+}
