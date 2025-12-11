@@ -10,42 +10,32 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnLeft = document.getElementById("btnLeft");
     const btnRight = document.getElementById("btnRight");
 
-    // USUARIO ACTUAL
     const user = JSON.parse(localStorage.getItem("usuario"));
 
-    // Mostrar formulario solo si hay usuario logueado
-    if (user) {
-        bloque.style.display = "block";
-    } else {
-        bloque.style.display = "none";
-    }
+    // Mostrar formulario si hay sesión
+    bloque.style.display = user ? "block" : "none";
 
 
     /* =====================================================
-         FUNCIÓN PARA CARGAR TODAS LAS RESEÑAS
+         CARGAR TODAS LAS RESEÑAS
     ===================================================== */
     async function cargarReseñas() {
+        if (!carrusel) return;
+
         try {
             const res = await fetch("/api/reviews/list");
             const data = await res.json();
 
-            if (!data.reseñas) return;
-
-            // Limpiar carrusel
             carrusel.innerHTML = "";
 
-            // Insertar reseñas
+            if (!data.reseñas || data.reseñas.length === 0) {
+                carrusel.innerHTML = `<p class="no-resenas">No hay reseñas todavía.</p>`;
+                return;
+            }
+
             data.reseñas.forEach(r => {
                 const card = document.createElement("div");
                 card.classList.add("review-card");
-                // Permitir seleccionar una tarjeta
-                div.addEventListener("click", () => {
-                    // Quitar selección previa
-                    document.querySelectorAll(".review-card").forEach(c => c.classList.remove("selected"));
-
-                    // Seleccionar esta
-                    div.classList.add("selected");
-                });
 
                 card.innerHTML = `
                     <p class="review-text">"${r.Reseña}"</p>
@@ -53,8 +43,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p class="review-date">${new Date(r.Fecha).toLocaleDateString()}</p>
                 `;
 
+                // Animación de selección
+                card.addEventListener("click", () => {
+                    document.querySelectorAll(".review-card").forEach(c =>
+                        c.classList.remove("selected")
+                    );
+                    card.classList.add("selected");
+                });
+
                 carrusel.appendChild(card);
             });
+
+            iniciarAutoScroll();
 
         } catch (error) {
             console.error("Error cargando reseñas:", error);
@@ -63,7 +63,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-         FUNCIÓN PARA ENVIAR UNA RESEÑA
+         AUTO-SCROLL DEL CARRUSEL (MEJORADO)
+    ===================================================== */
+
+    let autoScrollInterval;
+    const SCROLL_SPEED = 1;     // velocidad del movimiento (px por tick)
+    const TICK_RATE = 15;       // intervalo del movimiento (ms)
+    const PAUSE_TIME = 2500;    // pausa cuando se llega al final
+
+    function iniciarAutoScroll() {
+        detenerAutoScroll(); // Reiniciar si ya estaba corriendo
+
+        autoScrollInterval = setInterval(() => {
+            carrusel.scrollLeft += SCROLL_SPEED;
+
+            // Si llega al final → reinicia con pausa
+            if (carrusel.scrollLeft + carrusel.clientWidth >= carrusel.scrollWidth) {
+                detenerAutoScroll();
+                setTimeout(() => {
+                    carrusel.scrollLeft = 0;
+                    iniciarAutoScroll();
+                }, PAUSE_TIME);
+            }
+        }, TICK_RATE);
+    }
+
+    function detenerAutoScroll() {
+        clearInterval(autoScrollInterval);
+    }
+
+    // Pausar al pasar el mouse
+    carrusel?.addEventListener("mouseenter", detenerAutoScroll);
+    carrusel?.addEventListener("mouseleave", iniciarAutoScroll);
+
+
+    /* =====================================================
+         MANEJO DE BOTONES
+    ===================================================== */
+    btnLeft?.addEventListener("click", () => {
+        carrusel.scrollBy({ left: -300, behavior: "smooth" });
+    });
+
+    btnRight?.addEventListener("click", () => {
+        carrusel.scrollBy({ left: 300, behavior: "smooth" });
+    });
+
+
+    /* =====================================================
+         ENVÍO DE RESEÑA
     ===================================================== */
     btnEnviar?.addEventListener("click", async () => {
 
@@ -87,18 +134,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     usuarioID: user.ID,
-                    texto: texto
+                    texto
                 })
             });
 
             const data = await res.json();
-
             msgReseña.style.color = "lime";
             msgReseña.textContent = data.message;
 
             textarea.value = "";
-
-            // VOLVER A CARGAR DESPUÉS DE AGREGAR UNA RESEÑA
             cargarReseñas();
 
         } catch (error) {
@@ -108,20 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     /* =====================================================
-         BOTONES DEL CARRUSEL
-    ===================================================== */
-    btnLeft?.addEventListener("click", () => {
-        carrusel.scrollLeft -= 300;
-    });
-
-    btnRight?.addEventListener("click", () => {
-        carrusel.scrollLeft += 300;
-    });
-
-
-    /* =====================================================
-         CARGAR LAS RESEÑAS AL INICIO
+         INICIO
     ===================================================== */
     cargarReseñas();
-
 });
