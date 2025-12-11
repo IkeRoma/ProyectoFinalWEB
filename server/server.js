@@ -4,7 +4,7 @@ const cors = require("cors");
 const http = require("http");
 const path = require("path");
 const reviews = require("./reviewsController");
-const auth = require("./authController");
+const auth = require("./authController.js");
 
 const app = express();
 
