@@ -1745,3 +1745,44 @@ body {
     color: rgba(148, 163, 184, 0.9);
     font-size: .85rem;
 }
+
+/* ===== Scrollbars Base (Navegadores WebKit: Chrome, Edge, Safari) ===== */
+::-webkit-scrollbar {
+    width: 10px;              /* Grosor vertical */
+    height: 10px;             /* Grosor horizontal */
+}
+
+/* Fondo del área del scrollbar */
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+}
+
+/* Barra desplazable */
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00e5ff, #00ff6c);
+    border-radius: 10px;
+    border: 2px solid rgba(0,0,0,0.2);
+}
+
+/* Hover en la barra */
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00c9ff, #00e65e);
+}
+
+/* Barra activa mientras estás haciendo scroll */
+::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #00aaff, #00cc55);
+}
+
+
+/* ===== Scrollbar para Firefox ===== */
+html {
+    scrollbar-width: thin;  /* thin | auto | none */
+    scrollbar-color: #00e5ff rgba(255, 255, 255, 0.07);
+}
+
+/* Color más estilizado en hover */
+* {
+    scrollbar-color: #00e5ff #0f172a;
+}
