@@ -1,5 +1,5 @@
 // =========================================
-// authController.js COMPLETO CON WALLET
+// authController.js COMPLETO Y CORREGIDO
 // =========================================
 
 const db = require("./conexion");
@@ -44,6 +44,7 @@ exports.login = (req, res) => {
 
         const usuario = rows[0];
 
+        // Tus contraseñas NO usan hash → comparación directa
         if (usuario.Contrasena !== password)
             return res.json({ error: true, message: "Contraseña incorrecta" });
 
@@ -198,7 +199,7 @@ exports.eliminarTarjeta = (req, res) => {
 };
 
 // =========================================
-// WALLET — ACTUALIZAR TARJETA (OPCIONAL)
+// WALLET — ACTUALIZAR TARJETA
 // =========================================
 exports.actualizarTarjeta = (req, res) => {
     const { id_wallet, titular, expiracion } = req.body;
@@ -216,64 +217,53 @@ exports.actualizarTarjeta = (req, res) => {
     });
 };
 
-// =====================================================
+// =========================================
 // ACTUALIZAR INFORMACIÓN DEL USUARIO
-// =====================================================
+// =========================================
 exports.updateUser = (req, res) => {
     const { ID, Nombre, Apellido, Correo, Telefono } = req.body;
 
-    if (!ID)
-        return res.status(400).json({ message: "ID requerido" });
+    if (!ID) return res.status(400).json({ message: "ID requerido" });
 
     const sql = `
-        UPDATE usuarios 
+        UPDATE Usuarios 
         SET Nombre = ?, Apellido = ?, Correo = ?, Telefono = ?
         WHERE ID = ?
     `;
 
     db.query(sql, [Nombre, Apellido, Correo, Telefono, ID], (err) => {
         if (err) {
-            console.error("Error al actualizar usuario:", err);
-            return res.status(500).json({ message: "Error en el servidor" });
+            console.error(err);
+            return res.json({ message: "Error al actualizar" });
         }
 
         return res.json({ message: "Información actualizada correctamente" });
     });
 };
 
-
-// =====================================================
-// ACTUALIZAR CONTRASEÑA
-// =====================================================
+// =========================================
+// ACTUALIZAR CONTRASEÑA (SIN BCRYPT)
+// =========================================
 exports.updatePassword = (req, res) => {
     const { ID, actual, nueva } = req.body;
 
     if (!ID || !actual || !nueva)
-        return res.status(400).json({ success: false, message: "Datos incompletos" });
+        return res.json({ success: false, message: "Datos incompletos" });
 
-    // 1. Obtener contraseña actual
-    db.query("SELECT Password FROM usuarios WHERE ID = ?", [ID], (err, results) => {
-        if (err || results.length === 0) {
+    db.query("SELECT Contrasena FROM Usuarios WHERE ID = ?", [ID], (err, rows) => {
+        if (err || rows.length === 0)
             return res.json({ success: false, message: "Usuario no encontrado" });
-        }
 
-        const passBD = results[0].Password;
+        const passBD = rows[0].Contrasena;
 
-        // 2. Comparar contra contraseña ingresada
-        bcrypt.compare(actual, passBD, (err, match) => {
-            if (!match)
-                return res.json({ success: false, message: "La contraseña actual es incorrecta" });
+        if (passBD !== actual)
+            return res.json({ success: false, message: "La contraseña actual es incorrecta" });
 
-            // 3. Hashear nueva contraseña
-            const nuevoHash = bcrypt.hashSync(nueva, 10);
+        db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nueva, ID], (err2) => {
+            if (err2)
+                return res.json({ success: false, message: "Error al actualizar contraseña" });
 
-            // 4. Actualizar en la BD
-            db.query("UPDATE usuarios SET Password = ? WHERE ID = ?", [nuevoHash, ID], (err2) => {
-                if (err2)
-                    return res.json({ success: false, message: "Error al actualizar contraseña" });
-
-                return res.json({ success: true, message: "Contraseña actualizada correctamente" });
-            });
+            return res.json({ success: true, message: "Contraseña actualizada correctamente" });
         });
     });
 };

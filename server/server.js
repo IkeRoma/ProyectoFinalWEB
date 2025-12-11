@@ -1,9 +1,13 @@
-// server.js
+// =========================================
+// server.js — Servidor Principal
+// =========================================
+
 const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const path = require("path");
-const reviews = require("./reviewsController");
+
+const reviews = require("./reviewsController.js");
 const auth = require("./authController.js");
 
 const app = express();
@@ -15,48 +19,44 @@ app.use(cors());
 app.use(express.json());
 
 // ========================
-//  Archivos estáticos
-//  (sirve tu carpeta public directamente)
+//  Archivos estáticos (carpeta public)
 // ========================
-
 app.use(express.static(path.join(__dirname, "../public")));
 
-// Ruta de prueba opcional
+// Ruta de prueba
 app.get("/", (req, res) => {
     res.send("Servidor funcionando correctamente");
 });
 
 // ========================
-//  Rutas API
+//  RUTAS API
 // ========================
 
-// LOGIN
+// LOGIN & REGISTER
 app.post("/api/login", auth.login);
-
-// REGISTRO
 app.post("/api/register", auth.registrar);
 
 // RESET PASSWORD
 app.post("/api/reset", auth.resetPassword);
 
-// ELIMINAR USUARIO
+// USUARIOS
 app.post("/api/eliminar", auth.eliminarUsuario);
-
-// LISTAR USUARIOS
 app.get("/api/listar", auth.listarUsuarios);
 
-// RESEÑAS DE USUARIOS
-app.post("/api/reviews/add", reviews.crearReseña);
-app.get("/api/reviews/list", reviews.obtenerReseñas);
+// PERFIL — MODIFICAR DATOS & CONTRASEÑA
+app.post("/api/updateUser", auth.updateUser);
+app.post("/api/updatePassword", auth.updatePassword);
 
-// WALLET´S
+// WALLET
 app.get("/api/wallet/list/:id_usuario", auth.listarWallet);
 app.post("/api/wallet/add", auth.agregarTarjeta);
 app.post("/api/wallet/delete", auth.eliminarTarjeta);
 app.post("/api/wallet/update", auth.actualizarTarjeta);
 
-app.post("/api/updateUser", authController.updateUser);
-app.post("/api/updatePassword", authController.updatePassword);
+// RESEÑAS
+app.post("/api/reviews/add", reviews.crearReseña);
+app.get("/api/reviews/list", reviews.obtenerReseñas);
+app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
 
 // ========================
 //  Servidor HTTP
@@ -65,12 +65,11 @@ app.post("/api/updatePassword", authController.updatePassword);
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
 
-// Crear servidor HTTP para soportar despliegues en la VM
 const server = http.createServer(app);
 
-// Manejo de errores
+// Errores del servidor
 server.on("error", (err) => {
-    console.error("❌ Error al iniciar el servidor:", err.message);
+    console.error("❌ Error al iniciar servidor:", err.message);
 });
 
 // Iniciar servidor

@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!usr) return;
 
-    // Mostrar datos
+    // Mostrar datos iniciales
     document.getElementById("perfilNombre").textContent = usr.Nombre;
     document.getElementById("perfilNombreComp").textContent = usr.Nombre + " " + usr.Apellido;
     document.getElementById("perfilCorreo").textContent = usr.Correo;
     document.getElementById("perfilTelefono").textContent = usr.Telefono;
 
     /* ================================
-       MANEJO DE MODALES
+       MODALES
     ================================= */
     const modalEditarInfo = document.getElementById("modalEditarInfo");
     const modalPassword = document.getElementById("modalPassword");
@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const modalHistorial = document.getElementById("modalHistorial");
 
     const open = modal => modal.style.display = "flex";
-    const close = () => document.querySelectorAll(".modal").forEach(m => m.style.display = "none");
+    const close = () =>
+        document.querySelectorAll(".modal").forEach(m => (m.style.display = "none"));
 
     document.querySelectorAll("[data-close]").forEach(btn =>
         btn.addEventListener("click", close)
@@ -36,10 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     /* =================================================
-       GUARDAR INFORMACIÓN PERSONAL (BD + LocalStorage)
+       GUARDAR INFORMACIÓN PERSONAL — UPDATE USER
     ================================================= */
     document.getElementById("guardarInfo").onclick = async () => {
-
         const nombreCompleto = document.getElementById("inputNombre").value.trim().split(" ");
         const nombre = nombreCompleto[0];
         const apellido = nombreCompleto.slice(1).join(" ");
@@ -73,35 +73,27 @@ document.addEventListener("DOMContentLoaded", () => {
         location.reload();
     };
 
-
     /* =================================================
-       ABRIR MODAL CAMBIAR CONTRASEÑA
+       ABRIR MODAL CONTRASEÑA
     ================================================= */
     const btnCambiarPassword = document.getElementById("btnCambiarPassword");
-    if (btnCambiarPassword) {
-        btnCambiarPassword.onclick = () => open(modalPassword);
-    }
+    if (btnCambiarPassword) btnCambiarPassword.onclick = () => open(modalPassword);
 
     /* =================================================
-       GUARDAR NUEVA CONTRASEÑA
+       GUARDAR NUEVA CONTRASEÑA — UPDATE PASSWORD
     ================================================= */
     const btnGuardarPassword = document.getElementById("guardarPassword");
     if (btnGuardarPassword) {
         btnGuardarPassword.onclick = async () => {
-
             const actual = document.getElementById("passActual").value;
             const nueva = document.getElementById("passNueva").value;
             const confirm = document.getElementById("passConfirm").value;
 
-            if (!actual || !nueva || !confirm) {
-                alert("Debes llenar todos los campos.");
-                return;
-            }
+            if (!actual || !nueva || !confirm)
+                return alert("Debes llenar todos los campos.");
 
-            if (nueva !== confirm) {
-                alert("Las contraseñas no coinciden.");
-                return;
-            }
+            if (nueva !== confirm)
+                return alert("Las contraseñas no coinciden.");
 
             const res = await fetch("/api/updatePassword", {
                 method: "POST",
@@ -121,10 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* =================================================
-       ABRIR RESEÑAS DEL USUARIO
+       VER RESEÑAS DEL USUARIO
     ================================================= */
     document.getElementById("btnVerReseñas").onclick = async () => {
-
         open(modalReseñas);
 
         const cont = document.getElementById("listaReseñasUser");
@@ -143,9 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     /* =================================================
-       ABRIR HISTORIAL
+       HISTORIAL
     ================================================= */
-    document.getElementById("btnHistorial").onclick = () => {
-        open(modalHistorial);
-    };
+    document.getElementById("btnHistorial").onclick = () => open(modalHistorial);
 });
