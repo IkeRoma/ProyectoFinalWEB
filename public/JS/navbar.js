@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ======================================================
        SISTEMA EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
        ====================================================== */
-    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
+    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
 
     function actualizarActividad() {
         localStorage.setItem("lastActivity", Date.now().toString());
@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     validarExpiracion();
+
 
 
     /* ======================================================
@@ -63,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
+        // LINKS PARA TODOS
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
@@ -72,22 +74,42 @@ document.addEventListener("DOMContentLoaded", () => {
             usuario = JSON.parse(localStorage.getItem("usuario"));
         } catch {}
 
+        // USUARIO INVITADO
         if (!usuario) {
-            navLinksContainer.appendChild(crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary"));
-            navLinksContainer.appendChild(crearLink("Registrarse", "Registro.html"));
+            navLinksContainer.appendChild(
+                crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
+            );
+            navLinksContainer.appendChild(
+                crearLink("Registrarse", "Registro.html")
+            );
             return;
         }
 
+        // USUARIO LOGUEADO
+
+        // ADMINISTRADOR
         if (usuario.Rol === 1) {
-            navLinksContainer.appendChild(crearLink("Panel Admin", "#", "nav__link--primary"));
-        } else {
-            navLinksContainer.appendChild(crearLink("Mi Perfil", "#"));
+            navLinksContainer.appendChild(
+                crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
+            );
+        }
+        // USUARIO NORMAL
+        else {
+            navLinksContainer.appendChild(
+                crearLink("Mi Perfil", "MiPerfil.html")
+            );
         }
 
+        // CERRAR SESIÓN
         navLinksContainer.appendChild(crearBotonLogout());
     }
 
     construirNavbar();
+
+
+    /* ======================================================
+       EFECTO NAV AL DESPLAZAR
+       ====================================================== */
 
     window.addEventListener("scroll", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
