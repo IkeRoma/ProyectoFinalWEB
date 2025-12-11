@@ -1,24 +1,26 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    // FORZAR QUE SIEMPRE INICIE SESIÓN
-    localStorage.removeItem("usuario");
+    /* ======================================================
+       BANNER DE COOKIES
+    ====================================================== */
+    if (!localStorage.getItem("cookiesAceptadas")) {
+        const banner = document.getElementById("cookieBanner");
+        if (banner) banner.style.display = "block";
+    }
 
-    // BANNER DE COOKIES
-    window.addEventListener("DOMContentLoaded", () => {
-        if (!localStorage.getItem("cookiesAceptadas")) {
-            document.getElementById("cookieBanner").style.display = "block";
-        }
-
-        document.getElementById("aceptarCookies").addEventListener("click", () => {
+    const btnAceptar = document.getElementById("aceptarCookies");
+    if (btnAceptar) {
+        btnAceptar.addEventListener("click", () => {
             localStorage.setItem("cookiesAceptadas", "true");
             document.getElementById("cookieBanner").style.display = "none";
         });
-    });
+    }
+
 
     /* ======================================================
        SISTEMA EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
-       ====================================================== */
-    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
+    ====================================================== */
+    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 
     function actualizarActividad() {
         localStorage.setItem("lastActivity", Date.now().toString());
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
        NAVBAR DINÁMICO
-       ====================================================== */
+    ====================================================== */
 
     const nav = document.getElementById("mainNav");
     const navLinksContainer = document.querySelector('[data-nav="links"]');
@@ -100,16 +102,12 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // USUARIO LOGUEADO
-
         // ADMINISTRADOR
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
-        }
-        // USUARIO NORMAL
-        else {
+        } else {
             navLinksContainer.appendChild(
                 crearLink("Mi Perfil", "MiPerfil.html")
             );
@@ -122,10 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
     construirNavbar();
 
 
+
     /* ======================================================
        EFECTO NAV AL DESPLAZAR
-       ====================================================== */
-
+    ====================================================== */
     window.addEventListener("scroll", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");

@@ -154,24 +154,40 @@
                 </div>
             </div>
         </section>
-        <section id="seccionReseñas">
 
-            <!-- BLOQUE PARA AGREGAR RESEÑA (solo si hay sesión) -->
-            <div id="bloqueAgregarReseña" class="review-input-card" style="display: none;">
-                <h3 class="tituloReseña">Deja tu opinión ✨</h3>
 
-                <textarea id="textoReseña" 
-                        placeholder="Escribe tu experiencia aquí..." 
-                        class="textareaReseña">
-                </textarea>
+        <!-- ====================================================
+             RESEÑAS + FORMULARIO + CARRUSEL
+        ==================================================== -->
+        <section id="seccionReseñas" class="section">
 
-                <button id="btnEnviarReseña" class="btn-resena">Enviar reseña</button>
+            <div class="section__header">
+                <h2>Reseñas de viajeros</h2>
+                <p>Lo que nuestros usuarios opinan sobre Vista Voyages ✨</p>
+            </div>
+
+            <!-- FORMULARIO (solo si hay sesión) -->
+            <div id="bloqueAgregarReseña" class="review-input-card glass" style="display:none;">
+
+                <h3 class="tituloReseña">Deja tu experiencia</h3>
+
+                <textarea id="textoReseña"
+                    placeholder="Escribe tu experiencia aquí..."
+                    class="textareaReseña"></textarea>
+
+                <button id="btnEnviarReseña" class="btn-resena">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar reseña
+                </button>
 
                 <p id="msgReseña" class="mensajeReseña"></p>
             </div>
 
-            <!-- CONTENEDOR DE TODAS LAS RESEÑAS -->
-            <div id="contenedorReseñas"></div>
+            <!-- CARRUSEL -->
+            <div class="carousel-wrapper">
+                <button class="carousel-btn left" id="btnLeft"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel" id="carouselResenas"></div>
+                <button class="carousel-btn right" id="btnRight"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
 
         </section>
     </main>
@@ -191,9 +207,10 @@
         document.getElementById("year").textContent = new Date().getFullYear();
     </script>
 
+    <!-- COOKIES -->
     <div id="cookieBanner" class="cookie-banner">
-    Este sitio utiliza cookies para mejorar tu experiencia.
-    <button id="aceptarCookies" class="btn-azul">Aceptar</button>
+        Este sitio utiliza cookies para mejorar tu experiencia.
+        <button id="aceptarCookies" class="btn-azul">Aceptar</button>
     </div>
 
 </body>

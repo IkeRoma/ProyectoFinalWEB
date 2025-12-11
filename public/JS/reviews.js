@@ -8,19 +8,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const user = JSON.parse(localStorage.getItem("usuario"));
 
-    // Mostrar formulario solo si el usuario está logueado
-    if (user) {
-        bloque.style.display = "block";
-    } else {
-        bloque.style.display = "none";
-    }
+    // Mostrar el formulario solo si hay usuario logueado
+    if (user) bloque.style.display = "block";
+    else bloque.style.display = "none";
 
-    // ============================
-    // CARGAR RESEÑAS
-    // ============================
+
+    /* =======================
+       CARGAR TODAS LAS RESEÑAS
+    ======================== */
     async function cargarReseñas() {
         const res = await fetch("/api/reviews/list");
         const data = await res.json();
+
         contenedor.innerHTML = "";
 
         data.reseñas.forEach(r => {
@@ -37,10 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ============================
-    // ENVIAR RESEÑA
-    // ============================
-    btnEnviar.addEventListener("click", async () => {
+
+    /* =======================
+       ENVIAR RESEÑA
+    ======================== */
+    btnEnviar?.addEventListener("click", async () => {
+
+        if (!user) {
+            msgReseña.textContent = "Debes iniciar sesión para enviar una reseña.";
+            msgReseña.style.color = "red";
+            return;
+        }
 
         const texto = textarea.value.trim();
         if (texto.length < 5) {
@@ -56,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         const data = await res.json();
-
         msgReseña.textContent = data.message;
         msgReseña.style.color = "lime";
 
@@ -64,5 +69,19 @@ document.addEventListener("DOMContentLoaded", () => {
         cargarReseñas();
     });
 
+    // Cargar reseñas al iniciar
     cargarReseñas();
-});
+
+    // --- CARRUSEL --- //
+    const carrusel = document.getElementById("carouselResenas");
+    const leftBtn = document.getElementById("btnLeft");
+    const rightBtn = document.getElementById("btnRight");
+
+    leftBtn.addEventListener("click", () => {
+        carrusel.scrollLeft -= 300;
+    });
+    rightBtn.addEventListener("click", () => {
+        carrusel.scrollLeft += 300;
+    });
+
+}); //fin DOOM
