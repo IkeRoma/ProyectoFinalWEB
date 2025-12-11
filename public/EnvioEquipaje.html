@@ -23,10 +23,10 @@
     <ul class="nav__links" data-nav="links"></ul>
 </nav>
 
-<!-- PROTECCIÓN -->
+<!-- PROTECCIÓN DE ACCESO -->
 <script>
-    const usr = JSON.parse(localStorage.getItem("usuario") || "null");
-    if (!usr) window.location.href = "LogIn.html";
+    const usrEnv = JSON.parse(localStorage.getItem("usuario") || "null");
+    if (!usrEnv) window.location.href = "LogIn.html";
 </script>
 
 <main class="perfil-container envio-container">
@@ -34,14 +34,14 @@
     <section class="perfil-header glass">
         <div>
             <h1>Envío de Equipaje</h1>
-            <p>Envía tu maleta a cualquier parte de la República Mexicana.</p>
+            <p>Registra una o varias maletas para enviarlas a tus direcciones registradas.</p>
         </div>
     </section>
 
     <section class="perfil-secciones">
 
+        <!-- FORMULARIO DE ENVÍO -->
         <div class="perfil-card glass envio-card">
-
             <h2><i class="fa-solid fa-suitcase-rolling"></i> Datos del envío</h2>
 
             <form id="formEnvio">
@@ -56,31 +56,35 @@
                 </select>
 
                 <label for="inputPesoMaleta"><strong>Peso de la maleta (kg)</strong></label>
-                <input type="number" class="input-modal" id="inputPesoMaleta" step="0.1" min="1" value="10" required>
+                <input type="number" id="inputPesoMaleta" class="input-modal" step="0.1" min="1" value="10" required>
 
-                <button class="btn-azul mt-2">
-                    <i class="fa-solid fa-calculator"></i> Calcular envío
+                <label for="selectDireccion"><strong>Dirección de entrega</strong></label>
+                <select id="selectDireccion" class="input-modal" required>
+                    <option value="">Cargando direcciones...</option>
+                </select>
+
+                <button type="submit" class="btn-azul mt-2">
+                    <i class="fa-solid fa-plus"></i> Agregar envío
                 </button>
 
                 <p id="envioPrecioLabel" class="texto-muted" style="margin-top:1rem;"></p>
-
             </form>
-
         </div>
 
+        <!-- INFO -->
         <div class="perfil-card glass">
             <h2><i class="fa-solid fa-info-circle"></i> Información</h2>
-            <p>El precio final se sumará automáticamente al total en tu carrito.</p>
-            <p>Una vez calculado el envío, regresa al carrito para completar el pago.</p>
+            <p>Cada vez que agregues un envío, se guardará temporalmente y se sumará a tu carrito.</p>
+            <p>Puedes registrar varias maletas (con diferentes direcciones) y pagarlas todas juntas en el carrito.</p>
         </div>
 
     </section>
 </main>
 
 <!-- ICONOS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" crossorigin="anonymous"></script>
 
-<!-- Scripts -->
+<!-- SCRIPTS -->
 <script src="JS/navbar.js"></script>
 <script src="JS/envioEquipaje.js"></script>
 

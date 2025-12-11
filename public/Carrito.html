@@ -58,7 +58,7 @@
         </div>
 
         <div class="carrito-resumen-row" id="rowEnvio" style="display:none;">
-            <span>Envío de equipaje</span>
+            <span>Envío(s) de equipaje</span>
             <span class="carrito-total">$<span id="carritoTotalEnvio">0.00</span> MXN</span>
         </div>
 
@@ -69,34 +69,76 @@
             <span class="carrito-total">$<span id="carritoTotal">0.00</span> MXN</span>
         </div>
 
+        <div id="envioResumenTexto" class="texto-muted" style="margin-top:.5rem; font-size:.9rem;"></div>
+
+        <div id="enviosDetalleCarrito" class="envios-detalle" style="margin-top:.5rem;"></div>
+
         <div class="carrito-resumen-row" style="margin-top:1rem;">
             <span>Método de pago</span>
         </div>
-
         <select id="selectMetodoPago" class="input-modal" style="width:100%; margin-bottom:1rem;">
             <option value="">Selecciona una tarjeta guardada</option>
         </select>
 
         <button id="btnPagar" class="btn btn--primary" style="width:100%; margin-top:.5rem;">
-            Confirmar pago
+            Revisar y pagar
         </button>
 
-        <div id="envioResumenTexto" class="texto-muted" style="margin-top:1rem; font-size:.85rem;"></div>
-
-        <div id="ticketContainer" class="ticket-container"></div>
+        <div id="ticketContainer" class="ticket-container" style="margin-top:1.5rem;">
+            <!-- ticket virtual -->
+        </div>
     </section>
-
 </main>
 
 <footer class="footer">
     <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
+<!-- MODAL RESUMEN PAGO -->
+<div id="modalResumen" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    z-index:999;
+    justify-content:center;
+    align-items:center;
+">
+    <div class="glass" style="
+        max-width:600px;
+        width:90%;
+        max-height:80vh;
+        overflow-y:auto;
+        padding:1.5rem;
+        border-radius:1rem;
+    ">
+        <h2 style="margin-bottom:1rem;"><i class="fa-solid fa-list-check"></i> Resumen de tu compra</h2>
+
+        <h3 style="font-size:1rem; margin-top:.5rem;">Vuelos</h3>
+        <div id="modalCarritoDetalle" class="texto-muted" style="font-size:.9rem;"></div>
+
+        <h3 style="font-size:1rem; margin-top:1rem;">Envíos de equipaje</h3>
+        <div id="modalEnviosDetalle" class="texto-muted" style="font-size:.9rem;"></div>
+
+        <h3 style="font-size:1rem; margin-top:1rem;">Método de pago</h3>
+        <p id="modalMetodoPago" class="texto-muted" style="font-size:.9rem;"></p>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
+            <strong>Total:</strong>
+            <strong id="modalTotal"></strong>
+        </div>
+
+        <div style="display:flex; gap:.5rem; margin-top:1.5rem; justify-content:flex-end;">
+            <button id="btnCerrarModal" class="btn-cerrar">Cancelar</button>
+            <button id="btnConfirmarPago" class="btn-azul">Confirmar pago</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" crossorigin="anonymous"></script>
 <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 </script>
-
 <script src="JS/navbar.js"></script>
 <script src="JS/carrito.js"></script>
 </body>
