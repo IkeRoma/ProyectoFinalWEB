@@ -55,10 +55,12 @@ function crearToken(usuario) {
 // =========================================
 exports.verificarToken = (req, res, next) => {
     const header = req.headers["authorization"];
+
     if (!header)
         return res.status(401).json({ error: true, message: "Falta token de autenticación" });
 
     const [type, token] = header.split(" ");
+
     if (type !== "Bearer" || !token)
         return res.status(401).json({ error: true, message: "Token inválido" });
 
@@ -77,11 +79,12 @@ exports.verificarToken = (req, res, next) => {
 exports.soloAdmin = (req, res, next) => {
     if (!req.user || req.user.Rol !== 1)
         return res.status(403).json({ error: true, message: "Acceso restringido (solo admin)" });
+
     next();
 };
 
 // =========================================
-// LOGIN — bcrypt + JWT
+// LOGIN — bcrypt + migración de texto plano
 // =========================================
 exports.login = (req, res) => {
     const { email, password } = req.body;
@@ -93,35 +96,57 @@ exports.login = (req, res) => {
             return res.json({ error: true, message: "El usuario no existe" });
 
         const usuario = rows[0];
+        const hashBD = usuario.Contrasena || "";
+        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$") || hashBD.startsWith("$2y$");
 
-        bcrypt.compare(password, usuario.Contrasena, (err2, ok) => {
-            if (err2)
-                return res.json({ error: true, message: "Error interno" });
-
-            if (!ok)
+        // Caso 1: contraseña vieja guardada en texto plano
+        if (!esHash) {
+            if (hashBD !== password)
                 return res.json({ error: true, message: "Contraseña incorrecta" });
 
-            const token = crearToken(usuario);
-
-            res.json({
-                error: false,
-                message: "Inicio de sesión correcto",
-                user: {
-                    ID: usuario.ID,
-                    Nombre: usuario.Nombre,
-                    Apellido: usuario.Apellido,
-                    Correo: usuario.Correo,
-                    Telefono: usuario.Telefono,
-                    Rol: usuario.Rol
-                },
-                token
+            // Migrar a bcrypt
+            bcrypt.hash(password, 10, (errH, nuevoHash) => {
+                if (!errH) {
+                    db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, usuario.ID]);
+                    usuario.Contrasena = nuevoHash;
+                }
+                continuar(usuario, password);
             });
-        });
+        } else {
+            // Ya está hasheada
+            continuar(usuario, password);
+        }
+
+        function continuar(usr, plainPassword) {
+            bcrypt.compare(plainPassword, usr.Contrasena, (err2, ok) => {
+                if (err2)
+                    return res.json({ error: true, message: "Error interno" });
+
+                if (!ok)
+                    return res.json({ error: true, message: "Contraseña incorrecta" });
+
+                const token = crearToken(usr);
+
+                res.json({
+                    error: false,
+                    message: "Inicio de sesión correcto",
+                    user: {
+                        ID: usr.ID,
+                        Nombre: usr.Nombre,
+                        Apellido: usr.Apellido,
+                        Correo: usr.Correo,
+                        Telefono: usr.Telefono,
+                        Rol: usr.Rol
+                    },
+                    token
+                });
+            });
+        }
     });
 };
 
 // =========================================
-// REGISTRO
+// REGISTRO — contraseñas seguras
 // =========================================
 exports.registrar = (req, res) => {
     const { nombre, apellidos, email, telefono, password } = req.body;
@@ -147,7 +172,7 @@ exports.registrar = (req, res) => {
 };
 
 // =========================================
-// RESET PASSWORD
+// RESET PASSWORD — bcrypt
 // =========================================
 exports.resetPassword = (req, res) => {
     const { email, passwordNueva } = req.body;
@@ -156,24 +181,20 @@ exports.resetPassword = (req, res) => {
         if (errHash)
             return res.status(500).json({ error: true, message: "Error procesando contraseña" });
 
-        db.query(
-            "UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?",
-            [hash, email],
-            (err, result) => {
-                if (err)
-                    return res.json({ error: true, message: "Error interno" });
+        db.query("UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?", [hash, email], (err, result) => {
+            if (err)
+                return res.json({ error: true, message: "Error interno" });
 
-                if (result.affectedRows === 0)
-                    return res.json({ error: true, message: "El correo no existe" });
+            if (result.affectedRows === 0)
+                return res.json({ error: true, message: "El correo no existe" });
 
-                res.json({ error: false, message: "Contraseña actualizada correctamente" });
-            }
-        );
+            res.json({ error: false, message: "Contraseña actualizada correctamente" });
+        });
     });
 };
 
 // =========================================
-// ADMIN — Eliminar usuario
+
 // =========================================
 exports.eliminarUsuario = (req, res) => {
     const { id } = req.body;
@@ -258,7 +279,7 @@ exports.agregarTarjeta = (req, res) => {
 };
 
 // =========================================
-// WALLET — Eliminar tarjeta
+// WALLET — Eliminar tarjeta (soft delete)
 // =========================================
 exports.eliminarTarjeta = (req, res) => {
     const { id_wallet } = req.body;
@@ -312,41 +333,64 @@ exports.updateUser = (req, res) => {
 };
 
 // =========================================
-// PERFIL — Actualizar contraseña
+// PERFIL — Actualizar contraseña (soporta hash viejo y nuevo)
 // =========================================
 exports.updatePassword = (req, res) => {
     const { ID, actual, nueva } = req.body;
+
+    if (!ID || !actual || !nueva)
+        return res.json({ success: false, message: "Datos incompletos" });
 
     db.query("SELECT Contrasena FROM Usuarios WHERE ID = ?", [ID], (err, rows) => {
         if (err || rows.length === 0)
             return res.json({ success: false, message: "Usuario no encontrado" });
 
-        const hashBD = rows[0].Contrasena;
+        const hashBD = rows[0].Contrasena || "";
+        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$") || hashBD.startsWith("$2y$");
 
-        bcrypt.compare(actual, hashBD, (err2, ok) => {
-            if (err2)
-                return res.json({ success: false, message: "Error interno" });
-
-            if (!ok)
+        // Contraseña antigua en texto plano
+        if (!esHash) {
+            if (hashBD !== actual)
                 return res.json({ success: false, message: "La contraseña actual es incorrecta" });
 
             bcrypt.hash(nueva, 10, (errHash, nuevoHash) => {
                 if (errHash)
                     return res.json({ success: false, message: "Error procesando contraseña" });
 
-                db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, ID], (err3) => {
-                    if (err3)
+                db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, ID], (err2) => {
+                    if (err2)
                         return res.json({ success: false, message: "Error al actualizar contraseña" });
 
-                    res.json({ success: true, message: "Contraseña actualizada correctamente" });
+                    return res.json({ success: true, message: "Contraseña actualizada correctamente" });
                 });
             });
-        });
+        } else {
+            // Contraseña ya hasheada
+            bcrypt.compare(actual, hashBD, (err2, ok) => {
+                if (err2)
+                    return res.json({ success: false, message: "Error interno" });
+
+                if (!ok)
+                    return res.json({ success: false, message: "La contraseña actual es incorrecta" });
+
+                bcrypt.hash(nueva, 10, (errHash, nuevoHash) => {
+                    if (errHash)
+                        return res.json({ success: false, message: "Error procesando contraseña" });
+
+                    db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, ID], (err3) => {
+                        if (err3)
+                            return res.json({ success: false, message: "Error al actualizar contraseña" });
+
+                        return res.json({ success: true, message: "Contraseña actualizada correctamente" });
+                    });
+                });
+            });
+        }
     });
 };
 
 // ================================================================
-// OBTENER PEDIDOS PAGADOS
+// ENVÍO DE EQUIPAJE — Obtener pedidos pagados
 // ================================================================
 exports.obtenerPedidosPagados = (req, res) => {
     const { id_usuario } = req.params;
@@ -364,7 +408,7 @@ exports.obtenerPedidosPagados = (req, res) => {
 };
 
 // ================================================================
-// OBTENER DIRECCIONES
+// ENVÍO DE EQUIPAJE — Obtener direcciones del usuario
 // ================================================================
 exports.obtenerDireccionesUsuario = (req, res) => {
     const { id_usuario } = req.params;
@@ -382,7 +426,48 @@ exports.obtenerDireccionesUsuario = (req, res) => {
 };
 
 // ================================================================
-// AGREGAR DIRECCIÓN
+// ENVÍO DE EQUIPAJE — Crear envío
+// ================================================================
+exports.crearEnvio = (req, res) => {
+    const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
+
+    if (!id_usuario || !id_pedido || !id_direccion || !cantidad)
+        return res.json({ error: true, message: "Datos incompletos para crear el envío" });
+
+    const sql = `
+        INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear envío" });
+
+        res.json({ error: false, message: "Envío registrado correctamente" });
+    });
+};
+
+// ================================================================
+// ENVÍO DE EQUIPAJE — Historial
+// ================================================================
+exports.obtenerHistorialEnvios = (req, res) => {
+    const { id_usuario } = req.params;
+
+    const sql = `
+        SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
+        FROM envio_equipaje
+        WHERE id_usuario = ?
+        ORDER BY fecha_envio DESC
+    `;
+
+    db.query(sql, [id_usuario], (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al obtener historial" });
+
+        res.json({ error: false, envios: rows });
+    });
+};
+
+// ================================================================
+// DIRECCIONES — Agregar
 // ================================================================
 exports.agregarDireccion = (req, res) => {
     const { id_usuario, calle, ciudad, estado, cp } = req.body;
@@ -403,7 +488,7 @@ exports.agregarDireccion = (req, res) => {
 };
 
 // ================================================================
-// EDITAR DIRECCIÓN
+// DIRECCIONES — Editar
 // ================================================================
 exports.editarDireccion = (req, res) => {
     const { id_direccion, calle, ciudad, estado, cp } = req.body;
@@ -425,7 +510,7 @@ exports.editarDireccion = (req, res) => {
 };
 
 // ================================================================
-// ELIMINAR DIRECCIÓN
+// DIRECCIONES — Eliminar
 // ================================================================
 exports.eliminarDireccion = (req, res) => {
     const { id_direccion } = req.body;
@@ -434,46 +519,5 @@ exports.eliminarDireccion = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar" });
 
         res.json({ error: false, message: "Dirección eliminada" });
-    });
-};
-
-// ================================================================
-// CREAR ENVÍO DE EQUIPAJE
-// ================================================================
-exports.crearEnvio = (req, res) => {
-    const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
-
-    if (!id_usuario || !id_pedido || !id_direccion || !cantidad)
-        return res.json({ error: true, message: "Datos incompletos para crear el envío" });
-
-    const sql = `
-        INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
-        VALUES (?, ?, ?, ?)
-    `;
-
-    db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
-        if (err) return res.json({ error: true, message: "Error al crear envío" });
-
-        res.json({ error: false, message: "Envío registrado correctamente" });
-    });
-};
-
-// ================================================================
-// HISTORIAL DE ENVÍOS
-// ================================================================
-exports.obtenerHistorialEnvios = (req, res) => {
-    const { id_usuario } = req.params;
-
-    const sql = `
-        SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
-        FROM envio_equipaje
-        WHERE id_usuario = ?
-        ORDER BY fecha_envio DESC
-    `;
-
-    db.query(sql, [id_usuario], (err, rows) => {
-        if (err) return res.json({ error: true, message: "Error al obtener historial" });
-
-        res.json({ error: false, envios: rows });
     });
 };

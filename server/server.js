@@ -29,11 +29,9 @@ app.get("/", (req, res) => {
 });
 const { verificarToken, soloAdmin } = auth;
 
-// LOGIN & REGISTRO
+// LOGIN / REGISTRO
 app.post("/api/login", auth.login);
 app.post("/api/register", auth.registrar);
-
-// RESET PASSWORD
 app.post("/api/reset", auth.resetPassword);
 
 // WALLET
@@ -46,27 +44,25 @@ app.post("/api/wallet/update", verificarToken, auth.actualizarTarjeta);
 app.post("/api/updateUser", verificarToken, auth.updateUser);
 app.post("/api/updatePassword", verificarToken, auth.updatePassword);
 
-// ADMINISTRACIÓN
+// ADMIN
 app.get("/api/listar", verificarToken, soloAdmin, auth.listarUsuarios);
 app.post("/api/eliminar", verificarToken, soloAdmin, auth.eliminarUsuario);
 
-// RESEÑAS
-app.post("/api/reviews/add", reviews.crearReseña);
-app.get("/api/reviews/list", reviews.obtenerReseñas);
-app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
-
-// ========================= ENVIOS DE EQUIPAJE ==========================
+// ENVÍO EQUIPAJE
 app.get("/api/envio/pedidos/:id_usuario", verificarToken, auth.obtenerPedidosPagados);
 app.get("/api/envio/direcciones/:id_usuario", verificarToken, auth.obtenerDireccionesUsuario);
 app.post("/api/envio/crear", verificarToken, auth.crearEnvio);
 app.get("/api/envio/historial/:id_usuario", verificarToken, auth.obtenerHistorialEnvios);
 
-// ================== DIRECCIONES ==================
+// DIRECCIONES (Mi Perfil)
 app.post("/api/envio/agregarDireccion", verificarToken, auth.agregarDireccion);
 app.post("/api/envio/editarDireccion", verificarToken, auth.editarDireccion);
 app.post("/api/envio/eliminarDireccion", verificarToken, auth.eliminarDireccion);
 
-
+// RESEÑAS
+app.post("/api/reviews/add", reviews.crearReseña);
+app.get("/api/reviews/list", reviews.obtenerReseñas);
+app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
 // ========================
 //  Servidor HTTP
 // ========================

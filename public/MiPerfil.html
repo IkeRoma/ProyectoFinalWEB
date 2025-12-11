@@ -18,6 +18,7 @@
 </head>
 
 <body class="perfil-body">
+<div id="navTrigger"></div>
 
     <!-- NAVBAR -->
     <nav id="mainNav" class="nav">
@@ -201,6 +202,63 @@
             <button id="actualizarDireccion" class="btn-azul">Actualizar</button>
             <button class="btn-cerrar" data-close>Cancelar</button>
         </div>
+    </div>
+    <!-- ==========================================================
+            MODAL — Agregar Dirección de Envío
+    ========================================================== -->
+    <div class="modal" id="modalAgregarDireccion">
+        <div class="modal-content glass">
+            <h3>Agregar dirección</h3>
+
+            <input id="dirCalle" class="input-modal" placeholder="Calle y número">
+            <input id="dirCiudad" class="input-modal" placeholder="Ciudad">
+
+            <!-- Estado — SOLO MEXICANOS -->
+            <select id="dirEstado" class="input-modal">
+                <option value="">Seleccionar estado</option>
+            </select>
+
+            <input id="dirCP" class="input-modal" placeholder="Código Postal" maxlength="5">
+
+            <button id="guardarDireccion" class="btn-azul">Guardar</button>
+            <button class="btn-cerrar" data-close>Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================================
+            MODAL — Editar Dirección de Envío
+    ========================================================== -->
+    <div class="modal" id="modalEditarDireccion">
+        <div class="modal-content glass">
+            <h3>Editar dirección</h3>
+
+            <input id="editDirID" type="hidden">
+
+            <input id="editDirCalle" class="input-modal">
+            <input id="editDirCiudad" class="input-modal">
+
+            <select id="editDirEstado" class="input-modal"></select>
+
+            <input id="editDirCP" class="input-modal" maxlength="5">
+
+            <button id="actualizarDireccion" class="btn-azul">Actualizar</button>
+            <button class="btn-cerrar" data-close>Cancelar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================================
+            LISTA DE DIRECCIONES
+    ========================================================== -->
+    <div class="perfil-card glass">
+        <h2><i class="fa-solid fa-location-dot"></i> Direcciones de envío</h2>
+
+        <div id="listaDirecciones" class="direccion-lista"></div>
+
+        <button id="btnAgregarDireccion" class="btn-azul">
+            <i class="fa-solid fa-circle-plus"></i> Añadir dirección
+        </button>
     </div>
 
 

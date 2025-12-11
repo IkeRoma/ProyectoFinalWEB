@@ -1471,3 +1471,80 @@ input:focus,
     padding: 12px;
     border-radius: 12px;
 }
+
+/* NAVBAR AUTO OCULTABLE */
+.nav {
+    position: fixed;
+    top: -80px;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    transition: top 0.3s ease-in-out;
+    z-index: 9999;
+}
+
+/* Cuando se muestra */
+.nav--visible {
+    top: 0;
+}
+
+/* Activador invisible en la parte superior */
+#navTrigger {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 15px;
+    z-index: 9998;
+}
+
+/* =======================================================
+   VALIDACIÓN UNIVERSAL DE FORMULARIOS
+======================================================= */
+
+.input-field,
+.input-modal,
+select.input-modal {
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.input-valid {
+    border-color: #31d67b !important;
+    box-shadow: 0 0 6px rgba(49, 214, 123, 0.4);
+}
+
+.input-invalid {
+    border-color: #ff3b3b !important;
+    box-shadow: 0 0 6px rgba(255, 59, 59, 0.4);
+}
+
+/* Mensajes de validación */
+.form-msg {
+    font-size: 0.8rem;
+    margin-top: 4px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.form-msg.error { color: #ff5555; }
+.form-msg.success { color: #31d67b; }
+
+.form-msg.show {
+    opacity: 1;
+}
+
+/* Animación cuando el usuario comete un error */
+@keyframes shake {
+    0% { transform: translateX(0px); }
+    20% { transform: translateX(-3px); }
+    40% { transform: translateX(3px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+    100% { transform: translateX(0px); }
+}
+
+.input-invalid.shake {
+    animation: shake 0.3s linear;
+}

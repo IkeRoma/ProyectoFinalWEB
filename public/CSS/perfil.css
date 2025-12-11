@@ -153,3 +153,82 @@
 .input-modal[type="password"] {
     letter-spacing: 1px;
 }
+
+/* ===========================================
+   TARJETAS DE DIRECCIONES – GLASS EFFECT
+=========================================== */
+
+.direccion-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.direccion-item {
+    padding: 18px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+
+    transition: transform 0.25s ease, 
+                box-shadow 0.25s ease,
+                border-color 0.25s ease;
+}
+
+/* Hover (levantar tarjeta) */
+.direccion-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Texto */
+.direccion-item p {
+    margin: 4px 0;
+    font-size: 0.95rem;
+    color: #e4e4e4;
+}
+
+/* Botones dentro de tarjeta */
+.direccion-item button {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
+/* ===========================================
+   MODALES DE DIRECCIONES
+=========================================== */
+
+#modalAgregarDireccion .modal-content,
+#modalEditarDireccion .modal-content {
+    width: 350px;
+}
+
+.modal-content select.input-modal {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Estilo visual del placeholder del select */
+.modal-content select.input-modal option {
+    background: #1e1e1e;
+    color: #fff;
+}
+
+/* ===========================================
+   BOTÓN — Añadir dirección
+=========================================== */
+
+#btnAgregarDireccion {
+    margin-top: 10px;
+    width: 100%;
+    font-size: 1rem;
+}
+

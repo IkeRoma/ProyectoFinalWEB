@@ -290,5 +290,27 @@ document.addEventListener("DOMContentLoaded", () => {
         AUTO INICIO
     ======================= */
     cargarDirecciones();
+/* =======================================================
+   SISTEMA GLOBAL DE VALIDACIÓN VISUAL
+======================================================= */
+
+function marcarInput(input, valido, msg = "", contenedorMsg = null) {
+
+    input.classList.remove("input-valid", "input-invalid", "shake");
+
+    if (valido) {
+        input.classList.add("input-valid");
+        if (contenedorMsg) {
+            contenedorMsg.textContent = msg;
+            contenedorMsg.className = "form-msg success show";
+        }
+    } else {
+        input.classList.add("input-invalid", "shake");
+        if (contenedorMsg) {
+            contenedorMsg.textContent = msg;
+            contenedorMsg.className = "form-msg error show";
+        }
+    }
+}
 
 });

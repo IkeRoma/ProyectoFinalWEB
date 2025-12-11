@@ -157,4 +157,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");
     });
+
+    /* ======================================================
+    NAVBAR QUE APARECE AL ACERCAR EL CURSOR
+    ====================================================== */
+
+    const navBar = document.getElementById("mainNav");
+    const trigger = document.getElementById("navTrigger");
+
+    let hideTimeout;
+
+    function mostrarNavbar() {
+        navBar.classList.add("nav--visible");
+        if (hideTimeout) clearTimeout(hideTimeout);
+
+        hideTimeout = setTimeout(() => {
+            navBar.classList.remove("nav--visible");
+        }, 2000);
+    }
+
+    // Mostrar navbar cuando el cursor toca el área superior
+    trigger.addEventListener("mousemove", mostrarNavbar);
+
+    // También mostrarlo si el usuario mueve la rueda en la parte superior
+    window.addEventListener("scroll", () => {
+        if (window.scrollY < 20) mostrarNavbar();
+    });
+
 });
