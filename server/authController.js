@@ -2,11 +2,13 @@
 // authController.js — Seguridad completa
 // =========================================
 
+const express = require("express");
+const router = express.Router();
 const db = require("./conexion");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-module.exports = router;
+
 // =========================================
 // CONFIGURACIÓN JWT
 // =========================================
@@ -1315,3 +1317,5 @@ exports.crearUsuario = (req, res) => {
         res.json({ error: false, message: "Usuario creado correctamente" });
     });
 };
+
+module.exports = router;
