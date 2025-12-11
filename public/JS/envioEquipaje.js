@@ -1,24 +1,9 @@
+/* ============================================================
+   envioEquipaje.js — Registro del envío y cálculo del precio
+   Compatible con carrito.js (usa localStorage)
+===============================================================*/
+
 document.addEventListener("DOMContentLoaded", () => {
-
-    function secureHeaders() {
-        return {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + localStorage.getItem("token")
-        };
-    }
-
-    async function secureFetch(url, options = {}) {
-        options.headers = secureHeaders();
-        const res = await fetch(url, options);
-
-        if (res.status === 401) {
-            alert("Tu sesión expiró. Inicia sesión nuevamente.");
-            localStorage.clear();
-            window.location.href = "LogIn.html";
-        }
-
-        return res;
-    }
 
     const usr = JSON.parse(localStorage.getItem("usuario") || "null");
     if (!usr) {
@@ -26,148 +11,53 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const selPedido = document.getElementById("selectPedido");
-    const selDireccion = document.getElementById("selectDireccion");
-    const cantidad = document.getElementById("cantidad");
-    const msg = document.getElementById("msgEnvio");
-    const listaEnvios = document.getElementById("listaEnvios");
+    const form = document.getElementById("formEnvio");
+    const selectTamano = document.getElementById("selectTamanoMaleta");
+    const inputPeso = document.getElementById("inputPesoMaleta");
+    const labelPrecio = document.getElementById("envioPrecioLabel");
 
-    /* ================================
-       CARGAR PEDIDOS PAGADOS
-    ================================= */
-    async function cargarPedidos() {
-        const res = await secureFetch(`/api/envio/pedidos/${usr.ID}`);
-        const data = await res.json();
-
-        selPedido.innerHTML = "";
-
-        if (!data.pedidos || data.pedidos.length === 0) {
-            const opt = document.createElement("option");
-            opt.value = "";
-            opt.textContent = "No tienes pedidos pagados disponibles";
-            selPedido.appendChild(opt);
-            selPedido.disabled = true;
-            return;
-        }
-
-        selPedido.disabled = false;
-
-        data.pedidos.forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.id_pedido;
-            opt.textContent = `Pedido #${p.id_pedido} — $${p.total}`;
-            selPedido.appendChild(opt);
-        });
-    }
-
-    /* ================================
-       CARGAR DIRECCIONES
-    ================================= */
-    async function cargarDirecciones() {
-        const res = await secureFetch(`/api/envio/direcciones/${usr.ID}`);
-        const data = await res.json();
-
-        selDireccion.innerHTML = "";
-
-        if (!data.direcciones || data.direcciones.length === 0) {
-            const opt = document.createElement("option");
-            opt.value = "";
-            opt.textContent = "No tienes direcciones registradas (ve a Mi Perfil)";
-            selDireccion.appendChild(opt);
-            selDireccion.disabled = true;
-            return;
-        }
-
-        selDireccion.disabled = false;
-
-        data.direcciones.forEach(d => {
-            const opt = document.createElement("option");
-            opt.value = d.id_direccion;
-            opt.textContent = `${d.calle}, ${d.ciudad}, ${d.estado}, C.P. ${d.cp}`;
-            selDireccion.appendChild(opt);
-        });
-    }
-
-    /* ================================
-       HISTORIAL DE ENVÍOS
-    ================================= */
-    async function cargarHistorial() {
-        const res = await secureFetch(`/api/envio/historial/${usr.ID}`);
-        const data = await res.json();
-
-        listaEnvios.innerHTML = "";
-
-        if (!data.envios || data.envios.length === 0) {
-            listaEnvios.innerHTML = "<p>Aún no tienes envíos registrados.</p>";
-            return;
-        }
-
-        data.envios.forEach(e => {
-            const div = document.createElement("div");
-            div.className = "envio-item glass";
-
-            div.innerHTML = `
-                <p><strong>Envío #${e.id_envio}</strong></p>
-                <p>Pedido: ${e.id_pedido}</p>
-                <p>Cantidad: ${e.cantidad}</p>
-                <p>Estado: ${e.estado_envio}</p>
-                <p>Fecha: ${new Date(e.fecha_envio).toLocaleString()}</p>
-                <p>Costo: $${e.costo_envio}</p>
-            `;
-
-            listaEnvios.appendChild(div);
-        });
-    }
-
-    /* ================================
-       ENVIAR EQUIPAJE
-    ================================= */
-    document.getElementById("btnEnviarEquipaje").onclick = async () => {
-
-        msg.textContent = "";
-        msg.style.color = "red";
-
-        if (!selPedido.value) {
-            msg.textContent = "Selecciona un pedido válido.";
-            return;
-        }
-
-        if (!selDireccion.value) {
-            msg.textContent = "Selecciona una dirección de destino.";
-            return;
-        }
-
-        if (!cantidad.value || parseInt(cantidad.value) <= 0) {
-            msg.textContent = "La cantidad debe ser mayor a 0.";
-            return;
-        }
-
-        const body = {
-            id_usuario: usr.ID,
-            id_pedido: selPedido.value,
-            id_direccion: selDireccion.value,
-            cantidad: parseInt(cantidad.value, 10)
-        };
-
-        const res = await secureFetch("/api/envio/crear", {
-            method: "POST",
-            body: JSON.stringify(body)
-        });
-
-        const data = await res.json();
-
-        msg.textContent = data.message;
-        msg.style.color = data.error ? "red" : "lime";
-
-        if (!data.error) {
-            cargarHistorial();
-        }
+    // Configuración del modelo C (debe coincidir con la BD)
+    const tiposMaleta = {
+        1: { nombre: "Pequeña", peso_max: 10, precio_base: 200, tarifa_extra: 25 },
+        2: { nombre: "Mediana", peso_max: 20, precio_base: 300, tarifa_extra: 25 },
+        3: { nombre: "Grande", peso_max: 30, precio_base: 400, tarifa_extra: 25 },
+        4: { nombre: "XL",      peso_max: 45, precio_base: 550, tarifa_extra: 25 }
     };
 
-    /* ================================
-       AUTO INICIO
-    ================================= */
-    cargarPedidos();
-    cargarDirecciones();
-    cargarHistorial();
+    function calcularPrecio(id, peso) {
+        const m = tiposMaleta[id];
+        if (!m) return 0;
+
+        const extra = Math.max(0, peso - m.peso_max);
+        return m.precio_base + extra * m.tarifa_extra;
+    }
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const idMaleta = Number(selectTamano.value);
+        const peso = Number(inputPeso.value);
+
+        if (!idMaleta || !peso) {
+            alert("Ingresa valores válidos.");
+            return;
+        }
+
+        const precio = calcularPrecio(idMaleta, peso);
+
+        const data = {
+            id_tipo_maleta: idMaleta,
+            nombre_tipo: tiposMaleta[idMaleta].nombre,
+            peso,
+            precio_total: precio
+        };
+
+        // Guardamos para que carrito.js lo use
+        localStorage.setItem("envioEquipaje", JSON.stringify(data));
+
+        labelPrecio.textContent =
+            `Costo de envío: $${precio.toFixed(2)} MXN (Ya puedes pagar en el carrito).`;
+        labelPrecio.style.color = "lime";
+    });
+
 });

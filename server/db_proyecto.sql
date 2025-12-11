@@ -191,3 +191,17 @@ CREATE TABLE reseñas_vuelos (
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo) ON DELETE CASCADE,
     FOREIGN KEY (id_boleto) REFERENCES boletos(id_boleto) ON DELETE SET NULL
 );
+
+CREATE TABLE tipos_maleta (
+    id_tipo_maleta INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    peso_max DECIMAL(5,2) NOT NULL,
+    precio_base DECIMAL(10,2) NOT NULL,
+    tarifa_kg_extra DECIMAL(10,2) NOT NULL
+);
+
+INSERT INTO tipos_maleta (nombre, peso_max, precio_base, tarifa_kg_extra) VALUES
+('Pequeña', 10, 200, 25),
+('Mediana', 20, 300, 25),
+('Grande', 30, 400, 25),
+('XL', 45, 550, 25);

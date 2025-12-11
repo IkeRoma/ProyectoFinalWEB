@@ -884,7 +884,7 @@ exports.eliminarEquipaje = (req, res) => {
 // CARRITO / PEDIDOS / PAGOS / BOLETOS
 // ================================================================
 exports.crearPedidoDesdeCarrito = async (req, res) => {
-    const { id_usuario, id_wallet, items } = req.body;
+    const { id_usuario, id_wallet, items, envio } = req.body;
 
     if (!id_usuario || !id_wallet || !Array.isArray(items) || !items.length) {
         return res.json({ error: true, message: "Datos incompletos del carrito" });
@@ -930,6 +930,13 @@ exports.crearPedidoDesdeCarrito = async (req, res) => {
                 precioUnit,
                 subtotal
             });
+        }
+
+        // ---- COSTO DE ENVÍO (si viene) ----
+        let costo_envio = 0;
+        if (envio && envio.precio_total) {
+            costo_envio = Number(envio.precio_total) || 0;
+            total += costo_envio;
         }
 
         const pedidoRes = await query(
@@ -995,11 +1002,260 @@ exports.crearPedidoDesdeCarrito = async (req, res) => {
         res.json({
             error: false,
             message: "Pedido creado y pago registrado",
-            pedido: { id_pedido, total },
-            boletos: boletosCreados
+            pedido: { id_pedido, total, costo_envio },
+            boletos: boletosCreados,
+            envio: envio || null
         });
     } catch (err) {
         console.error(err);
         res.json({ error: true, message: "Error al procesar el carrito" });
     }
+};
+
+// ================================================================
+// ADMIN – Tipos de maleta (envío equipaje)
+// ================================================================
+exports.listarTiposMaleta = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM tipos_maleta";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_tipo_maleta = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar tipos de maleta" });
+        res.json({ error: false, tipos: rows });
+    });
+};
+
+exports.crearTipoMaleta = (req, res) => {
+    const { nombre, peso_max, precio_base, tarifa_kg_extra } = req.body;
+    if (!nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO tipos_maleta (nombre, peso_max, precio_base, tarifa_kg_extra)
+        VALUES (?, ?, ?, ?)
+    `;
+    db.query(sql, [nombre, peso_max, precio_base, tarifa_kg_extra], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear tipo de maleta" });
+        res.json({ error: false, message: "Tipo de maleta creado" });
+    });
+};
+
+exports.actualizarTipoMaleta = (req, res) => {
+    const { id_tipo_maleta, nombre, peso_max, precio_base, tarifa_kg_extra } = req.body;
+    if (!id_tipo_maleta || !nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE tipos_maleta
+        SET nombre = ?, peso_max = ?, precio_base = ?, tarifa_kg_extra = ?
+        WHERE id_tipo_maleta = ?
+    `;
+    db.query(sql, [nombre, peso_max, precio_base, tarifa_kg_extra, id_tipo_maleta], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar tipo de maleta" });
+        res.json({ error: false, message: "Tipo de maleta actualizado" });
+    });
+};
+
+exports.eliminarTipoMaleta = (req, res) => {
+    const { id_tipo_maleta } = req.body;
+    if (!id_tipo_maleta) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("DELETE FROM tipos_maleta WHERE id_tipo_maleta = ?", [id_tipo_maleta], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar tipo de maleta" });
+        res.json({ error: false, message: "Tipo de maleta eliminado" });
+    });
+};
+
+// ================================================================
+// ADMIN – Pedidos
+// ================================================================
+exports.listarPedidos = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM pedidos";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_pedido = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar pedidos" });
+        res.json({ error: false, pedidos: rows });
+    });
+};
+
+exports.crearPedidoAdmin = (req, res) => {
+    const { id_usuario, id_wallet, total, estado } = req.body;
+    if (!id_usuario || !id_wallet || !total || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO pedidos (id_usuario, id_wallet, total, estado)
+        VALUES (?, ?, ?, ?)
+    `;
+    db.query(sql, [id_usuario, id_wallet, total, estado], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear pedido" });
+        res.json({ error: false, message: "Pedido creado" });
+    });
+};
+
+exports.actualizarPedidoAdmin = (req, res) => {
+    const { id_pedido, id_usuario, id_wallet, total, estado } = req.body;
+    if (!id_pedido || !id_usuario || !id_wallet || !total || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE pedidos
+        SET id_usuario = ?, id_wallet = ?, total = ?, estado = ?
+        WHERE id_pedido = ?
+    `;
+    db.query(sql, [id_usuario, id_wallet, total, estado, id_pedido], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar pedido" });
+        res.json({ error: false, message: "Pedido actualizado" });
+    });
+};
+
+exports.eliminarPedidoAdmin = (req, res) => {
+    const { id_pedido } = req.body;
+    if (!id_pedido) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("DELETE FROM pedidos WHERE id_pedido = ?", [id_pedido], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar pedido" });
+        res.json({ error: false, message: "Pedido eliminado" });
+    });
+};
+
+// ================================================================
+// ADMIN – Pagos
+// ================================================================
+exports.listarPagos = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM pagos";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_pago = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar pagos" });
+        res.json({ error: false, pagos: rows });
+    });
+};
+
+exports.crearPagoAdmin = (req, res) => {
+    const { id_usuario, id_pedido, monto, estado } = req.body;
+    if (!id_usuario || !id_pedido || !monto || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO pagos (id_usuario, id_pedido, monto, estado)
+        VALUES (?, ?, ?, ?)
+    `;
+    db.query(sql, [id_usuario, id_pedido, monto, estado], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear pago" });
+        res.json({ error: false, message: "Pago creado" });
+    });
+};
+
+exports.actualizarPagoAdmin = (req, res) => {
+    const { id_pago, id_usuario, id_pedido, monto, estado } = req.body;
+    if (!id_pago || !id_usuario || !id_pedido || !monto || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE pagos
+        SET id_usuario = ?, id_pedido = ?, monto = ?, estado = ?
+        WHERE id_pago = ?
+    `;
+    db.query(sql, [id_usuario, id_pedido, monto, estado, id_pago], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar pago" });
+        res.json({ error: false, message: "Pago actualizado" });
+    });
+};
+
+exports.eliminarPagoAdmin = (req, res) => {
+    const { id_pago } = req.body;
+    if (!id_pago) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("DELETE FROM pagos WHERE id_pago = ?", [id_pago], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar pago" });
+        res.json({ error: false, message: "Pago eliminado" });
+    });
+};
+
+// ================================================================
+// ADMIN – Boletos
+// ================================================================
+exports.listarBoletos = (req, res) => {
+    const { id } = req.query;
+    let sql = "SELECT * FROM boletos";
+    const params = [];
+
+    if (id) {
+        sql += " WHERE id_boleto = ?";
+        params.push(id);
+    }
+
+    db.query(sql, params, (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al listar boletos" });
+        res.json({ error: false, boletos: rows });
+    });
+};
+
+exports.crearBoletoAdmin = (req, res) => {
+    const { id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado } = req.body;
+    if (!id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        INSERT INTO boletos (id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+    db.query(sql, [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear boleto" });
+        res.json({ error: false, message: "Boleto creado" });
+    });
+};
+
+exports.actualizarBoletoAdmin = (req, res) => {
+    const { id_boleto, id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado } = req.body;
+    if (!id_boleto || !id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
+        return res.json({ error: true, message: "Datos incompletos" });
+    }
+
+    const sql = `
+        UPDATE boletos
+        SET id_usuario = ?, id_vuelo = ?, id_asiento = ?, id_equipaje = ?, id_pedido = ?, precio_total = ?, estado = ?
+        WHERE id_boleto = ?
+    `;
+    db.query(sql, [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado, id_boleto], (err) => {
+        if (err) return res.json({ error: true, message: "Error al actualizar boleto" });
+        res.json({ error: false, message: "Boleto actualizado" });
+    });
+};
+
+exports.eliminarBoletoAdmin = (req, res) => {
+    const { id_boleto } = req.body;
+    if (!id_boleto) return res.json({ error: true, message: "ID faltante" });
+
+    db.query("DELETE FROM boletos WHERE id_boleto = ?", [id_boleto], (err) => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar boleto" });
+        res.json({ error: false, message: "Boleto eliminado" });
+    });
 };

@@ -28,7 +28,6 @@
     <ul class="nav__links" data-nav="links"></ul>
 </nav>
 
-<!-- PROTECCIÓN DE ACCESO -->
 <script>
     const usr = JSON.parse(localStorage.getItem("usuario") || "null");
     if (!usr) window.location.href = "LogIn.html";
@@ -39,7 +38,6 @@
 </script>
 
 <main class="admin-container">
-    <!-- HEADER -->
     <section class="admin-header glass">
         <div>
             <h1>Panel de Administración</h1>
@@ -48,7 +46,7 @@
     </section>
 
     <section class="admin-grid">
-        <!-- Usuarios -->
+        <!-- USUARIOS -->
         <div class="admin-card glass">
             <div class="admin-card-header">
                 <h2><i class="fa-solid fa-users"></i> Usuarios</h2>
@@ -58,22 +56,17 @@
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosUsuarios">Ver todos</button>
                 </div>
             </div>
-
             <table class="admin-table" id="tablaUsuarios">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Correo</th>
-                        <th>Rol</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
         </div>
 
-        <!-- Wallet global -->
+        <!-- WALLET -->
         <div class="admin-card glass">
             <div class="admin-card-header">
                 <h2><i class="fa-solid fa-wallet"></i> Tarjetas (Wallet)</h2>
@@ -81,20 +74,14 @@
             <table class="admin-table" id="tablaWallet">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Tipo</th>
-                        <th>BIN</th>
-                        <th>Últimos 4</th>
-                        <th>Expira</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Usuario</th><th>Tipo</th><th>BIN</th><th>Últimos 4</th><th>Expira</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
         </div>
 
-        <!-- Aeropuertos / Destinos -->
+        <!-- AEROPUERTOS -->
         <div class="admin-card glass">
             <div class="admin-card-header">
                 <h2><i class="fa-solid fa-earth-americas"></i> Aeropuertos / Destinos</h2>
@@ -104,21 +91,14 @@
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosAeropuertos">Ver todos</button>
                 </div>
             </div>
-
             <table class="admin-table" id="tablaAeropuertos">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Ciudad</th>
-                        <th>Estado</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Nombre</th><th>Ciudad</th><th>Estado</th><th>Activo</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-
             <form id="formAeropuerto" class="admin-form">
                 <input type="hidden" id="aeropuertoId">
                 <div>
@@ -137,7 +117,7 @@
             </form>
         </div>
 
-        <!-- Vuelos -->
+        <!-- VUELOS -->
         <div class="admin-card glass">
             <div class="admin-card-header">
                 <h2><i class="fa-solid fa-plane"></i> Vuelos</h2>
@@ -147,23 +127,14 @@
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosVuelos">Ver todos</button>
                 </div>
             </div>
-
             <table class="admin-table" id="tablaVuelos">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Origen</th>
-                        <th>Destino</th>
-                        <th>Salida</th>
-                        <th>Llegada</th>
-                        <th>Escala</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Escala</th><th>Activo</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-
             <form id="formVuelo" class="admin-form">
                 <input type="hidden" id="vueloId">
                 <div>
@@ -197,7 +168,7 @@
             </form>
         </div>
 
-        <!-- Asientos -->
+        <!-- ASIENTOS -->
         <div class="admin-card glass">
             <div class="admin-card-header">
                 <h2><i class="fa-solid fa-chair"></i> Asientos</h2>
@@ -207,22 +178,14 @@
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosAsientos">Ver todos</button>
                 </div>
             </div>
-
             <table class="admin-table" id="tablaAsientos">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Vuelo</th>
-                        <th>Tipo</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Vuelo</th><th>Tipo</th><th>Precio</th><th>Stock</th><th>Activo</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-
             <form id="formAsiento" class="admin-form">
                 <input type="hidden" id="asientoId">
                 <div>
@@ -249,31 +212,24 @@
             </form>
         </div>
 
-        <!-- Equipaje -->
+        <!-- EQUIPAJE -->
         <div class="admin-card glass">
             <div class="admin-card-header">
-                <h2><i class="fa-solid fa-suitcase-rolling"></i> Equipaje</h2>
+                <h2><i class="fa-solid fa-suitcase-rolling"></i> Equipaje Vuelo</h2>
                 <div class="admin-filters">
                     <input type="number" id="filtroEquipajeId" placeholder="ID equipaje">
                     <button class="btn-azul btn-azul--xs" id="btnFiltrarEquipaje">Filtrar</button>
                     <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodoEquipaje">Ver todos</button>
                 </div>
             </div>
-
             <table class="admin-table" id="tablaEquipaje">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Vuelo</th>
-                        <th>Tipo</th>
-                        <th>Precio extra</th>
-                        <th>Activo</th>
-                        <th>Acciones</th>
+                        <th>ID</th><th>Vuelo</th><th>Tipo</th><th>Precio extra</th><th>Activo</th><th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-
             <form id="formEquipaje" class="admin-form">
                 <input type="hidden" id="equipajeId">
                 <div>
@@ -297,10 +253,181 @@
                 <button type="submit" class="btn-azul">Guardar equipaje</button>
             </form>
         </div>
+
+        <!-- TIPOS DE MALETA (ENVÍO) -->
+        <div class="admin-card glass">
+            <div class="admin-card-header">
+                <h2><i class="fa-solid fa-box"></i> Tipos de maleta (envío)</h2>
+                <div class="admin-filters">
+                    <input type="number" id="filtroMaletaId" placeholder="ID tipo">
+                    <button class="btn-azul btn-azul--xs" id="btnFiltrarMaletas">Filtrar</button>
+                    <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodasMaletas">Ver todos</button>
+                </div>
+            </div>
+            <table class="admin-table" id="tablaMaletas">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Nombre</th><th>Peso máx.</th><th>Base</th><th>Tarifa extra/kg</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <form id="formMaleta" class="admin-form">
+                <input type="hidden" id="maletaId">
+                <div>
+                    <label>Nombre</label>
+                    <input type="text" id="maletaNombre" required>
+                </div>
+                <div>
+                    <label>Peso máximo (kg)</label>
+                    <input type="number" step="0.1" id="maletaPesoMax" required>
+                </div>
+                <div>
+                    <label>Precio base (MXN)</label>
+                    <input type="number" step="0.01" id="maletaBase" required>
+                </div>
+                <div>
+                    <label>Tarifa extra/kg (MXN)</label>
+                    <input type="number" step="0.01" id="maletaTarifa" required>
+                </div>
+                <button type="submit" class="btn-azul">Guardar tipo de maleta</button>
+            </form>
+        </div>
+
+        <!-- PEDIDOS -->
+        <div class="admin-card glass">
+            <div class="admin-card-header">
+                <h2><i class="fa-solid fa-file-invoice"></i> Pedidos</h2>
+                <div class="admin-filters">
+                    <input type="number" id="filtroPedidoId" placeholder="ID pedido">
+                    <button class="btn-azul btn-azul--xs" id="btnFiltrarPedidos">Filtrar</button>
+                    <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosPedidos">Ver todos</button>
+                </div>
+            </div>
+            <table class="admin-table" id="tablaPedidos">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Usuario</th><th>Wallet</th><th>Total</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <form id="formPedido" class="admin-form">
+                <input type="hidden" id="pedidoId">
+                <div>
+                    <label>ID usuario</label>
+                    <input type="number" id="pedidoUsuario" required>
+                </div>
+                <div>
+                    <label>ID wallet</label>
+                    <input type="number" id="pedidoWallet" required>
+                </div>
+                <div>
+                    <label>Total (MXN)</label>
+                    <input type="number" step="0.01" id="pedidoTotal" required>
+                </div>
+                <div>
+                    <label>Estado</label>
+                    <input type="text" id="pedidoEstado" placeholder="PAGADO / PENDIENTE / CANCELADO" required>
+                </div>
+                <button type="submit" class="btn-azul">Guardar pedido</button>
+            </form>
+        </div>
+
+        <!-- PAGOS -->
+        <div class="admin-card glass">
+            <div class="admin-card-header">
+                <h2><i class="fa-solid fa-money-check-dollar"></i> Pagos</h2>
+                <div class="admin-filters">
+                    <input type="number" id="filtroPagoId" placeholder="ID pago">
+                    <button class="btn-azul btn-azul--xs" id="btnFiltrarPagos">Filtrar</button>
+                    <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosPagos">Ver todos</button>
+                </div>
+            </div>
+            <table class="admin-table" id="tablaPagos">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Usuario</th><th>Pedido</th><th>Monto</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <form id="formPago" class="admin-form">
+                <input type="hidden" id="pagoId">
+                <div>
+                    <label>ID usuario</label>
+                    <input type="number" id="pagoUsuario" required>
+                </div>
+                <div>
+                    <label>ID pedido</label>
+                    <input type="number" id="pagoPedido" required>
+                </div>
+                <div>
+                    <label>Monto (MXN)</label>
+                    <input type="number" step="0.01" id="pagoMonto" required>
+                </div>
+                <div>
+                    <label>Estado</label>
+                    <input type="text" id="pagoEstado" placeholder="APROBADO / RECHAZADO" required>
+                </div>
+                <button type="submit" class="btn-azul">Guardar pago</button>
+            </form>
+        </div>
+
+        <!-- BOLETOS -->
+        <div class="admin-card glass">
+            <div class="admin-card-header">
+                <h2><i class="fa-solid fa-ticket"></i> Boletos</h2>
+                <div class="admin-filters">
+                    <input type="number" id="filtroBoletoId" placeholder="ID boleto">
+                    <button class="btn-azul btn-azul--xs" id="btnFiltrarBoletos">Filtrar</button>
+                    <button class="btn-cerrar btn-cerrar--xs" id="btnVerTodosBoletos">Ver todos</button>
+                </div>
+            </div>
+            <table class="admin-table" id="tablaBoletos">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Usuario</th><th>Vuelo</th><th>Asiento</th><th>Equipaje</th><th>Pedido</th><th>Precio</th><th>Estado</th><th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <form id="formBoleto" class="admin-form">
+                <input type="hidden" id="boletoId">
+                <div>
+                    <label>ID usuario</label>
+                    <input type="number" id="boletoUsuario" required>
+                </div>
+                <div>
+                    <label>ID vuelo</label>
+                    <input type="number" id="boletoVuelo" required>
+                </div>
+                <div>
+                    <label>ID asiento</label>
+                    <input type="number" id="boletoAsiento" required>
+                </div>
+                <div>
+                    <label>ID equipaje (nullable)</label>
+                    <input type="number" id="boletoEquipaje">
+                </div>
+                <div>
+                    <label>ID pedido</label>
+                    <input type="number" id="boletoPedido" required>
+                </div>
+                <div>
+                    <label>Precio total (MXN)</label>
+                    <input type="number" step="0.01" id="boletoPrecio" required>
+                </div>
+                <div>
+                    <label>Estado</label>
+                    <input type="text" id="boletoEstado" placeholder="Activo / Cancelado" required>
+                </div>
+                <button type="submit" class="btn-azul">Guardar boleto</button>
+            </form>
+        </div>
     </section>
 </main>
 
-<!-- Scripts -->
 <script src="JS/navbar.js"></script>
 <script src="JS/admin.js"></script>
 <script src="JS/wallet.js"></script>

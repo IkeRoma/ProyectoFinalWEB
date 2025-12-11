@@ -32,17 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("adminNombre").textContent = usr.Nombre;
 
-    // Usuarios y wallet
+    // Carga inicial de cada sección
     cargarUsuarios();
     cargarWalletAdmin();
-
-    // Catálogos de vuelos
     cargarAeropuertos();
     cargarVuelosAdmin();
     cargarAsientos();
     cargarEquipaje();
+    cargarTiposMaleta();
+    cargarPedidos();
+    cargarPagos();
+    cargarBoletos();
 
-    // Filtros
+    // ===== Filtros & botones =====
     document.getElementById("btnFiltrarUsuarios").onclick = () => {
         const id = document.getElementById("filtroUsuarioId").value;
         cargarUsuarios(id || null);
@@ -73,11 +75,39 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     document.getElementById("btnVerTodoEquipaje").onclick = () => cargarEquipaje();
 
+    document.getElementById("btnFiltrarMaletas").onclick = () => {
+        const id = document.getElementById("filtroMaletaId").value;
+        cargarTiposMaleta(id || null);
+    };
+    document.getElementById("btnVerTodasMaletas").onclick = () => cargarTiposMaleta();
+
+    document.getElementById("btnFiltrarPedidos").onclick = () => {
+        const id = document.getElementById("filtroPedidoId").value;
+        cargarPedidos(id || null);
+    };
+    document.getElementById("btnVerTodosPedidos").onclick = () => cargarPedidos();
+
+    document.getElementById("btnFiltrarPagos").onclick = () => {
+        const id = document.getElementById("filtroPagoId").value;
+        cargarPagos(id || null);
+    };
+    document.getElementById("btnVerTodosPagos").onclick = () => cargarPagos();
+
+    document.getElementById("btnFiltrarBoletos").onclick = () => {
+        const id = document.getElementById("filtroBoletoId").value;
+        cargarBoletos(id || null);
+    };
+    document.getElementById("btnVerTodosBoletos").onclick = () => cargarBoletos();
+
     // Formularios
     document.getElementById("formAeropuerto").addEventListener("submit", guardarAeropuerto);
     document.getElementById("formVuelo").addEventListener("submit", guardarVuelo);
     document.getElementById("formAsiento").addEventListener("submit", guardarAsiento);
     document.getElementById("formEquipaje").addEventListener("submit", guardarEquipaje);
+    document.getElementById("formMaleta").addEventListener("submit", guardarMaleta);
+    document.getElementById("formPedido").addEventListener("submit", guardarPedidoAdmin);
+    document.getElementById("formPago").addEventListener("submit", guardarPagoAdmin);
+    document.getElementById("formBoleto").addEventListener("submit", guardarBoletoAdmin);
 });
 
 // ================================
@@ -102,9 +132,7 @@ async function cargarUsuarios(idFiltro = null) {
                 <td>${u.Nombre} ${u.Apellido}</td>
                 <td>${u.Correo}</td>
                 <td>${u.Rol === 1 ? "Admin" : "Usuario"}</td>
-                <td>
-                    <button onclick="eliminarUsuario(${u.ID})">Eliminar</button>
-                </td>
+                <td><button onclick="eliminarUsuario(${u.ID})">Eliminar</button></td>
             </tr>
         `;
     });
@@ -124,7 +152,7 @@ async function eliminarUsuario(id) {
 }
 
 // ================================
-// Wallet global (todas las tarjetas)
+// Wallet global
 // ================================
 async function cargarWalletAdmin() {
     const resUsuarios = await secureFetch("/api/listar");
@@ -146,9 +174,7 @@ async function cargarWalletAdmin() {
                     <td>${w.bin}</td>
                     <td>${w.ultimos4}</td>
                     <td>${w.fecha_expiracion}</td>
-                    <td>
-                        <button onclick="adminEliminarTarjeta(${w.id_wallet})">Eliminar</button>
-                    </td>
+                    <td><button onclick="adminEliminarTarjeta(${w.id_wallet})">Eliminar</button></td>
                 </tr>
             `;
         });
@@ -190,7 +216,7 @@ async function cargarAeropuertos(idFiltro = null) {
                 <td>${a.estado}</td>
                 <td>${a.activo ? "Sí" : "No"}</td>
                 <td>
-                    <button onclick='editarAeropuerto(${JSON.stringify(a.id_aeropuerto)})'>Editar</button>
+                    <button onclick='editarAeropuerto(${a.id_aeropuerto})'>Editar</button>
                     <button onclick='eliminarAeropuerto(${a.id_aeropuerto})'>Eliminar</button>
                 </td>
             </tr>
@@ -199,8 +225,7 @@ async function cargarAeropuertos(idFiltro = null) {
 }
 
 async function editarAeropuerto(id) {
-    let url = "/api/admin/aeropuertos?id=" + id;
-    const res = await secureFetch(url);
+    const res = await secureFetch(`/api/admin/aeropuertos?id=${id}`);
     const data = await res.json();
     const a = (data.aeropuertos || [])[0];
     if (!a) return;
@@ -212,7 +237,7 @@ async function editarAeropuerto(id) {
 }
 
 async function eliminarAeropuerto(id) {
-    if (!confirm("¿Eliminar aeropuerto? Se desactivará lógicamente.")) return;
+    if (!confirm("¿Eliminar aeropuerto (DELETE real)?")) return;
 
     const res = await secureFetch("/api/admin/aeropuertos/delete", {
         method: "POST",
@@ -285,8 +310,7 @@ async function cargarVuelosAdmin(idFiltro = null) {
 }
 
 async function editarVuelo(id) {
-    let url = "/api/admin/vuelos?id=" + id;
-    const res = await secureFetch(url);
+    const res = await secureFetch(`/api/admin/vuelos?id=${id}`);
     const data = await res.json();
     const v = (data.vuelos || [])[0];
     if (!v) return;
@@ -301,7 +325,7 @@ async function editarVuelo(id) {
 }
 
 async function eliminarVuelo(id) {
-    if (!confirm("¿Eliminar vuelo? Se desactivará lógicamente.")) return;
+    if (!confirm("¿Eliminar vuelo (DELETE real)?")) return;
 
     const res = await secureFetch("/api/admin/vuelos/delete", {
         method: "POST",
@@ -384,8 +408,7 @@ async function cargarAsientos(idFiltro = null) {
 }
 
 async function editarAsiento(id) {
-    let url = "/api/admin/asientos?id=" + id;
-    const res = await secureFetch(url);
+    const res = await secureFetch(`/api/admin/asientos?id=${id}`);
     const data = await res.json();
     const a = (data.asientos || [])[0];
     if (!a) return;
@@ -398,7 +421,7 @@ async function editarAsiento(id) {
 }
 
 async function eliminarAsiento(id) {
-    if (!confirm("¿Eliminar asiento?")) return;
+    if (!confirm("¿Eliminar asiento (DELETE real)?")) return;
 
     const res = await secureFetch("/api/admin/asientos/delete", {
         method: "POST",
@@ -446,7 +469,7 @@ async function guardarAsiento(e) {
 }
 
 // ================================
-// Equipaje
+// Equipaje Vuelo
 // ================================
 async function cargarEquipaje(idFiltro = null) {
     let url = "/api/admin/equipaje";
@@ -476,8 +499,7 @@ async function cargarEquipaje(idFiltro = null) {
 }
 
 async function editarEquipaje(id) {
-    let url = "/api/admin/equipaje?id=" + id;
-    const res = await secureFetch(url);
+    const res = await secureFetch(`/api/admin/equipaje?id=${id}`);
     const data = await res.json();
     const e = (data.equipaje || [])[0];
     if (!e) return;
@@ -489,7 +511,7 @@ async function editarEquipaje(id) {
 }
 
 async function eliminarEquipaje(id) {
-    if (!confirm("¿Eliminar configuración de equipaje?")) return;
+    if (!confirm("¿Eliminar configuración de equipaje (DELETE real)?")) return;
 
     const res = await secureFetch("/api/admin/equipaje/delete", {
         method: "POST",
@@ -534,5 +556,377 @@ async function guardarEquipaje(e) {
     cargarEquipaje();
 }
 
-/* Cabecera y filtros de tarjetas del admin */
+// ================================
+// Tipos de maleta (envío)
+// ================================
+async function cargarTiposMaleta(idFiltro = null) {
+    let url = "/api/admin/tipos-maleta";
+    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
 
+    const res = await secureFetch(url);
+    const data = await res.json();
+
+    const tbody = document.querySelector("#tablaMaletas tbody");
+    tbody.innerHTML = "";
+
+    (data.tipos || []).forEach(t => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${t.id_tipo_maleta}</td>
+                <td>${t.nombre}</td>
+                <td>${t.peso_max} kg</td>
+                <td>$${Number(t.precio_base).toFixed(2)}</td>
+                <td>$${Number(t.tarifa_kg_extra).toFixed(2)}</td>
+                <td>
+                    <button onclick="editarMaleta(${t.id_tipo_maleta})">Editar</button>
+                    <button onclick="eliminarMaleta(${t.id_tipo_maleta})">Eliminar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function editarMaleta(id) {
+    const res = await secureFetch(`/api/admin/tipos-maleta?id=${id}`);
+    const data = await res.json();
+    const t = (data.tipos || [])[0];
+    if (!t) return;
+
+    document.getElementById("maletaId").value = t.id_tipo_maleta;
+    document.getElementById("maletaNombre").value = t.nombre;
+    document.getElementById("maletaPesoMax").value = t.peso_max;
+    document.getElementById("maletaBase").value = t.precio_base;
+    document.getElementById("maletaTarifa").value = t.tarifa_kg_extra;
+}
+
+async function eliminarMaleta(id) {
+    if (!confirm("¿Eliminar tipo de maleta (DELETE real)?")) return;
+
+    const res = await secureFetch("/api/admin/tipos-maleta/delete", {
+        method: "POST",
+        body: JSON.stringify({ id_tipo_maleta: id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    cargarTiposMaleta();
+}
+
+async function guardarMaleta(e) {
+    e.preventDefault();
+
+    const id_tipo_maleta = document.getElementById("maletaId").value;
+    const nombre = document.getElementById("maletaNombre").value.trim();
+    const peso_max = Number(document.getElementById("maletaPesoMax").value);
+    const precio_base = Number(document.getElementById("maletaBase").value);
+    const tarifa_kg_extra = Number(document.getElementById("maletaTarifa").value);
+
+    if (!nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
+        alert("Completa todos los campos del tipo de maleta.");
+        return;
+    }
+
+    const ruta = id_tipo_maleta ? "/api/admin/tipos-maleta/update" : "/api/admin/tipos-maleta/add";
+
+    const res = await secureFetch(ruta, {
+        method: "POST",
+        body: JSON.stringify({
+            id_tipo_maleta: id_tipo_maleta || null,
+            nombre,
+            peso_max,
+            precio_base,
+            tarifa_kg_extra
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    e.target.reset();
+    document.getElementById("maletaId").value = "";
+    cargarTiposMaleta();
+}
+
+// ================================
+// PEDIDOS (admin)
+// ================================
+async function cargarPedidos(idFiltro = null) {
+    let url = "/api/admin/pedidos";
+    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+
+    const res = await secureFetch(url);
+    const data = await res.json();
+    const tbody = document.querySelector("#tablaPedidos tbody");
+    tbody.innerHTML = "";
+
+    (data.pedidos || []).forEach(p => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${p.id_pedido}</td>
+                <td>${p.id_usuario}</td>
+                <td>${p.id_wallet}</td>
+                <td>$${Number(p.total).toFixed(2)}</td>
+                <td>${p.estado}</td>
+                <td>
+                    <button onclick="editarPedidoAdmin(${p.id_pedido})">Editar</button>
+                    <button onclick="eliminarPedidoAdmin(${p.id_pedido})">Eliminar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function editarPedidoAdmin(id) {
+    const res = await secureFetch(`/api/admin/pedidos?id=${id}`);
+    const data = await res.json();
+    const p = (data.pedidos || [])[0];
+    if (!p) return;
+
+    document.getElementById("pedidoId").value = p.id_pedido;
+    document.getElementById("pedidoUsuario").value = p.id_usuario;
+    document.getElementById("pedidoWallet").value = p.id_wallet;
+    document.getElementById("pedidoTotal").value = p.total;
+    document.getElementById("pedidoEstado").value = p.estado;
+}
+
+async function eliminarPedidoAdmin(id) {
+    if (!confirm("¿Eliminar pedido (DELETE real)?")) return;
+
+    const res = await secureFetch("/api/admin/pedidos/delete", {
+        method: "POST",
+        body: JSON.stringify({ id_pedido: id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    cargarPedidos();
+}
+
+async function guardarPedidoAdmin(e) {
+    e.preventDefault();
+
+    const id_pedido = document.getElementById("pedidoId").value;
+    const id_usuario = Number(document.getElementById("pedidoUsuario").value);
+    const id_wallet = Number(document.getElementById("pedidoWallet").value);
+    const total = Number(document.getElementById("pedidoTotal").value);
+    const estado = document.getElementById("pedidoEstado").value.trim();
+
+    if (!id_usuario || !id_wallet || !total || !estado) {
+        alert("Completa todos los campos del pedido.");
+        return;
+    }
+
+    const ruta = id_pedido ? "/api/admin/pedidos/update" : "/api/admin/pedidos/add";
+
+    const res = await secureFetch(ruta, {
+        method: "POST",
+        body: JSON.stringify({
+            id_pedido: id_pedido || null,
+            id_usuario,
+            id_wallet,
+            total,
+            estado
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    e.target.reset();
+    document.getElementById("pedidoId").value = "";
+    cargarPedidos();
+}
+
+// ================================
+// PAGOS (admin)
+// ================================
+async function cargarPagos(idFiltro = null) {
+    let url = "/api/admin/pagos";
+    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+
+    const res = await secureFetch(url);
+    const data = await res.json();
+    const tbody = document.querySelector("#tablaPagos tbody");
+    tbody.innerHTML = "";
+
+    (data.pagos || []).forEach(p => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${p.id_pago}</td>
+                <td>${p.id_usuario}</td>
+                <td>${p.id_pedido}</td>
+                <td>$${Number(p.monto).toFixed(2)}</td>
+                <td>${p.estado}</td>
+                <td>
+                    <button onclick="editarPagoAdmin(${p.id_pago})">Editar</button>
+                    <button onclick="eliminarPagoAdmin(${p.id_pago})">Eliminar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function editarPagoAdmin(id) {
+    const res = await secureFetch(`/api/admin/pagos?id=${id}`);
+    const data = await res.json();
+    const p = (data.pagos || [])[0];
+    if (!p) return;
+
+    document.getElementById("pagoId").value = p.id_pago;
+    document.getElementById("pagoUsuario").value = p.id_usuario;
+    document.getElementById("pagoPedido").value = p.id_pedido;
+    document.getElementById("pagoMonto").value = p.monto;
+    document.getElementById("pagoEstado").value = p.estado;
+}
+
+async function eliminarPagoAdmin(id) {
+    if (!confirm("¿Eliminar pago (DELETE real)?")) return;
+
+    const res = await secureFetch("/api/admin/pagos/delete", {
+        method: "POST",
+        body: JSON.stringify({ id_pago: id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    cargarPagos();
+}
+
+async function guardarPagoAdmin(e) {
+    e.preventDefault();
+
+    const id_pago = document.getElementById("pagoId").value;
+    const id_usuario = Number(document.getElementById("pagoUsuario").value);
+    const id_pedido = Number(document.getElementById("pagoPedido").value);
+    const monto = Number(document.getElementById("pagoMonto").value);
+    const estado = document.getElementById("pagoEstado").value.trim();
+
+    if (!id_usuario || !id_pedido || !monto || !estado) {
+        alert("Completa todos los campos del pago.");
+        return;
+    }
+
+    const ruta = id_pago ? "/api/admin/pagos/update" : "/api/admin/pagos/add";
+
+    const res = await secureFetch(ruta, {
+        method: "POST",
+        body: JSON.stringify({
+            id_pago: id_pago || null,
+            id_usuario,
+            id_pedido,
+            monto,
+            estado
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    e.target.reset();
+    document.getElementById("pagoId").value = "";
+    cargarPagos();
+}
+
+// ================================
+// BOLETOS (admin)
+// ================================
+async function cargarBoletos(idFiltro = null) {
+    let url = "/api/admin/boletos";
+    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+
+    const res = await secureFetch(url);
+    const data = await res.json();
+    const tbody = document.querySelector("#tablaBoletos tbody");
+    tbody.innerHTML = "";
+
+    (data.boletos || []).forEach(b => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${b.id_boleto}</td>
+                <td>${b.id_usuario}</td>
+                <td>${b.id_vuelo}</td>
+                <td>${b.id_asiento}</td>
+                <td>${b.id_equipaje || "-"}</td>
+                <td>${b.id_pedido}</td>
+                <td>$${Number(b.precio_total).toFixed(2)}</td>
+                <td>${b.estado}</td>
+                <td>
+                    <button onclick="editarBoletoAdmin(${b.id_boleto})">Editar</button>
+                    <button onclick="eliminarBoletoAdmin(${b.id_boleto})">Eliminar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+async function editarBoletoAdmin(id) {
+    const res = await secureFetch(`/api/admin/boletos?id=${id}`);
+    const data = await res.json();
+    const b = (data.boletos || [])[0];
+    if (!b) return;
+
+    document.getElementById("boletoId").value = b.id_boleto;
+    document.getElementById("boletoUsuario").value = b.id_usuario;
+    document.getElementById("boletoVuelo").value = b.id_vuelo;
+    document.getElementById("boletoAsiento").value = b.id_asiento;
+    document.getElementById("boletoEquipaje").value = b.id_equipaje || "";
+    document.getElementById("boletoPedido").value = b.id_pedido;
+    document.getElementById("boletoPrecio").value = b.precio_total;
+    document.getElementById("boletoEstado").value = b.estado;
+}
+
+async function eliminarBoletoAdmin(id) {
+    if (!confirm("¿Eliminar boleto (DELETE real)?")) return;
+
+    const res = await secureFetch("/api/admin/boletos/delete", {
+        method: "POST",
+        body: JSON.stringify({ id_boleto: id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    cargarBoletos();
+}
+
+async function guardarBoletoAdmin(e) {
+    e.preventDefault();
+
+    const id_boleto = document.getElementById("boletoId").value;
+    const id_usuario = Number(document.getElementById("boletoUsuario").value);
+    const id_vuelo = Number(document.getElementById("boletoVuelo").value);
+    const id_asiento = Number(document.getElementById("boletoAsiento").value);
+    const id_equipaje = document.getElementById("boletoEquipaje").value
+        ? Number(document.getElementById("boletoEquipaje").value)
+        : null;
+    const id_pedido = Number(document.getElementById("boletoPedido").value);
+    const precio_total = Number(document.getElementById("boletoPrecio").value);
+    const estado = document.getElementById("boletoEstado").value.trim();
+
+    if (!id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
+        alert("Completa todos los campos obligatorios del boleto.");
+        return;
+    }
+
+    const ruta = id_boleto ? "/api/admin/boletos/update" : "/api/admin/boletos/add";
+
+    const res = await secureFetch(ruta, {
+        method: "POST",
+        body: JSON.stringify({
+            id_boleto: id_boleto || null,
+            id_usuario,
+            id_vuelo,
+            id_asiento,
+            id_equipaje,
+            id_pedido,
+            precio_total,
+            estado
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    e.target.reset();
+    document.getElementById("boletoId").value = "";
+    cargarBoletos();
+}

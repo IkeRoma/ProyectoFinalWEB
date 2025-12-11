@@ -90,6 +90,29 @@ app.post("/api/admin/equipaje/delete", verificarToken, soloAdmin, auth.eliminarE
 // CARRITO / PAGOS
 app.post("/api/carrito/pagar", verificarToken, auth.crearPedidoDesdeCarrito);
 
+// --- TIPOS DE MALETA (ENVÍOS) ---
+app.get("/api/admin/tipos-maleta", verificarToken, soloAdmin, auth.listarTiposMaleta);
+app.post("/api/admin/tipos-maleta/add", verificarToken, soloAdmin, auth.crearTipoMaleta);
+app.post("/api/admin/tipos-maleta/update", verificarToken, soloAdmin, auth.actualizarTipoMaleta);
+app.post("/api/admin/tipos-maleta/delete", verificarToken, soloAdmin, auth.eliminarTipoMaleta);
+
+// --- PEDIDOS ---
+app.get("/api/admin/pedidos", verificarToken, soloAdmin, auth.listarPedidos);
+app.post("/api/admin/pedidos/add", verificarToken, soloAdmin, auth.crearPedidoAdmin);
+app.post("/api/admin/pedidos/update", verificarToken, soloAdmin, auth.actualizarPedidoAdmin);
+app.post("/api/admin/pedidos/delete", verificarToken, soloAdmin, auth.eliminarPedidoAdmin);
+
+// --- PAGOS ---
+app.get("/api/admin/pagos", verificarToken, soloAdmin, auth.listarPagos);
+app.post("/api/admin/pagos/add", verificarToken, soloAdmin, auth.crearPagoAdmin);
+app.post("/api/admin/pagos/update", verificarToken, soloAdmin, auth.actualizarPagoAdmin);
+app.post("/api/admin/pagos/delete", verificarToken, soloAdmin, auth.eliminarPagoAdmin);
+
+// --- BOLETOS ---
+app.get("/api/admin/boletos", verificarToken, soloAdmin, auth.listarBoletos);
+app.post("/api/admin/boletos/add", verificarToken, soloAdmin, auth.crearBoletoAdmin);
+app.post("/api/admin/boletos/update", verificarToken, soloAdmin, auth.actualizarBoletoAdmin);
+app.post("/api/admin/boletos/delete", verificarToken, soloAdmin, auth.eliminarBoletoAdmin);
 // RESEÑAS
 app.post("/api/reviews/add", reviews.crearReseña);
 app.get("/api/reviews/list", reviews.obtenerReseñas);

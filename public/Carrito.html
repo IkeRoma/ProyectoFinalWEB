@@ -10,7 +10,9 @@
     <link rel="stylesheet" href="CSS/style.css">
     <link rel="stylesheet" href="CSS/perfil.css">
 </head>
+
 <body class="perfil-body">
+
 <div id="navTrigger"></div>
 
 <nav id="mainNav" class="nav">
@@ -22,7 +24,8 @@
 </nav>
 
 <main class="carrito-main">
-    <!-- Carrito -->
+
+    <!-- Carrito vuelos -->
     <section class="carrito-card glass">
         <h2><i class="fa-solid fa-plane-departure"></i> Vuelos en tu carrito</h2>
 
@@ -50,13 +53,26 @@
         <h2><i class="fa-solid fa-credit-card"></i> Pago</h2>
 
         <div class="carrito-resumen-row">
-            <span>Total del carrito</span>
+            <span>Total vuelos</span>
+            <span class="carrito-total">$<span id="carritoTotalVuelos">0.00</span> MXN</span>
+        </div>
+
+        <div class="carrito-resumen-row" id="rowEnvio" style="display:none;">
+            <span>Envío de equipaje</span>
+            <span class="carrito-total">$<span id="carritoTotalEnvio">0.00</span> MXN</span>
+        </div>
+
+        <hr style="margin:.7rem 0; border-color:rgba(148,163,184,0.5);">
+
+        <div class="carrito-resumen-row">
+            <span>Total a pagar</span>
             <span class="carrito-total">$<span id="carritoTotal">0.00</span> MXN</span>
         </div>
 
-        <div class="carrito-resumen-row">
+        <div class="carrito-resumen-row" style="margin-top:1rem;">
             <span>Método de pago</span>
         </div>
+
         <select id="selectMetodoPago" class="input-modal" style="width:100%; margin-bottom:1rem;">
             <option value="">Selecciona una tarjeta guardada</option>
         </select>
@@ -65,20 +81,22 @@
             Confirmar pago
         </button>
 
-        <div id="ticketContainer" class="ticket-container">
-            <!-- Aquí se mostrará el ticket virtual después de pagar -->
-        </div>
+        <div id="envioResumenTexto" class="texto-muted" style="margin-top:1rem; font-size:.85rem;"></div>
+
+        <div id="ticketContainer" class="ticket-container"></div>
     </section>
+
 </main>
 
 <footer class="footer">
     <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
 </footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
 <script>
     document.getElementById("year").textContent = new Date().getFullYear();
 </script>
+
 <script src="JS/navbar.js"></script>
 <script src="JS/carrito.js"></script>
 </body>
