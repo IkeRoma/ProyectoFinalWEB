@@ -1,7 +1,27 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    const usr = JSON.parse(localStorage.getItem("usuario"));
+    function secureHeaders() {
+        return {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + localStorage.getItem("token")
+        };
+    }
 
+    async function secureFetch(url, options = {}) {
+        options.headers = secureHeaders();
+
+        const res = await fetch(url, options);
+
+        if (res.status === 401) {
+            alert("Tu sesión expiró.");
+            localStorage.clear();
+            window.location.href = "LogIn.html";
+        }
+
+        return res;
+    }
+
+    const usr = JSON.parse(localStorage.getItem("usuario"));
     if (!usr) return;
 
     // Mostrar datos iniciales
@@ -10,9 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("perfilCorreo").textContent = usr.Correo;
     document.getElementById("perfilTelefono").textContent = usr.Telefono;
 
-    /* ================================
-       MODALES
-    ================================= */
     const modalEditarInfo = document.getElementById("modalEditarInfo");
     const modalPassword = document.getElementById("modalPassword");
     const modalReseñas = document.getElementById("modalReseñas");
@@ -26,9 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", close)
     );
 
-    /* =================================================
-       ABRIR EDITAR INFORMACIÓN
-    ================================================= */
     document.getElementById("btnEditarInfo").onclick = () => {
         document.getElementById("inputNombre").value = usr.Nombre + " " + usr.Apellido;
         document.getElementById("inputCorreo").value = usr.Correo;
@@ -36,9 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
         open(modalEditarInfo);
     };
 
-    /* =================================================
-       GUARDAR INFORMACIÓN PERSONAL — UPDATE USER
-    ================================================= */
     document.getElementById("guardarInfo").onclick = async () => {
         const nombreCompleto = document.getElementById("inputNombre").value.trim().split(" ");
         const nombre = nombreCompleto[0];
@@ -46,42 +57,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const correo = document.getElementById("inputCorreo").value;
         const telefono = document.getElementById("inputTelefono").value;
 
-        const body = {
-            ID: usr.ID,
-            Nombre: nombre,
-            Apellido: apellido,
-            Correo: correo,
-            Telefono: telefono
-        };
+        const body = { ID: usr.ID, Nombre: nombre, Apellido: apellido, Correo: correo, Telefono: telefono };
 
-        const res = await fetch("/api/updateUser", {
+        const res = await secureFetch("/api/updateUser", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body)
         });
 
         const data = await res.json();
         alert(data.message);
 
-        // Actualizar localStorage
         usr.Nombre = nombre;
         usr.Apellido = apellido;
         usr.Correo = correo;
         usr.Telefono = telefono;
+
         localStorage.setItem("usuario", JSON.stringify(usr));
 
         location.reload();
     };
 
-    /* =================================================
-       ABRIR MODAL CONTRASEÑA
-    ================================================= */
     const btnCambiarPassword = document.getElementById("btnCambiarPassword");
     if (btnCambiarPassword) btnCambiarPassword.onclick = () => open(modalPassword);
 
-    /* =================================================
-       GUARDAR NUEVA CONTRASEÑA — UPDATE PASSWORD
-    ================================================= */
     const btnGuardarPassword = document.getElementById("guardarPassword");
     if (btnGuardarPassword) {
         btnGuardarPassword.onclick = async () => {
@@ -90,19 +88,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const confirm = document.getElementById("passConfirm").value;
 
             if (!actual || !nueva || !confirm)
-                return alert("Debes llenar todos los campos.");
+                return alert("Completa todos los campos.");
 
             if (nueva !== confirm)
                 return alert("Las contraseñas no coinciden.");
 
-            const res = await fetch("/api/updatePassword", {
+            const res = await secureFetch("/api/updatePassword", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    ID: usr.ID,
-                    actual,
-                    nueva
-                })
+                body: JSON.stringify({ ID: usr.ID, actual, nueva })
             });
 
             const data = await res.json();
@@ -112,9 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         };
     }
 
-    /* =================================================
-       VER RESEÑAS DEL USUARIO
-    ================================================= */
     document.getElementById("btnVerReseñas").onclick = async () => {
         open(modalReseñas);
 
@@ -133,8 +123,5 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    /* =================================================
-       HISTORIAL
-    ================================================= */
     document.getElementById("btnHistorial").onclick = () => open(modalHistorial);
 });

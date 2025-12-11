@@ -1,10 +1,35 @@
 /* ============================================================
-   admin.js — Panel del Administrador
+   admin.js — Panel del Administrador (con JWT)
 ===============================================================*/
+
+function secureHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+    };
+}
+
+async function secureFetch(url, options = {}) {
+    options.headers = secureHeaders();
+
+    const res = await fetch(url, options);
+
+    if (res.status === 401) {
+        alert("Tu sesión expiró.");
+        localStorage.clear();
+        window.location.href = "LogIn.html";
+    }
+
+    return res;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     const usr = JSON.parse(localStorage.getItem("usuario"));
-    if (!usr || usr.Rol !== 1) return;
+
+    if (!usr || usr.Rol !== 1) {
+        window.location.href = "Index.html";
+        return;
+    }
 
     document.getElementById("adminNombre").textContent = usr.Nombre;
 
@@ -16,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Cargar usuarios
 // ================================
 async function cargarUsuarios() {
-    const res = await fetch("/api/listar");
+    const res = await secureFetch("/api/listar");
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaUsuarios tbody");
@@ -41,9 +66,8 @@ async function cargarUsuarios() {
 // Eliminar usuario
 // ================================
 async function eliminarUsuario(id) {
-    const res = await fetch("/api/eliminar", {
+    const res = await secureFetch("/api/eliminar", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ id })
     });
 
@@ -56,14 +80,14 @@ async function eliminarUsuario(id) {
 // Cargar métodos de pago globales
 // ================================
 async function cargarWalletAdmin() {
-    const resUsuarios = await fetch("/api/listar");
+    const resUsuarios = await secureFetch("/api/listar");
     const usuarios = (await resUsuarios.json()).usuarios;
 
     const tbody = document.querySelector("#tablaWallet tbody");
     tbody.innerHTML = "";
 
     for (const user of usuarios) {
-        const res = await fetch(`/api/wallet/list/${user.ID}`);
+        const res = await secureFetch(`/api/wallet/list/${user.ID}`);
         const data = await res.json();
 
         data.wallet.forEach(w => {
@@ -85,9 +109,8 @@ async function cargarWalletAdmin() {
 }
 
 async function adminEliminarTarjeta(id) {
-    const res = await fetch("/api/wallet/delete", {
+    const res = await secureFetch("/api/wallet/delete", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ id_wallet: id })
     });
 

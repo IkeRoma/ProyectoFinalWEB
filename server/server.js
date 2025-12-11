@@ -27,31 +27,28 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.get("/", (req, res) => {
     res.send("Servidor funcionando correctamente");
 });
+const { verificarToken, soloAdmin } = auth;
 
-// ========================
-//  RUTAS API
-// ========================
-
-// LOGIN & REGISTER
+// LOGIN & REGISTRO
 app.post("/api/login", auth.login);
 app.post("/api/register", auth.registrar);
 
 // RESET PASSWORD
 app.post("/api/reset", auth.resetPassword);
 
-// USUARIOS
-app.post("/api/eliminar", auth.eliminarUsuario);
-app.get("/api/listar", auth.listarUsuarios);
-
-// PERFIL — MODIFICAR DATOS & CONTRASEÑA
-app.post("/api/updateUser", auth.updateUser);
-app.post("/api/updatePassword", auth.updatePassword);
-
 // WALLET
-app.get("/api/wallet/list/:id_usuario", auth.listarWallet);
-app.post("/api/wallet/add", auth.agregarTarjeta);
-app.post("/api/wallet/delete", auth.eliminarTarjeta);
-app.post("/api/wallet/update", auth.actualizarTarjeta);
+app.get("/api/wallet/list/:id_usuario", verificarToken, auth.listarWallet);
+app.post("/api/wallet/add", verificarToken, auth.agregarTarjeta);
+app.post("/api/wallet/delete", verificarToken, auth.eliminarTarjeta);
+app.post("/api/wallet/update", verificarToken, auth.actualizarTarjeta);
+
+// PERFIL
+app.post("/api/updateUser", verificarToken, auth.updateUser);
+app.post("/api/updatePassword", verificarToken, auth.updatePassword);
+
+// ADMINISTRACIÓN
+app.get("/api/listar", verificarToken, soloAdmin, auth.listarUsuarios);
+app.post("/api/eliminar", verificarToken, soloAdmin, auth.eliminarUsuario);
 
 // RESEÑAS
 app.post("/api/reviews/add", reviews.crearReseña);

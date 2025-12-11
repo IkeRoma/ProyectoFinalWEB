@@ -1,9 +1,17 @@
 // =========================================
-// authController.js COMPLETO Y CORREGIDO
+// authController.js — Seguridad completa
 // =========================================
 
 const db = require("./conexion");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+// =========================================
+// CONFIGURACIÓN JWT
+// =========================================
+const JWT_SECRET = process.env.JWT_SECRET || "CAMBIA_ESTA_CLAVE_EN_PRODUCCION_123";
+const JWT_EXPIRES_IN = "2h";
 
 // =========================================
 // Helper: Tokenizar tarjeta (SHA-256)
@@ -17,136 +25,212 @@ function tokenizar(numeroTarjeta) {
 // =========================================
 function detectarTipo(numero) {
     if (/^4[0-9]{12}(?:[0-9]{3})?$/.test(numero)) return "Visa";
-
-    // Mastercard (51–55)
     if (/^5[1-5][0-9]{14}$/.test(numero)) return "MasterCard";
-
-    // Mastercard (2221–2720)
-    if (/^2(2[2-9][0-9]{12}|[3-6][0-9]{13}|7[01][0-9]{12}|720[0-9]{12})$/.test(numero)) {
-        return "MasterCard";
-    }
-
+    if (/^2(2[2-9]|[3-6]|7[01]|720)[0-9]{12}$/.test(numero)) return "MasterCard";
     return "Desconocida";
 }
 
 // =========================================
-// LOGIN
+// Crear token JWT
+// =========================================
+function crearToken(usuario) {
+    return jwt.sign(
+        { id: usuario.ID, rol: usuario.Rol },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN }
+    );
+}
+
+// =========================================
+// MIDDLEWARE — Verificar token
+// =========================================
+exports.verificarToken = (req, res, next) => {
+    const header = req.headers["authorization"];
+
+    if (!header)
+        return res.status(401).json({ error: true, message: "Falta token de autenticación" });
+
+    const [type, token] = header.split(" ");
+
+    if (type !== "Bearer" || !token)
+        return res.status(401).json({ error: true, message: "Token inválido" });
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err)
+            return res.status(401).json({ error: true, message: "Token expirado o corrupto" });
+
+        req.user = { ID: decoded.id, Rol: decoded.rol };
+        next();
+    });
+};
+
+// =========================================
+// MIDDLEWARE — Solo Admin
+// =========================================
+exports.soloAdmin = (req, res, next) => {
+    if (!req.user || req.user.Rol !== 1)
+        return res.status(403).json({ error: true, message: "Acceso restringido (solo admin)" });
+
+    next();
+};
+
+// =========================================
+// LOGIN — bcrypt + JWT
 // =========================================
 exports.login = (req, res) => {
     const { email, password } = req.body;
 
-    const sql = "SELECT * FROM Usuarios WHERE Correo = ?";
-    db.query(sql, [email], (err, rows) => {
+    db.query("SELECT * FROM Usuarios WHERE Correo = ?", [email], (err, rows) => {
         if (err) return res.status(500).json({ error: true, message: "Error en servidor" });
 
         if (rows.length === 0)
             return res.json({ error: true, message: "El usuario no existe" });
 
         const usuario = rows[0];
+        const hashBD = usuario.Contrasena;
 
-        // Tus contraseñas NO usan hash → comparación directa
-        if (usuario.Contrasena !== password)
-            return res.json({ error: true, message: "Contraseña incorrecta" });
+        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$");
 
-        return res.json({
-            error: false,
-            user: {
-                ID: usuario.ID,
-                Nombre: usuario.Nombre,
-                Apellido: usuario.Apellido,
-                Correo: usuario.Correo,
-                Telefono: usuario.Telefono,
-                Rol: usuario.Rol
-            }
+        // Migración: si no tiene hash pero coincide, lo actualizamos
+        if (!esHash && hashBD === password) {
+            bcrypt.hash(password, 10, (errH, nuevoHash) => {
+                if (!errH) {
+                    db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [
+                        nuevoHash,
+                        usuario.ID
+                    ]);
+                    usuario.Contrasena = nuevoHash;
+                }
+                continuar();
+            });
+        } else {
+            continuar();
+        }
+
+        function continuar() {
+            bcrypt.compare(password, usuario.Contrasena, (err2, ok) => {
+                if (err2)
+                    return res.json({ error: true, message: "Error interno" });
+
+                if (!ok)
+                    return res.json({ error: true, message: "Contraseña incorrecta" });
+
+                const token = crearToken(usuario);
+
+                res.json({
+                    error: false,
+                    message: "Inicio de sesión correcto",
+                    user: {
+                        ID: usuario.ID,
+                        Nombre: usuario.Nombre,
+                        Apellido: usuario.Apellido,
+                        Correo: usuario.Correo,
+                        Telefono: usuario.Telefono,
+                        Rol: usuario.Rol
+                    },
+                    token
+                });
+            });
+        }
+    });
+};
+
+// =========================================
+// REGISTRO — contraseñas seguras
+// =========================================
+exports.registrar = (req, res) => {
+    const { nombre, apellidos, email, telefono, password } = req.body;
+
+    const rol = email.endsWith("@admin.com") ? 1 : 0;
+
+    bcrypt.hash(password, 10, (errHash, hash) => {
+        if (errHash)
+            return res.json({ error: true, message: "Error procesando contraseña" });
+
+        const sql = `
+            INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, Telefono, Rol)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        db.query(sql, [nombre, apellidos, email, hash, telefono, rol], (err) => {
+            if (err)
+                return res.json({ error: true, message: "El correo ya está registrado" });
+
+            res.json({ error: false, message: "Usuario registrado exitosamente" });
         });
     });
 };
 
 // =========================================
-// REGISTRO
-// =========================================
-exports.registrar = (req, res) => {
-    const { nombre, apellidos, email, telefono, password } = req.body;
-
-    const esAdmin = email.endsWith("@admin.com") ? 1 : 0;
-
-    const sql = `
-        INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, Telefono, Rol)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    db.query(sql, [nombre, apellidos, email, password, telefono, esAdmin], (err) => {
-        if (err) return res.json({ error: true, message: "Correo ya registrado" });
-
-        res.json({ error: false, message: "Registro exitoso" });
-    });
-};
-
-// =========================================
-// RESET PASSWORD
+// RESET PASSWORD — bcrypt
 // =========================================
 exports.resetPassword = (req, res) => {
     const { email, passwordNueva } = req.body;
 
-    const sql = "UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?";
-    db.query(sql, [passwordNueva, email], (err, result) => {
-        if (err) return res.json({ error: true, message: "Error al actualizar" });
+    bcrypt.hash(passwordNueva, 10, (errHash, hash) => {
+        if (errHash)
+            return res.status(500).json({ error: true, message: "Error procesando contraseña" });
 
-        if (result.affectedRows === 0)
-            return res.json({ error: true, message: "El correo no existe" });
+        db.query("UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?", [hash, email], (err, result) => {
+            if (err)
+                return res.json({ error: true, message: "Error interno" });
 
-        res.json({ error: false, message: "Contraseña actualizada" });
+            if (result.affectedRows === 0)
+                return res.json({ error: true, message: "El correo no existe" });
+
+            res.json({ error: false, message: "Contraseña actualizada correctamente" });
+        });
     });
 };
 
 // =========================================
-// ELIMINAR USUARIO
+// ADMIN — Eliminar usuario
 // =========================================
 exports.eliminarUsuario = (req, res) => {
     const { id } = req.body;
 
-    const sql = "DELETE FROM Usuarios WHERE ID = ?";
-    db.query(sql, [id], (err) => {
-        if (err) return res.json({ error: true, message: "Error al eliminar" });
+    db.query("DELETE FROM Usuarios WHERE ID = ?", [id], (err) => {
+        if (err)
+            return res.json({ error: true, message: "Error al eliminar usuario" });
 
         res.json({ error: false, message: "Usuario eliminado" });
     });
 };
 
 // =========================================
-// LISTAR USUARIOS
+// ADMIN — Listar usuarios
 // =========================================
 exports.listarUsuarios = (req, res) => {
-    const sql = "SELECT ID, Nombre, Apellido, Correo, Telefono, Rol FROM Usuarios";
-
-    db.query(sql, (err, rows) => {
-        if (err) return res.json({ error: true, message: "Error al listar" });
+    db.query("SELECT ID, Nombre, Apellido, Correo, Telefono, Rol FROM Usuarios", (err, rows) => {
+        if (err)
+            return res.json({ error: true, message: "Error al listar usuarios" });
 
         res.json({ error: false, usuarios: rows });
     });
 };
 
 // =========================================
-// WALLET — LISTAR TARJETAS
+// WALLET — Listar tarjetas
 // =========================================
 exports.listarWallet = (req, res) => {
     const { id_usuario } = req.params;
 
     const sql = `
-        SELECT id_wallet, bin, ultimos4, tipo, nombre_titular, fecha_expiracion, activo
+        SELECT id_wallet, bin, ultimos4, tipo, nombre_titular, fecha_expiracion
         FROM wallet
         WHERE id_usuario = ? AND activo = 1
     `;
 
     db.query(sql, [id_usuario], (err, rows) => {
-        if (err) return res.json({ error: true, message: "Error al obtener wallet" });
+        if (err)
+            return res.json({ error: true, message: "Error al obtener wallet" });
 
         res.json({ error: false, wallet: rows });
     });
 };
 
 // =========================================
-// WALLET — AGREGAR TARJETA
+// WALLET — Agregar tarjeta
 // =========================================
 exports.agregarTarjeta = (req, res) => {
     const { id_usuario, numero, titular, expiracion } = req.body;
@@ -162,108 +246,112 @@ exports.agregarTarjeta = (req, res) => {
     const ultimos4 = numero.slice(-4);
     const hash = tokenizar(numero);
 
-    // Prevenir duplicados
-    const sqlCheck = "SELECT id_wallet FROM wallet WHERE hash_tarjeta = ? AND id_usuario = ?";
-    db.query(sqlCheck, [hash, id_usuario], (err, rows) => {
-        if (rows?.length > 0)
-            return res.json({ error: true, message: "Esta tarjeta ya está registrada." });
+    db.query(
+        "SELECT id_wallet FROM wallet WHERE hash_tarjeta = ? AND id_usuario = ? AND activo = 1",
+        [hash, id_usuario],
+        (err, rows) => {
+            if (rows?.length > 0)
+                return res.json({ error: true, message: "Esta tarjeta ya está registrada" });
 
-        const sql = `
-            INSERT INTO wallet (id_usuario, bin, ultimos4, tipo, nombre_titular, fecha_expiracion, hash_tarjeta)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
+            const sql = `
+                INSERT INTO wallet (id_usuario, bin, ultimos4, tipo, nombre_titular, fecha_expiracion, hash_tarjeta, activo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 1)
+            `;
 
-        db.query(sql,
-            [id_usuario, bin, ultimos4, tipo, titular, expiracion, hash],
-            (err) => {
-                if (err) return res.json({ error: true, message: "Error al guardar tarjeta" });
+            db.query(sql, [id_usuario, bin, ultimos4, tipo, titular, expiracion, hash], (err) => {
+                if (err)
+                    return res.json({ error: true, message: "Error al guardar tarjeta" });
 
                 res.json({ error: false, message: "Tarjeta agregada correctamente" });
-            }
-        );
-    });
+            });
+        }
+    );
 };
 
 // =========================================
-// WALLET — ELIMINAR TARJETA
+// WALLET — Eliminar tarjeta (soft delete)
 // =========================================
 exports.eliminarTarjeta = (req, res) => {
     const { id_wallet } = req.body;
 
-    const sql = "UPDATE wallet SET activo = 0 WHERE id_wallet = ?";
-    db.query(sql, [id_wallet], (err) => {
-        if (err) return res.json({ error: true, message: "Error al eliminar tarjeta" });
+    db.query("UPDATE wallet SET activo = 0 WHERE id_wallet = ?", [id_wallet], (err) => {
+        if (err)
+            return res.json({ error: true, message: "Error al eliminar tarjeta" });
 
         res.json({ error: false, message: "Tarjeta eliminada" });
     });
 };
 
 // =========================================
-// WALLET — ACTUALIZAR TARJETA
+// WALLET — Actualizar tarjeta
 // =========================================
 exports.actualizarTarjeta = (req, res) => {
     const { id_wallet, titular, expiracion } = req.body;
 
-    const sql = `
-        UPDATE wallet
-        SET nombre_titular = ?, fecha_expiracion = ?
-        WHERE id_wallet = ?
-    `;
+    db.query(
+        "UPDATE wallet SET nombre_titular = ?, fecha_expiracion = ? WHERE id_wallet = ?",
+        [titular, expiracion, id_wallet],
+        (err) => {
+            if (err)
+                return res.json({ error: true, message: "Error al actualizar tarjeta" });
 
-    db.query(sql, [titular, expiracion, id_wallet], (err) => {
-        if (err) return res.json({ error: true, message: "Error al actualizar tarjeta" });
-
-        res.json({ error: false, message: "Tarjeta actualizada" });
-    });
+            res.json({ error: false, message: "Datos actualizados" });
+        }
+    );
 };
 
 // =========================================
-// ACTUALIZAR INFORMACIÓN DEL USUARIO
+// PERFIL — Actualizar datos
 // =========================================
 exports.updateUser = (req, res) => {
     const { ID, Nombre, Apellido, Correo, Telefono } = req.body;
 
-    if (!ID) return res.status(400).json({ message: "ID requerido" });
-
-    const sql = `
-        UPDATE Usuarios 
+    db.query(
+        `
+        UPDATE Usuarios
         SET Nombre = ?, Apellido = ?, Correo = ?, Telefono = ?
         WHERE ID = ?
-    `;
+        `,
+        [Nombre, Apellido, Correo, Telefono, ID],
+        (err) => {
+            if (err)
+                return res.json({ success: false, message: "Error al actualizar datos" });
 
-    db.query(sql, [Nombre, Apellido, Correo, Telefono, ID], (err) => {
-        if (err) {
-            console.error(err);
-            return res.json({ message: "Error al actualizar" });
+            res.json({ success: true, message: "Datos actualizados correctamente" });
         }
-
-        return res.json({ message: "Información actualizada correctamente" });
-    });
+    );
 };
 
 // =========================================
-// ACTUALIZAR CONTRASEÑA (SIN BCRYPT)
+// PERFIL — Actualizar contraseña (bcrypt)
 // =========================================
 exports.updatePassword = (req, res) => {
     const { ID, actual, nueva } = req.body;
-
-    if (!ID || !actual || !nueva)
-        return res.json({ success: false, message: "Datos incompletos" });
 
     db.query("SELECT Contrasena FROM Usuarios WHERE ID = ?", [ID], (err, rows) => {
         if (err || rows.length === 0)
             return res.json({ success: false, message: "Usuario no encontrado" });
 
-        const passBD = rows[0].Contrasena;
+        const hashBD = rows[0].Contrasena;
 
-        if (passBD !== actual)
-            return res.json({ success: false, message: "La contraseña actual es incorrecta" });
-
-        db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nueva, ID], (err2) => {
+        bcrypt.compare(actual, hashBD, (err2, ok) => {
             if (err2)
-                return res.json({ success: false, message: "Error al actualizar contraseña" });
+                return res.json({ success: false, message: "Error interno" });
 
-            return res.json({ success: true, message: "Contraseña actualizada correctamente" });
+            if (!ok)
+                return res.json({ success: false, message: "La contraseña actual es incorrecta" });
+
+            bcrypt.hash(nueva, 10, (errHash, nuevoHash) => {
+                if (errHash)
+                    return res.json({ success: false, message: "Error procesando contraseña" });
+
+                db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, ID], (err3) => {
+                    if (err3)
+                        return res.json({ success: false, message: "Error al actualizar contraseña" });
+
+                    res.json({ success: true, message: "Contraseña actualizada correctamente" });
+                });
+            });
         });
     });
 };

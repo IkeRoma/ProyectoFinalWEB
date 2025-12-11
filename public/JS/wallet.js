@@ -1,6 +1,27 @@
 /* ============================================================
-   wallet.js — Gestión de tarjetas Apple+Vibrante
+   wallet.js — Gestión de tarjetas con JWT
 ===============================================================*/
+
+function secureHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + localStorage.getItem("token")
+    };
+}
+
+async function secureFetch(url, options = {}) {
+    options.headers = secureHeaders();
+
+    const res = await fetch(url, options);
+
+    if (res.status === 401) {
+        alert("Tu sesión expiró. Inicia sesión nuevamente.");
+        localStorage.clear();
+        window.location.href = "LogIn.html";
+    }
+
+    return res;
+}
 
 function detectarTipoTarjeta(numero) {
     if (/^4[0-9]{12}(?:[0-9]{3})?$/.test(numero)) return "Visa";
@@ -16,7 +37,7 @@ async function cargarWallet() {
     const usr = JSON.parse(localStorage.getItem("usuario"));
     if (!usr) return;
 
-    const res = await fetch(`/api/wallet/list/${usr.ID}`);
+    const res = await secureFetch(`/api/wallet/list/${usr.ID}`);
     const data = await res.json();
 
     const cont = document.getElementById("walletLista");
@@ -51,9 +72,9 @@ async function cargarWallet() {
     });
 }
 
-// ================================
-// Mostrar modal para agregar tarjeta
-// ================================
+// =====================
+// Modal agregar tarjeta
+// =====================
 function mostrarModalTarjeta() {
     const modal = document.createElement("div");
     modal.className = "wallet-modal";
@@ -77,48 +98,42 @@ function mostrarModalTarjeta() {
     document.body.appendChild(modal);
 }
 
-// ================================
+// =====================
 // Guardar tarjeta
-// ================================
+// =====================
 async function guardarTarjeta() {
     const numero = document.getElementById("cardNumero").value.replace(/\s/g, "");
     const titular = document.getElementById("cardTitular").value;
     const exp = document.getElementById("cardExp").value;
 
     const tipo = detectarTipoTarjeta(numero);
-    if (tipo === "Desconocida") {
-        alert("Número de tarjeta inválido.");
-        return;
-    }
+    if (tipo === "Desconocida") return alert("Tarjeta inválida.");
 
     const usr = JSON.parse(localStorage.getItem("usuario"));
 
-    const res = await fetch("/api/wallet/add", {
+    const res = await secureFetch("/api/wallet/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
         body: JSON.stringify({
             id_usuario: usr.ID,
-            numero: numero,
-            titular: titular,
+            numero,
+            titular,
             expiracion: exp
         })
     });
 
     const data = await res.json();
-
     alert(data.message);
 
     document.querySelector(".wallet-modal")?.remove();
     cargarWallet();
 }
 
-// ================================
+// =====================
 // Eliminar tarjeta
-// ================================
+// =====================
 async function eliminarTarjeta(id) {
-    const res = await fetch("/api/wallet/delete", {
+    const res = await secureFetch("/api/wallet/delete", {
         method: "POST",
-        headers: { "Content-Type": "application/json"},
         body: JSON.stringify({ id_wallet: id })
     });
 
@@ -128,7 +143,6 @@ async function eliminarTarjeta(id) {
     cargarWallet();
 }
 
-// Auto iniciar
 setTimeout(() => {
     if (document.getElementById("walletLista"))
         cargarWallet();

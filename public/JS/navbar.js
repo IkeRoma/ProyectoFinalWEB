@@ -127,4 +127,59 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");
     });
+    function isLogged() {
+        const token = localStorage.getItem("token");
+        const user = localStorage.getItem("usuario");
+
+        if (!token || !user) return false;
+
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            const exp = payload.exp * 1000;
+
+            if (Date.now() >= exp) {
+                localStorage.clear();
+                return false;
+            }
+
+            return true;
+        } catch {
+            localStorage.clear();
+            return false;
+        }
+    }
+
+    const navLinks = document.querySelector("[data-nav='links']");
+    navLinks.innerHTML = "";
+
+    if (!isLogged()) {
+        navLinks.innerHTML = `
+            <li><a href="Index.html">Inicio</a></li>
+            <li><a href="Vuelos.html">Vuelos</a></li>
+            <li><a href="LogIn.html">Iniciar sesión</a></li>
+            <li><a href="Registro.html">Registrarse</a></li>
+        `;
+        return;
+    }
+
+    const usr = JSON.parse(localStorage.getItem("usuario"));
+
+    navLinks.innerHTML = `
+        <li><a href="Index.html">Inicio</a></li>
+        <li><a href="Vuelos.html">Vuelos</a></li>
+        <li><a href="Perfil.html">Mi perfil</a></li>
+        <li><button id="logoutBtn" class="btn-logout">Cerrar sesión</button></li>
+    `;
+
+    if (usr.Rol === 1) {
+        navLinks.innerHTML += `
+            <li><a href="PanelAdmin.html" class="admin-link">Admin</a></li>
+        `;
+    }
+
+    document.getElementById("logoutBtn").onclick = () => {
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("token");
+        window.location.href = "Index.html";
+    };
 });

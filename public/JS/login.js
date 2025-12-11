@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
         elemento.className = `form-message ${tipo}`;
         elemento.style.display = "block";
 
-        // Auto ocultar después de 4s
         setTimeout(() => {
             elemento.classList.add("fade-out");
         }, 3500);
@@ -67,7 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) {
                 mostrarMensaje(msg, data.message, "error");
             } else {
+                // GUARDAR TOKEN Y USUARIO
                 localStorage.setItem("usuario", JSON.stringify(data.user));
+                localStorage.setItem("token", data.token);
+
                 mostrarMensaje(msg, "Inicio de sesión exitoso.", "success");
 
                 setTimeout(() => {
