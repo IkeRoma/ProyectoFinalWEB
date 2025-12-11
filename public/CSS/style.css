@@ -949,3 +949,294 @@ input:focus,
     from { opacity: 1; }
     to   { opacity: 0; }
 }
+/* ================================== */
+/*     TARJETAS DE RESEÑAS PREMIUM    */
+/* ================================== */
+
+.review-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transform: translateY(25px);
+    transition: all 0.6s ease;
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+/* Avatar circular */
+.review-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 1.3rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    flex-shrink: 0;
+}
+
+/* Contenido de la reseña */
+.review-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Nombre del usuario */
+.review-user {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    margin-bottom: 2px;
+}
+
+/* Fecha */
+.review-date {
+    font-size: 0.8rem;
+    color: var(--color-text-soft);
+}
+
+/* Texto de la reseña */
+.review-text {
+    margin-top: 5px;
+    line-height: 1.5;
+    color: var(--color-text);
+}
+
+/* Estrellas visuales */
+.review-stars {
+    color: gold;
+    margin-top: 2px;
+    font-size: 1rem;
+}
+
+/* Al hacer visible desde JS */
+.review-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* =========================== */
+/*         RESPONSIVE          */
+/* =========================== */
+
+@media (max-width: 600px) {
+    .review-card {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    .review-content {
+        align-items: center;
+    }
+
+    .review-text {
+        text-align: center;
+    }
+}
+
+.review-input-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 600px;
+    margin: 0 auto 25px auto;
+    backdrop-filter: blur(8px);
+}
+
+.tituloReseña {
+    font-size: 22px;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.textareaReseña {
+    width: 100%;
+    min-height: 100px;
+    border-radius: 12px;
+    padding: 12px;
+    border: none;
+    outline: none;
+    background: rgba(0,0,0,0.35);
+    color: white;
+    font-size: 16px;
+}
+
+.btn-resena {
+    background: linear-gradient(45deg, #009FFF, #00F5A0);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: 0.25s;
+}
+
+.btn-resena:hover {
+    transform: scale(1.05);
+}
+
+.review-card {
+    background: rgba(255,255,255,0.07);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.review-text {
+    font-size: 17px;
+    color: #e7f0ff;
+}
+
+.review-author {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.review-date {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.cookie-banner {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    padding: 15px 25px;
+    border-radius: 12px;
+    color: white;
+    z-index: 9999;
+    display: none;
+}
+
+/* SECCIÓN DE RESEÑAS */
+.resenas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.review-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 18px;
+    border-radius: 18px;
+    backdrop-filter: blur(6px);
+    transition: 0.25s;
+}
+
+.review-card:hover {
+    transform: translateY(-4px);
+}
+
+.review-text {
+    color: #f0f4ff;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.review-author {
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.review-date {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+
+/* FORMULARIO DE RESEÑA */
+.review-input-card {
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+}
+
+.textareaReseña {
+    width: 100%;
+    min-height: 110px;
+    background: rgba(0,0,0,0.35);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px;
+    outline: none;
+    font-size: 15px;
+    margin-bottom: 12px;
+}
+
+.btn-resena {
+    background: linear-gradient(45deg, #009FFF, #00F5A0);
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.3s;
+}
+
+.btn-resena:hover {
+    transform: scale(1.05);
+}
+
+.carousel-wrapper {
+    position: relative;
+    margin-top: 20px;
+}
+
+.carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 10px;
+}
+
+.carousel::-webkit-scrollbar {
+    height: 8px;
+}
+.carousel::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 10px;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.4);
+    border: none;
+    color: white;
+    font-size: 20px;
+    padding: 10px;
+    border-radius: 50%;
+    cursor: pointer;
+    backdrop-filter: blur(5px);
+    z-index: 20;
+}
+
+.carousel-btn.left { left: 10px; }
+.carousel-btn.right { right: 10px; }
+
+.carousel-btn:hover {
+    background: rgba(255,255,255,0.2);
+}

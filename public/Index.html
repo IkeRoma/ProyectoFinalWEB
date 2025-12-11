@@ -15,7 +15,9 @@
     <link rel="stylesheet" href="CSS/variables.css" />
     <link rel="stylesheet" href="CSS/style.css" />
 </head>
+
 <body>
+
     <!-- NAVBAR -->
     <header class="header">
         <nav class="nav glass" id="mainNav">
@@ -93,6 +95,7 @@
         </section>
     </header>
 
+
     <!-- BENEFICIOS -->
     <main>
         <section class="section" id="beneficios">
@@ -100,6 +103,7 @@
                 <h2>¿Por qué volar con Vista Voyages?</h2>
                 <p>Una experiencia pensada para que disfrutes desde el primer clic hasta el aterrizaje.</p>
             </div>
+
             <div class="grid grid--3">
                 <article class="card card--feature">
                     <div class="card__icon">
@@ -133,11 +137,13 @@
             </div>
         </section>
 
-        <!-- CALL TO ACTION -->
+
+        <!-- CTA -->
         <section class="section section--cta">
             <div class="section__content glass">
                 <h2>¿Listo para despegar?</h2>
                 <p>Crea una cuenta y guarda tus vuelos favoritos, historial de viajes y más.</p>
+
                 <div class="section__actions">
                     <a href="Registro.html" class="btn btn--primary">
                         <i class="fa-solid fa-user-plus"></i> Crear cuenta
@@ -148,15 +154,64 @@
                 </div>
             </div>
         </section>
+
+
+        <!-- ====================================================
+             RESEÑAS + FORMULARIO + CARRUSEL
+        ==================================================== -->
+        <section id="seccionReseñas" class="section">
+
+            <div class="section__header">
+                <h2>Reseñas de viajeros</h2>
+                <p>Lo que nuestros usuarios opinan sobre Vista Voyages ✨</p>
+            </div>
+
+            <!-- FORMULARIO (solo si hay sesión) -->
+            <div id="bloqueAgregarReseña" class="review-input-card glass" style="display:none;">
+
+                <h3 class="tituloReseña">Deja tu experiencia</h3>
+
+                <textarea id="textoReseña"
+                    placeholder="Escribe tu experiencia aquí..."
+                    class="textareaReseña"></textarea>
+
+                <button id="btnEnviarReseña" class="btn-resena">
+                    <i class="fa-solid fa-paper-plane"></i> Enviar reseña
+                </button>
+
+                <p id="msgReseña" class="mensajeReseña"></p>
+            </div>
+
+            <!-- CARRUSEL -->
+            <div class="carousel-wrapper">
+                <button class="carousel-btn left" id="btnLeft"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel" id="carouselResenas"></div>
+                <button class="carousel-btn right" id="btnRight"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+        </section>
     </main>
 
+
+    <!-- FOOTER -->
     <footer class="footer">
         <p>© <span id="year"></span> Vista Voyages. Todos los derechos reservados.</p>
     </footer>
 
+
+    <!-- SCRIPTS -->
     <script src="JS/navbar.js"></script>
+    <script src="JS/reviews.js"></script>
+
     <script>
         document.getElementById("year").textContent = new Date().getFullYear();
     </script>
+
+    <!-- COOKIES -->
+    <div id="cookieBanner" class="cookie-banner">
+        Este sitio utiliza cookies para mejorar tu experiencia.
+        <button id="aceptarCookies" class="btn-azul">Aceptar</button>
+    </div>
+
 </body>
 </html>
