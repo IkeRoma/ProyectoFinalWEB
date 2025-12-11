@@ -12,17 +12,14 @@ CREATE TABLE aeropuertos (
 
 );
 
-CREATE TABLE usuarios (
-    id_usuario INT PRIMARY KEY AUTO_INCREMENT,
-    nombre VARCHAR(100) NOT NULL,
-    apellido VARCHAR(100) NOT NULL,
-    correo VARCHAR(100) NOT NULL UNIQUE,
-    telefono VARCHAR(20),
-    contrasena VARCHAR(255) NOT NULL,  -- Hasheada
-    nivel ENUM('Cliente','Administrador','Empleado') 
-        DEFAULT 'Cliente' NOT NULL,
-    fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    activo BOOLEAN DEFAULT 1
+CREATE TABLE IF NOT EXISTS Usuarios (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Apellido VARCHAR(50) NOT NULL,
+    Nombre VARCHAR(50) NOT NULL,
+    Correo VARCHAR(50) NOT NULL UNIQUE,
+    Contrasena VARCHAR(255) NOT NULL,
+    Telefono VARCHAR(10) NOT NULL,
+    Rol TINYINT(1) NOT NULL DEFAULT 0
 );
 
 CREATE TABLE direcciones (
@@ -35,30 +32,26 @@ CREATE TABLE direcciones (
     FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
-CREATE TABLE wallet (
+CREATE TABLE IF NOT EXISTS wallet (
     id_wallet INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
-
-    bin VARCHAR(6) NOT NULL,              -- primeros 6 dígitos
-    ultimos4 VARCHAR(4) NOT NULL,         -- últimos 4 dígitos
-    tipo VARCHAR(15) NOT NULL,            -- Visa o Mastercard
-
+    bin VARCHAR(6) NOT NULL,
+    ultimos4 VARCHAR(4) NOT NULL,
+    tipo VARCHAR(15) NOT NULL,
     nombre_titular VARCHAR(100) NOT NULL,
-    fecha_expiracion CHAR(7) NOT NULL,    -- MM/AAAA
-
-    hash_tarjeta CHAR(64) NOT NULL,       -- SHA-256 del número completo
-    
+    fecha_expiracion CHAR(7) NOT NULL,
+    hash_tarjeta CHAR(64) NOT NULL,
     activo BOOLEAN DEFAULT 1,
-
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID)
 );
 
-CREATE TABLE Resenas (
+
+CREATE TABLE IF NOT EXISTS Reseñas (
     ID INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
+    UsuarioID INT NOT NULL,
     Reseña TEXT NOT NULL,
     Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
+    FOREIGN KEY (UsuarioID) REFERENCES Usuarios(ID) ON DELETE CASCADE
 );
 
 
