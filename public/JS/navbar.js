@@ -1,5 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+    // FORZAR QUE SIEMPRE INICIE SESIÓN
+    localStorage.removeItem("usuario");
+
+    // BANNER DE COOKIES
+    window.addEventListener("DOMContentLoaded", () => {
+        if (!localStorage.getItem("cookiesAceptadas")) {
+            document.getElementById("cookieBanner").style.display = "block";
+        }
+
+        document.getElementById("aceptarCookies").addEventListener("click", () => {
+            localStorage.setItem("cookiesAceptadas", "true");
+            document.getElementById("cookieBanner").style.display = "none";
+        });
+    });
+
     /* ======================================================
        SISTEMA EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
        ====================================================== */

@@ -1,94 +1,68 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     const contenedor = document.getElementById("contenedorReseñas");
-    const user = JSON.parse(localStorage.getItem("usuario"));
-    const formReseña = document.getElementById("formularioReseña");
+    const bloque = document.getElementById("bloqueAgregarReseña");
+    const textarea = document.getElementById("textoReseña");
     const btnEnviar = document.getElementById("btnEnviarReseña");
     const msgReseña = document.getElementById("msgReseña");
 
-    // Mostrar formulario solo si el usuario inició sesión
+    const user = JSON.parse(localStorage.getItem("usuario"));
+
+    // Mostrar formulario solo si el usuario está logueado
     if (user) {
-        formReseña.style.display = "flex";
+        bloque.style.display = "block";
+    } else {
+        bloque.style.display = "none";
     }
 
-    // =====================================================
-    // FUNCIÓN PARA CARGAR RESEÑAS DESDE EL SERVIDOR
-    // =====================================================
+    // ============================
+    // CARGAR RESEÑAS
+    // ============================
     async function cargarReseñas() {
         const res = await fetch("/api/reviews/list");
         const data = await res.json();
-
         contenedor.innerHTML = "";
 
-        data.reseñas.forEach((r, index) => {
+        data.reseñas.forEach(r => {
             const div = document.createElement("div");
             div.classList.add("review-card");
 
-            // Crear avatar con iniciales
-            const iniciales = (r.Nombre[0] + r.Apellido[0]).toUpperCase();
-
-            // Construcción de la tarjeta premium
             div.innerHTML = `
-                <div class="review-avatar">${iniciales}</div>
-
-                <div class="review-content">
-                    <div class="review-user">${r.Nombre} ${r.Apellido}</div>
-                    <div class="review-date">${new Date(r.Fecha).toLocaleDateString()}</div>
-
-                    <div class="review-stars">★★★★★</div>
-
-                    <div class="review-text">"${r.Reseña}"</div>
-                </div>
+                <p class="review-text">"${r.Reseña}"</p>
+                <p class="review-author">— ${r.Nombre} ${r.Apellido}</p>
+                <p class="review-date">${new Date(r.Fecha).toLocaleDateString()}</p>
             `;
 
             contenedor.appendChild(div);
-
-            // Animación de aparición con retraso escalonado
-            setTimeout(() => {
-                div.classList.add("visible");
-            }, 120 * index);
         });
     }
 
-    cargarReseñas(); // Cargar al entrar en la página
+    // ============================
+    // ENVIAR RESEÑA
+    // ============================
+    btnEnviar.addEventListener("click", async () => {
 
-
-    // =====================================================
-    // ENVIAR UNA NUEVA RESEÑA
-    // =====================================================
-    btnEnviar?.addEventListener("click", async () => {
-        const texto = document.getElementById("textoReseña").value.trim();
-
-        if (!texto) {
-            msgReseña.textContent = "La reseña no puede estar vacía.";
-            msgReseña.className = "form-message error";
+        const texto = textarea.value.trim();
+        if (texto.length < 5) {
+            msgReseña.textContent = "La reseña es demasiado corta.";
+            msgReseña.style.color = "red";
             return;
         }
-
-        const body = {
-            usuarioID: user?.ID,
-            texto
-        };
 
         const res = await fetch("/api/reviews/add", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body)
+            body: JSON.stringify({ usuarioID: user.ID, texto })
         });
 
         const data = await res.json();
 
-        if (data.message.includes("éxito")) {
-            msgReseña.textContent = "Reseña enviada correctamente.";
-            msgReseña.className = "form-message success";
+        msgReseña.textContent = data.message;
+        msgReseña.style.color = "lime";
 
-            document.getElementById("textoReseña").value = "";
-
-            cargarReseñas(); // actualizar dinámicamente
-        } else {
-            msgReseña.textContent = "Error al enviar reseña.";
-            msgReseña.className = "form-message error";
-        }
+        textarea.value = "";
+        cargarReseñas();
     });
 
+    cargarReseñas();
 });

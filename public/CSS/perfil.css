@@ -46,3 +46,49 @@
 .perfil-info p {
     margin: 0.2rem 0;
 }
+
+.perfil-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+}
+
+.perfil-titulo {
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+}
+
+.info-bloque {
+    font-family: 'Poppins', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    color: #dce4f0;
+}
+
+.info-bloque strong {
+    color: white;
+    font-weight: 600;
+}
+
+.btn-azul {
+    background: linear-gradient(45deg, #009FFF, #00F5A0);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: .3s;
+    margin-top: 10px;
+}
+
+.btn-azul:hover {
+    transform: scale(1.06);
+}

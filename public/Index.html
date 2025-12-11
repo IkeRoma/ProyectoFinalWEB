@@ -154,32 +154,25 @@
                 </div>
             </div>
         </section>
+        <section id="seccionReseñas">
 
+            <!-- BLOQUE PARA AGREGAR RESEÑA (solo si hay sesión) -->
+            <div id="bloqueAgregarReseña" class="review-input-card" style="display: none;">
+                <h3 class="tituloReseña">Deja tu opinión ✨</h3>
 
-        <!-- ========================================== -->
-        <!-- 🔵 SECCIÓN DE RESEÑAS (SIN CSS INCRUSTADO) -->
-        <!-- ========================================== -->
-        <section class="section" id="reviews">
-            <div class="section__header">
-                <h2>Opiniones de nuestros viajeros</h2>
-                <p>Conoce las experiencias reales de quienes ya volaron con nosotros.</p>
+                <textarea id="textoReseña" 
+                        placeholder="Escribe tu experiencia aquí..." 
+                        class="textareaReseña">
+                </textarea>
+
+                <button id="btnEnviarReseña" class="btn-resena">Enviar reseña</button>
+
+                <p id="msgReseña" class="mensajeReseña"></p>
             </div>
 
-            <!-- Contenedor donde se insertan las reseñas dinámicamente -->
-            <div id="contenedorReseñas" class="reviews-container"></div>
+            <!-- CONTENEDOR DE TODAS LAS RESEÑAS -->
+            <div id="contenedorReseñas"></div>
 
-            <!-- Formulario visible SOLO si hay sesión -->
-            <div id="formularioReseña" class="review-form">
-                <h3>Deja tu opinión</h3>
-
-                <textarea id="textoReseña" placeholder="Escribe tu experiencia aquí..."></textarea>
-
-                <button id="btnEnviarReseña" class="btn btn--primary">
-                    Enviar reseña
-                </button>
-
-                <p id="msgReseña" class="form-message"></p>
-            </div>
         </section>
     </main>
 
@@ -197,6 +190,11 @@
     <script>
         document.getElementById("year").textContent = new Date().getFullYear();
     </script>
+
+    <div id="cookieBanner" class="cookie-banner">
+    Este sitio utiliza cookies para mejorar tu experiencia.
+    <button id="aceptarCookies" class="btn-azul">Aceptar</button>
+    </div>
 
 </body>
 </html>
