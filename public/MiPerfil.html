@@ -21,15 +21,15 @@
 <div id="navTrigger"></div>
 
     <!-- NAVBAR -->
-    <nav id="mainNav" class="nav">
-        <div class="nav__brand">
-            <img src="imagenes/logosinfondo.png" class="nav__logo">
-            <span class="nav__title">Vista Voyages</span>
-        </div>
-        <ul class="nav__links" data-nav="links"></ul>
-    </nav>
-
-
+    <header class="header header--compact">
+        <nav class="nav glass" id="mainNav">
+            <div class="nav__brand">
+                <img src="imagenes/logosinfondo.png" class="nav__logo">
+                <span class="nav__title">Vista Voyages</span>
+            </div>
+            <ul class="nav__links" data-nav="links"></ul>
+        </nav>
+    </header>
 
     <!-- PROTECCIÓN DE ACCESO -->
     <script>
@@ -37,10 +37,9 @@
         if (!usr) window.location.href = "LogIn.html";
     </script>
 
-
     <main class="perfil-container">
 
-        <!-- HEADER -->
+        <!-- Encabezado -->
         <section class="perfil-header glass">
             <div>
                 <h1>Mi Perfil</h1>
@@ -52,8 +51,7 @@
             </button>
         </section>
 
-
-        <!-- PANEL DE CONTENIDO -->
+        <!-- Panel de contenido -->
         <section class="perfil-secciones">
 
             <!-- Información del usuario -->
@@ -70,7 +68,6 @@
                 <button id="btnCambiarPassword" class="btn-azul">Cambiar contraseña</button>
             </div>
 
-
             <!-- Wallet -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-wallet"></i> My Wallet</h2>
@@ -82,7 +79,6 @@
                 </button>
             </div>
 
-
             <!-- Mis reseñas -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-star"></i> Mis reseñas</h2>
@@ -91,27 +87,16 @@
                 <button id="btnVerReseñas" class="btn-azul">Ver reseñas</button>
             </div>
 
-
             <!-- Historial de vuelos -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-plane"></i> Historial de vuelos</h2>
-                <p>Próximamente podrás ver tus viajes.</p>
+                <p>Aún no implementado.</p>
 
                 <button id="btnHistorial" class="btn-azul">Ver historial</button>
             </div>
-            <div class="perfil-card glass">
-                <h2><i class="fa-solid fa-location-dot"></i> Direcciones de Envío</h2>
-                <p>Añade una o varias direcciones dentro de la República Mexicana.</p>
 
-                <div id="listaDirecciones" class="direcciones-container"></div>
-
-                <button id="btnAgregarDireccion" class="btn-azul mt-2">
-                    <i class="fa-solid fa-circle-plus"></i> Añadir dirección
-                </button>
-            </div>
         </section>
     </main>
-
 
     <!-- ==========================================================
             MODAL — Editar información personal
@@ -129,7 +114,6 @@
         </div>
     </div>
 
-
     <!-- ==========================================================
             MODAL — Cambiar contraseña
     ========================================================== -->
@@ -146,9 +130,8 @@
         </div>
     </div>
 
-
     <!-- ==========================================================
-            MODAL — Ver reseñas del usuario
+            MODAL — Ver reseñas
     ========================================================== -->
     <div class="modal" id="modalReseñas">
         <div class="modal-content glass">
@@ -160,7 +143,6 @@
         </div>
     </div>
 
-
     <!-- ==========================================================
             MODAL — Historial
     ========================================================== -->
@@ -171,98 +153,46 @@
             <button class="btn-cerrar" data-close>Cerrar</button>
         </div>
     </div>
+
     <!-- ==========================================================
-            MODAL — Añadir dirección
+            MODALES DE DIRECCIONES (SIGUEN FUNCIONANDO)
     ========================================================== -->
+
+    <!-- Modal agregar dirección -->
     <div class="modal" id="modalAgregarDireccion">
         <div class="modal-content glass">
             <h3>Añadir dirección</h3>
 
             <input id="dirCalle" class="input-modal" placeholder="Calle y número">
             <input id="dirCiudad" class="input-modal" placeholder="Ciudad">
-            <input id="editDirEstado" class="input-modal">
-            <input id="dirCP" class="input-modal" placeholder="Código Postal">
 
-            <button id="guardarDireccion" class="btn-azul">Guardar</button>
-            <button class="btn-cerrar" data-close>Cancelar</button>
-        </div>
-    </div>
-    <!-- ==========================================================
-            MODAL — Editar dirección
-    ========================================================== -->
-    <div class="modal" id="modalEditarDireccion">
-        <div class="modal-content glass">
-            <h3>Editar dirección</h3>
+            <select id="dirEstado" class="input-modal"></select>
 
-            <input id="editDirCalle" class="input-modal">
-            <input id="editDirCiudad" class="input-modal">
-            <select id="editDirEstado" class="input-modal"></select>
-            <input id="editDirCP" class="input-modal">
+            <input id="dirCP" class="input-modal" placeholder="Código postal">
 
-            <input id="editDirID" type="hidden">
-
-            <button id="actualizarDireccion" class="btn-azul">Actualizar</button>
-            <button class="btn-cerrar" data-close>Cancelar</button>
-        </div>
-    </div>
-    <!-- ==========================================================
-            MODAL — Agregar Dirección de Envío
-    ========================================================== -->
-    <div class="modal" id="modalAgregarDireccion">
-        <div class="modal-content glass">
-            <h3>Agregar dirección</h3>
-
-            <input id="dirCalle" class="input-modal" placeholder="Calle y número">
-            <input id="dirCiudad" class="input-modal" placeholder="Ciudad">
-
-            <!-- Estado — SOLO MEXICANOS -->
-            <select id="dirEstado" class="input-modal">
-                <option value="">Seleccionar estado</option>
-            </select>
-
-            <input id="dirCP" class="input-modal" placeholder="Código Postal" maxlength="5">
-
-            <button id="guardarDireccion" class="btn-azul">Guardar</button>
-            <button class="btn-cerrar" data-close>Cancelar</button>
+            <button id="guardarDireccion" class="btn-azul">Guardar dirección</button>
+            <button class="btn-cerrar" data-close>Cerrar</button>
         </div>
     </div>
 
-
-    <!-- ==========================================================
-            MODAL — Editar Dirección de Envío
-    ========================================================== -->
+    <!-- Modal editar dirección -->
     <div class="modal" id="modalEditarDireccion">
         <div class="modal-content glass">
             <h3>Editar dirección</h3>
 
             <input id="editDirID" type="hidden">
 
-            <input id="editDirCalle" class="input-modal">
-            <input id="editDirCiudad" class="input-modal">
+            <input id="editDirCalle" class="input-modal" placeholder="Calle y número">
+            <input id="editDirCiudad" class="input-modal" placeholder="Ciudad">
 
             <select id="editDirEstado" class="input-modal"></select>
 
-            <input id="editDirCP" class="input-modal" maxlength="5">
+            <input id="editDirCP" class="input-modal" placeholder="Código Postal">
 
             <button id="actualizarDireccion" class="btn-azul">Actualizar</button>
-            <button class="btn-cerrar" data-close>Cancelar</button>
+            <button class="btn-cerrar" data-close>Cerrar</button>
         </div>
     </div>
-
-
-    <!-- ==========================================================
-            LISTA DE DIRECCIONES
-    ========================================================== -->
-    <div class="perfil-card glass">
-        <h2><i class="fa-solid fa-location-dot"></i> Direcciones de envío</h2>
-
-        <div id="listaDirecciones" class="direccion-lista"></div>
-
-        <button id="btnAgregarDireccion" class="btn-azul">
-            <i class="fa-solid fa-circle-plus"></i> Añadir dirección
-        </button>
-    </div>
-
 
     <!-- SCRIPTS -->
     <script src="JS/navbar.js"></script>
