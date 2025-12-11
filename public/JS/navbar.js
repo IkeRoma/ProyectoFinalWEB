@@ -11,15 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const payload = JSON.parse(atob(token.split(".")[1]));
             const exp = payload.exp * 1000;
 
+            // Si ya expiró
             if (Date.now() >= exp) {
                 localStorage.removeItem("usuario");
                 localStorage.removeItem("token");
-                localStorage.removeItem("lastActivity");
                 return false;
             }
 
             return true;
-        } catch {
+        } catch (e) {
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
             return false;
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
-       VERIFICAR TOKEN AL CARGAR PÁGINA
+       LIMPIEZA BÁSICA AL CARGAR
     ====================================================== */
     if (!tokenValido()) {
         localStorage.removeItem("usuario");
@@ -38,23 +38,30 @@ document.addEventListener("DOMContentLoaded", () => {
        CERRAR SESIÓN SOLO AL CERRAR PESTAÑA (NO EN REFRESH)
     ====================================================== */
     window.addEventListener("pagehide", (event) => {
-        if (event.persisted) return; // 🔥 evita borrar sesión en recarga
+        // Si la página se mantiene en caché (back/forward), no borramos nada
+        if (event.persisted) return;
+
         localStorage.removeItem("usuario");
         localStorage.removeItem("lastActivity");
         localStorage.removeItem("token");
     });
 
     /* ======================================================
-       BANNER COOKIES
+       BANNER COOKIES (NO ROMPE EN PÁGINAS SIN BANNER)
     ====================================================== */
-    if (!localStorage.getItem("cookiesAceptadas")) {
-        document.getElementById("cookieBanner").style.display = "block";
-    }
+    const cookieBanner = document.getElementById("cookieBanner");
+    const btnCookies   = document.getElementById("aceptarCookies");
 
-    document.getElementById("aceptarCookies").addEventListener("click", () => {
-        localStorage.setItem("cookiesAceptadas", "true");
-        document.getElementById("cookieBanner").style.display = "none";
-    });
+    if (cookieBanner && btnCookies) {
+        if (!localStorage.getItem("cookiesAceptadas")) {
+            cookieBanner.style.display = "block";
+        }
+
+        btnCookies.addEventListener("click", () => {
+            localStorage.setItem("cookiesAceptadas", "true");
+            cookieBanner.style.display = "none";
+        });
+    }
 
     /* ======================================================
        EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
@@ -69,13 +76,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const last = localStorage.getItem("lastActivity");
         if (!last) return;
 
-        const diff = Date.now() - parseInt(last);
+        const diff = Date.now() - parseInt(last, 10);
 
         if (diff >= SESSION_TIMEOUT) {
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
             localStorage.removeItem("lastActivity");
-            alert("Tu sesión ha expirado por inactividad.");
+            alert("Tu sesión ha expirado por inactividad. Por favor inicia sesión nuevamente.");
             window.location.href = "LogIn.html";
         }
     }
@@ -83,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ["mousemove", "keydown", "click", "touchstart"].forEach(ev =>
         document.addEventListener(ev, actualizarActividad)
     );
-
     validarExpiracion();
 
     /* ======================================================
@@ -92,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nav = document.getElementById("mainNav");
     const navLinksContainer = document.querySelector('[data-nav="links"]');
 
-    if (!navLinksContainer) return;
+    if (!nav || !navLinksContainer) return;
 
     function crearLink(texto, href, extraClass = "") {
         const a = document.createElement("a");
@@ -118,12 +124,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
+        // Links comunes
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
-        const usuario = JSON.parse(localStorage.getItem("usuario"));
+        const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
         const tokenOK = tokenValido();
 
+        // SIN SESIÓN
         if (!usuario || !tokenOK) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
@@ -134,15 +142,21 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // ADMIN
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
         }
 
+        // USUARIO NORMAL
         if (usuario.Rol === 0) {
-            navLinksContainer.appendChild(crearLink("Mi Perfil", "MiPerfil.html"));
-            navLinksContainer.appendChild(crearLink("Envio de Equipaje", "EnvioEquipaje.html"));
+            navLinksContainer.appendChild(
+                crearLink("Mi Perfil", "MiPerfil.html")
+            );
+            navLinksContainer.appendChild(
+                crearLink("Envio de equipaje", "EnvioEquipaje.html")
+            );
         }
 
         navLinksContainer.appendChild(crearBotonLogout());
@@ -151,10 +165,30 @@ document.addEventListener("DOMContentLoaded", () => {
     construirNavbar();
 
     /* ======================================================
-       EFECTO SCROLL
+       NAVBAR QUE APARECE AL ACERCAR EL CURSOR
     ====================================================== */
+    const navBar   = document.getElementById("mainNav");
+    const trigger  = document.getElementById("navTrigger");
+    let hideTimeout;
+
+    function mostrarNavbar() {
+        if (!navBar) return;
+
+        navBar.classList.add("nav--visible");
+        if (hideTimeout) clearTimeout(hideTimeout);
+
+        hideTimeout = setTimeout(() => {
+            navBar.classList.remove("nav--visible");
+        }, 2000);
+    }
+
+    if (trigger) {
+        // Mostrar navbar cuando el cursor toca el área superior
+        trigger.addEventListener("mousemove", mostrarNavbar);
+    }
+
+    // También mostrarlo si el usuario mueve la rueda estando arriba
     window.addEventListener("scroll", () => {
-        if (window.scrollY > 10) nav.classList.add("nav--scrolled");
-        else nav.classList.remove("nav--scrolled");
+        if (window.scrollY < 20) mostrarNavbar();
     });
 });
