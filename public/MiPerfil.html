@@ -79,6 +79,28 @@
                 </button>
             </div>
 
+            <!-- Direcciones de envío -->
+            <div class="perfil-card glass perfil-card-direcciones">
+                <div class="perfil-card-header">
+                    <h2>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Direcciones de envío
+                    </h2>
+
+                    <button id="btnAgregarDireccion" class="btn-azul btn-azul--pill">
+                        <i class="fa-solid fa-plus"></i> Añadir dirección
+                    </button>
+                </div>
+
+                <p class="perfil-card-subtitle">
+                    Gestiona las direcciones donde puedes recibir tu equipaje.
+                </p>
+
+                <div id="listaDirecciones" class="direcciones-lista">
+                    <!-- Se llena dinámicamente desde perfil.js -->
+                </div>
+            </div>
+
             <!-- Mis reseñas -->
             <div class="perfil-card glass">
                 <h2><i class="fa-solid fa-star"></i> Mis reseñas</h2>
@@ -155,7 +177,7 @@
     </div>
 
     <!-- ==========================================================
-            MODALES DE DIRECCIONES (SIGUEN FUNCIONANDO)
+            MODALES DE DIRECCIONES
     ========================================================== -->
 
     <!-- Modal agregar dirección -->
