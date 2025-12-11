@@ -38,6 +38,14 @@ document.addEventListener("DOMContentLoaded", () => {
             data.reseñas.forEach(r => {
                 const card = document.createElement("div");
                 card.classList.add("review-card");
+                // Permitir seleccionar una tarjeta
+                div.addEventListener("click", () => {
+                    // Quitar selección previa
+                    document.querySelectorAll(".review-card").forEach(c => c.classList.remove("selected"));
+
+                    // Seleccionar esta
+                    div.classList.add("selected");
+                });
 
                 card.innerHTML = `
                     <p class="review-text">"${r.Reseña}"</p>

@@ -1277,3 +1277,60 @@ input:focus,
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     cursor: pointer;
 }
+
+/* ================================
+   CARRUSEL DE RESEÑAS — ESTILO VIBRANTE
+================================== */
+
+.carousel-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.carousel {
+    display: flex;
+    gap: 1.6rem;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 1rem;
+}
+
+.carousel::-webkit-scrollbar {
+    height: 6px;
+}
+
+.carousel::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #00C6FF, #0072FF);
+    border-radius: 5px;
+}
+
+.review-card {
+    min-width: 280px;
+    max-width: 320px;
+    background: rgba(255,255,255,0.12);
+    padding: 1.3rem;
+    border-radius: 18px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    transition: .25s ease;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0,140,255,0.15);
+}
+
+/* Hover interactivo */
+.review-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 0 18px rgba(0,200,255,0.45);
+    border-color: rgba(0,200,255,0.7);
+}
+
+/* Tarjeta seleccionada */
+.review-card.selected {
+    transform: scale(1.07);
+    border: 2px solid #00E1FF;
+    box-shadow: 0 0 25px #00E1FF;
+    background: rgba(0,255,255,0.18);
+}

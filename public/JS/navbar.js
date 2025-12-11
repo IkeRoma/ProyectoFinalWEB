@@ -1,26 +1,39 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
-       BANNER DE COOKIES
+       FORZAR NUEVA SESIÓN SIEMPRE AL ABRIR EL SITIO
     ====================================================== */
-    if (!localStorage.getItem("cookiesAceptadas")) {
-        const banner = document.getElementById("cookieBanner");
-        if (banner) banner.style.display = "block";
-    }
-
-    const btnAceptar = document.getElementById("aceptarCookies");
-    if (btnAceptar) {
-        btnAceptar.addEventListener("click", () => {
-            localStorage.setItem("cookiesAceptadas", "true");
-            document.getElementById("cookieBanner").style.display = "none";
-        });
-    }
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("lastActivity");
 
 
     /* ======================================================
-       SISTEMA EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
+       LIMPIAR SESIÓN AL CERRAR PESTAÑA / NAVEGADOR
     ====================================================== */
-    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
+    window.addEventListener("beforeunload", () => {
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("lastActivity");
+    });
+
+
+    /* ======================================================
+       BANNER DE COOKIES
+    ====================================================== */
+    if (!localStorage.getItem("cookiesAceptadas")) {
+        document.getElementById("cookieBanner").style.display = "block";
+    }
+
+    document.getElementById("aceptarCookies").addEventListener("click", () => {
+        localStorage.setItem("cookiesAceptadas", "true");
+        document.getElementById("cookieBanner").style.display = "none";
+    });
+
+
+    /* ======================================================
+       SISTEMA DE EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
+    ====================================================== */
+
+    const SESSION_TIMEOUT = 1/6 * 60 * 60 * 1000; // 10 minutos
 
     function actualizarActividad() {
         localStorage.setItem("lastActivity", Date.now().toString());
@@ -28,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validarExpiracion() {
         const last = localStorage.getItem("lastActivity");
-        if (!last) return actualizarActividad();
+        if (!last) return;
 
         const diff = Date.now() - parseInt(last);
 
@@ -45,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     validarExpiracion();
-
 
 
     /* ======================================================
@@ -69,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const btn = document.createElement("button");
         btn.textContent = "Cerrar sesión";
         btn.className = "btn btn--ghost nav__link--primary";
-        btn.style.borderRadius = "999px";
         btn.onclick = () => {
             localStorage.removeItem("usuario");
             localStorage.removeItem("lastActivity");
@@ -81,17 +92,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
-        // LINKS PARA TODOS
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
-        let usuario = null;
+        const usuario = JSON.parse(localStorage.getItem("usuario"));
 
-        try {
-            usuario = JSON.parse(localStorage.getItem("usuario"));
-        } catch {}
-
-        // USUARIO INVITADO
+        // USUARIO NO LOGUEADO
         if (!usuario) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
@@ -102,23 +108,24 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ADMINISTRADOR
+        // ADMIN
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
-        } else {
+        }
+
+        // USUARIO NORMAL
+        else {
             navLinksContainer.appendChild(
                 crearLink("Mi Perfil", "MiPerfil.html")
             );
         }
 
-        // CERRAR SESIÓN
         navLinksContainer.appendChild(crearBotonLogout());
     }
 
     construirNavbar();
-
 
 
     /* ======================================================
@@ -128,5 +135,4 @@ document.addEventListener("DOMContentLoaded", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");
     });
-
 });
