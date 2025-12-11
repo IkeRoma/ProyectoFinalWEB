@@ -55,12 +55,10 @@ function crearToken(usuario) {
 // =========================================
 exports.verificarToken = (req, res, next) => {
     const header = req.headers["authorization"];
-
     if (!header)
         return res.status(401).json({ error: true, message: "Falta token de autenticación" });
 
     const [type, token] = header.split(" ");
-
     if (type !== "Bearer" || !token)
         return res.status(401).json({ error: true, message: "Token inválido" });
 
@@ -79,7 +77,6 @@ exports.verificarToken = (req, res, next) => {
 exports.soloAdmin = (req, res, next) => {
     if (!req.user || req.user.Rol !== 1)
         return res.status(403).json({ error: true, message: "Acceso restringido (solo admin)" });
-
     next();
 };
 
@@ -96,56 +93,35 @@ exports.login = (req, res) => {
             return res.json({ error: true, message: "El usuario no existe" });
 
         const usuario = rows[0];
-        const hashBD = usuario.Contrasena;
 
-        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$");
+        bcrypt.compare(password, usuario.Contrasena, (err2, ok) => {
+            if (err2)
+                return res.json({ error: true, message: "Error interno" });
 
-        // Migración: si no tiene hash pero coincide, lo actualizamos
-        if (!esHash && hashBD === password) {
-            bcrypt.hash(password, 10, (errH, nuevoHash) => {
-                if (!errH) {
-                    db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [
-                        nuevoHash,
-                        usuario.ID
-                    ]);
-                    usuario.Contrasena = nuevoHash;
-                }
-                continuar();
+            if (!ok)
+                return res.json({ error: true, message: "Contraseña incorrecta" });
+
+            const token = crearToken(usuario);
+
+            res.json({
+                error: false,
+                message: "Inicio de sesión correcto",
+                user: {
+                    ID: usuario.ID,
+                    Nombre: usuario.Nombre,
+                    Apellido: usuario.Apellido,
+                    Correo: usuario.Correo,
+                    Telefono: usuario.Telefono,
+                    Rol: usuario.Rol
+                },
+                token
             });
-        } else {
-            continuar();
-        }
-
-        function continuar() {
-            bcrypt.compare(password, usuario.Contrasena, (err2, ok) => {
-                if (err2)
-                    return res.json({ error: true, message: "Error interno" });
-
-                if (!ok)
-                    return res.json({ error: true, message: "Contraseña incorrecta" });
-
-                const token = crearToken(usuario);
-
-                res.json({
-                    error: false,
-                    message: "Inicio de sesión correcto",
-                    user: {
-                        ID: usuario.ID,
-                        Nombre: usuario.Nombre,
-                        Apellido: usuario.Apellido,
-                        Correo: usuario.Correo,
-                        Telefono: usuario.Telefono,
-                        Rol: usuario.Rol
-                    },
-                    token
-                });
-            });
-        }
+        });
     });
 };
 
 // =========================================
-// REGISTRO — contraseñas seguras
+// REGISTRO
 // =========================================
 exports.registrar = (req, res) => {
     const { nombre, apellidos, email, telefono, password } = req.body;
@@ -171,7 +147,7 @@ exports.registrar = (req, res) => {
 };
 
 // =========================================
-// RESET PASSWORD — bcrypt
+// RESET PASSWORD
 // =========================================
 exports.resetPassword = (req, res) => {
     const { email, passwordNueva } = req.body;
@@ -180,15 +156,19 @@ exports.resetPassword = (req, res) => {
         if (errHash)
             return res.status(500).json({ error: true, message: "Error procesando contraseña" });
 
-        db.query("UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?", [hash, email], (err, result) => {
-            if (err)
-                return res.json({ error: true, message: "Error interno" });
+        db.query(
+            "UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?",
+            [hash, email],
+            (err, result) => {
+                if (err)
+                    return res.json({ error: true, message: "Error interno" });
 
-            if (result.affectedRows === 0)
-                return res.json({ error: true, message: "El correo no existe" });
+                if (result.affectedRows === 0)
+                    return res.json({ error: true, message: "El correo no existe" });
 
-            res.json({ error: false, message: "Contraseña actualizada correctamente" });
-        });
+                res.json({ error: false, message: "Contraseña actualizada correctamente" });
+            }
+        );
     });
 };
 
@@ -278,7 +258,7 @@ exports.agregarTarjeta = (req, res) => {
 };
 
 // =========================================
-// WALLET — Eliminar tarjeta (soft delete)
+// WALLET — Eliminar tarjeta
 // =========================================
 exports.eliminarTarjeta = (req, res) => {
     const { id_wallet } = req.body;
@@ -332,7 +312,7 @@ exports.updateUser = (req, res) => {
 };
 
 // =========================================
-// PERFIL — Actualizar contraseña (bcrypt)
+// PERFIL — Actualizar contraseña
 // =========================================
 exports.updatePassword = (req, res) => {
     const { ID, actual, nueva } = req.body;
@@ -363,215 +343,137 @@ exports.updatePassword = (req, res) => {
             });
         });
     });
+};
 
-    // ================================================================
-    // OBTENER PEDIDOS PAGADOS DEL USUARIO
-    // ================================================================
-    exports.obtenerPedidosPagados = (req, res) => {
-        const { id_usuario } = req.params;
+// ================================================================
+// OBTENER PEDIDOS PAGADOS
+// ================================================================
+exports.obtenerPedidosPagados = (req, res) => {
+    const { id_usuario } = req.params;
 
-        const sql = `
-            SELECT id_pedido, total 
-            FROM pedidos 
-            WHERE id_usuario = ? AND estado = 'PAGADO'
-        `;
+    const sql = `
+        SELECT id_pedido, total 
+        FROM pedidos 
+        WHERE id_usuario = ? AND estado = 'PAGADO'
+    `;
 
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
-            res.json({ error: false, pedidos: rows });
-        });
-    };
+    db.query(sql, [id_usuario], (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
+        res.json({ error: false, pedidos: rows });
+    });
+};
 
-    // ================================================================
-    // OBTENER DIRECCIONES REGISTRADAS DEL USUARIO
-    // ================================================================
-    exports.obtenerDireccionesUsuario = (req, res) => {
-        const { id_usuario } = req.params;
+// ================================================================
+// OBTENER DIRECCIONES
+// ================================================================
+exports.obtenerDireccionesUsuario = (req, res) => {
+    const { id_usuario } = req.params;
 
-        const sql = `
-            SELECT id_direccion, calle, ciudad, estado, cp
-            FROM direcciones
-            WHERE id_usuario = ?
-        `;
+    const sql = `
+        SELECT id_direccion, calle, ciudad, estado, cp
+        FROM direcciones
+        WHERE id_usuario = ?
+    `;
 
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
-            res.json({ error: false, direcciones: rows });
-        });
-    };
+    db.query(sql, [id_usuario], (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
+        res.json({ error: false, direcciones: rows });
+    });
+};
 
-    // ================================================================
-    // CREAR UN ENVÍO DE EQUIPAJE
-    // ================================================================
-    exports.crearEnvio = (req, res) => {
-        const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
+// ================================================================
+// AGREGAR DIRECCIÓN
+// ================================================================
+exports.agregarDireccion = (req, res) => {
+    const { id_usuario, calle, ciudad, estado, cp } = req.body;
 
-        const sql = `
-            INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
-            VALUES (?, ?, ?, ?)
-        `;
+    if (!ESTADOS_MX.has(estado))
+        return res.json({ error: true, message: "Estado inválido" });
 
-        db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
-            if (err) return res.json({ error: true, message: "Error al crear envío" });
+    const sql = `
+        INSERT INTO direcciones (id_usuario, calle, ciudad, estado, cp)
+        VALUES (?, ?, ?, ?, ?)
+    `;
 
-            res.json({ error: false, message: "Envío registrado correctamente" });
-        });
-    };
+    db.query(sql, [id_usuario, calle, ciudad, estado, cp], err => {
+        if (err) return res.json({ error: true, message: "Error al agregar dirección" });
 
-    // ================================================================
-    // HISTORIAL DE ENVÍOS
-    // ================================================================
-    exports.obtenerHistorialEnvios = (req, res) => {
-        const { id_usuario } = req.params;
+        res.json({ error: false, message: "Dirección agregada" });
+    });
+};
 
-        const sql = `
-            SELECT *
-            FROM envio_equipaje
-            WHERE id_usuario = ?
-            ORDER BY fecha_envio DESC
-        `;
+// ================================================================
+// EDITAR DIRECCIÓN
+// ================================================================
+exports.editarDireccion = (req, res) => {
+    const { id_direccion, calle, ciudad, estado, cp } = req.body;
 
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener historial" });
+    if (!ESTADOS_MX.has(estado))
+        return res.json({ error: true, message: "Estado inválido" });
 
-            res.json({ error: false, envios: rows });
-        });
-    };
+    const sql = `
+        UPDATE direcciones
+        SET calle = ?, ciudad = ?, estado = ?, cp = ?
+        WHERE id_direccion = ?
+    `;
 
-    // ================================================================
-    // AÑADIR DIRECCIÓN
-    // ================================================================
-    exports.agregarDireccion = (req, res) => {
-        const { id_usuario, calle, ciudad, estado, cp } = req.body;
-        if (!ESTADOS_MX.has(estado))
-            return res.json({ error: true, message: "Estado inválido" });
+    db.query(sql, [calle, ciudad, estado, cp, id_direccion], err => {
+        if (err) return res.json({ error: true, message: "Error al actualizar dirección" });
 
-        const sql = `
-            INSERT INTO direcciones (id_usuario, calle, ciudad, estado, cp)
-            VALUES (?, ?, ?, ?, ?)
-        `;
+        res.json({ error: false, message: "Dirección actualizada" });
+    });
+};
 
+// ================================================================
+// ELIMINAR DIRECCIÓN
+// ================================================================
+exports.eliminarDireccion = (req, res) => {
+    const { id_direccion } = req.body;
 
-        db.query(sql, [id_usuario, calle, ciudad, estado, cp], err => {
-            if (err) return res.json({ error: true, message: "Error al agregar dirección" });
+    db.query("DELETE FROM direcciones WHERE id_direccion = ?", [id_direccion], err => {
+        if (err) return res.json({ error: true, message: "No se pudo eliminar" });
 
-            res.json({ error: false, message: "Dirección agregada" });
-        });
-    };
+        res.json({ error: false, message: "Dirección eliminada" });
+    });
+};
 
+// ================================================================
+// CREAR ENVÍO DE EQUIPAJE
+// ================================================================
+exports.crearEnvio = (req, res) => {
+    const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
 
-    // ================================================================
-    // EDITAR DIRECCIÓN
-    // ================================================================
-    exports.editarDireccion = (req, res) => {
-        const { id_direccion, calle, ciudad, estado, cp } = req.body;
-        if (!ESTADOS_MX.has(estado))
-            return res.json({ error: true, message: "Estado inválido" });
-        const sql = `
-            UPDATE direcciones
-            SET calle = ?, ciudad = ?, estado = ?, cp = ?
-            WHERE id_direccion = ?
-        `;
+    if (!id_usuario || !id_pedido || !id_direccion || !cantidad)
+        return res.json({ error: true, message: "Datos incompletos para crear el envío" });
 
-        db.query(sql, [calle, ciudad, estado, cp, id_direccion], err => {
-            if (err) return res.json({ error: true, message: "Error al actualizar dirección" });
+    const sql = `
+        INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
+        VALUES (?, ?, ?, ?)
+    `;
 
-            res.json({ error: false, message: "Dirección actualizada" });
-        });
-    };
+    db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear envío" });
 
+        res.json({ error: false, message: "Envío registrado correctamente" });
+    });
+};
 
-    // ================================================================
-    // ELIMINAR DIRECCIÓN
-    // ================================================================
-    exports.eliminarDireccion = (req, res) => {
-        const { id_direccion } = req.body;
+// ================================================================
+// HISTORIAL DE ENVÍOS
+// ================================================================
+exports.obtenerHistorialEnvios = (req, res) => {
+    const { id_usuario } = req.params;
 
-        const sql = "DELETE FROM direcciones WHERE id_direccion = ?";
+    const sql = `
+        SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
+        FROM envio_equipaje
+        WHERE id_usuario = ?
+        ORDER BY fecha_envio DESC
+    `;
 
-        db.query(sql, [id_direccion], err => {
-            if (err) return res.json({ error: true, message: "No se pudo eliminar" });
+    db.query(sql, [id_usuario], (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al obtener historial" });
 
-            res.json({ error: false, message: "Dirección eliminada" });
-        });
-    };
-    // ================================================================
-    // OBTENER PEDIDOS PAGADOS DEL USUARIO
-    // ================================================================
-    exports.obtenerPedidosPagados = (req, res) => {
-        const { id_usuario } = req.params;
-
-        const sql = `
-            SELECT id_pedido, total 
-            FROM pedidos 
-            WHERE id_usuario = ? AND estado = 'PAGADO'
-        `;
-
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
-            res.json({ error: false, pedidos: rows });
-        });
-    };
-
-    // ================================================================
-    // OBTENER DIRECCIONES DEL USUARIO
-    // (ya se usa también en Mi Perfil)
-    // ================================================================
-    exports.obtenerDireccionesUsuario = (req, res) => {
-        const { id_usuario } = req.params;
-
-        const sql = `
-            SELECT id_direccion, calle, ciudad, estado, cp
-            FROM direcciones
-            WHERE id_usuario = ?
-        `;
-
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
-            res.json({ error: false, direcciones: rows });
-        });
-    };
-
-    // ================================================================
-    // CREAR UN ENVÍO DE EQUIPAJE
-    // ================================================================
-    exports.crearEnvio = (req, res) => {
-        const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
-
-        if (!id_usuario || !id_pedido || !id_direccion || !cantidad) {
-            return res.json({ error: true, message: "Datos incompletos para crear el envío" });
-        }
-
-        const sql = `
-            INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
-            VALUES (?, ?, ?, ?)
-        `;
-
-        db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
-            if (err) return res.json({ error: true, message: "Error al crear envío" });
-
-            res.json({ error: false, message: "Envío registrado correctamente" });
-        });
-    };
-
-    // ================================================================
-    // HISTORIAL DE ENVÍOS
-    // ================================================================
-    exports.obtenerHistorialEnvios = (req, res) => {
-        const { id_usuario } = req.params;
-
-        const sql = `
-            SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
-            FROM envio_equipaje
-            WHERE id_usuario = ?
-            ORDER BY fecha_envio DESC
-        `;
-
-        db.query(sql, [id_usuario], (err, rows) => {
-            if (err) return res.json({ error: true, message: "Error al obtener historial" });
-
-            res.json({ error: false, envios: rows });
-        });
-    };
-
+        res.json({ error: false, envios: rows });
+    });
 };
