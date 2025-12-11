@@ -3,7 +3,6 @@
 // =========================================
 
 const express = require("express");
-const router = express.Router();
 const db = require("./conexion");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
@@ -1318,4 +1317,88 @@ exports.crearUsuario = (req, res) => {
     });
 };
 
-module.exports = router;
+module.exports = {
+    verificarToken,
+    soloAdmin,
+    login,
+    registrar,
+    resetPassword,
+    eliminarUsuario,
+    listarUsuarios,
+
+    // WALLET
+    listarWallet,
+    agregarTarjeta,
+    eliminarTarjeta,
+    actualizarTarjeta,
+
+    // PERFIL
+    updateUser,
+    updatePassword,
+
+    // DIRECCIONES
+    obtenerDireccionesUsuario,
+    agregarDireccion,
+    editarDireccion,
+    eliminarDireccion,
+
+    // ENVÍOS
+    obtenerPedidosPagados,
+    crearEnvio,
+    obtenerHistorialEnvios,
+
+    // VUELOS PÚBLICOS
+    listarVuelosPublico,
+    detalleVuelo,
+
+    // ADMIN — AEROPUERTOS
+    listarAeropuertos,
+    crearAeropuerto,
+    actualizarAeropuerto,
+    eliminarAeropuerto,
+
+    // ADMIN — VUELOS
+    listarVuelosAdmin,
+    crearVuelo,
+    actualizarVuelo,
+    eliminarVuelo,
+
+    // ADMIN — ASIENTOS
+    listarAsientos,
+    crearAsiento,
+    actualizarAsiento,
+    eliminarAsiento,
+
+    // ADMIN — EQUIPAJE
+    listarEquipaje,
+    crearEquipaje,
+    actualizarEquipaje,
+    eliminarEquipaje,
+
+    // CARRITO
+    crearPedidoDesdeCarrito,
+
+    // TIPOS MALETA
+    listarTiposMaleta,
+    crearTipoMaleta,
+    actualizarTipoMaleta,
+    eliminarTipoMaleta,
+
+    // PEDIDOS ADMIN
+    listarPedidos,
+    crearPedidoAdmin,
+    actualizarPedidoAdmin,
+    eliminarPedidoAdmin,
+
+    // PAGOS
+    listarPagos,
+    crearPagoAdmin,
+    actualizarPagoAdmin,
+    eliminarPagoAdmin,
+
+    // BOLETOS
+    listarBoletos,
+    crearBoletoAdmin,
+    actualizarBoletoAdmin,
+    eliminarBoletoAdmin
+};
