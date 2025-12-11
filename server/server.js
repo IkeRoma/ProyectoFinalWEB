@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const path = require("path");
-
+const reviews = require("./reviewsController");
 const auth = require("./authController");
 
 const app = express();
@@ -44,6 +44,11 @@ app.post("/api/eliminar", auth.eliminarUsuario);
 
 // LISTAR USUARIOS
 app.get("/api/listar", auth.listarUsuarios);
+
+// RESEÑAS DE USUARIOS
+app.post("/api/reviews/add", reviews.crearReseña);
+app.get("/api/reviews/list", reviews.obtenerReseñas);
+
 
 // ========================
 //  Servidor HTTP

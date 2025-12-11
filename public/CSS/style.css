@@ -949,3 +949,55 @@ input:focus,
     from { opacity: 1; }
     to   { opacity: 0; }
 }
+/* =============================== */
+/*     SECCIÓN DE RESEÑAS         */
+/* =============================== */
+
+.reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-top: 25px;
+}
+
+.review-card {
+    background: var(--color-bg-light);
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    opacity: 0;
+    transform: translateY(25px);
+    transition: all 0.6s ease;
+}
+
+.review-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.review-user {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: var(--color-text-soft);
+}
+
+.review-form {
+    margin-top: 30px;
+    background: var(--color-bg-light);
+    padding: 20px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    display: none; /* Se activa solo cuando hay sesión */
+    flex-direction: column;
+    gap: 10px;
+}
+
+.review-form textarea {
+    resize: vertical;
+    padding: 10px;
+    min-height: 120px;
+}
