@@ -66,9 +66,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (data.error) {
                 mostrarMensaje(msg, data.message, "error");
             } else {
-                // GUARDAR TOKEN Y USUARIO
+
+                // GUARDAR SESIÓN
                 localStorage.setItem("usuario", JSON.stringify(data.user));
                 localStorage.setItem("token", data.token);
+
+                // 🔥 BORRAR CARRITO Y ENVÍOS AL INICIAR SESIÓN
+                localStorage.removeItem("carrito");
+                localStorage.removeItem("enviosEquipaje");
+                localStorage.removeItem("envioEquipaje");
 
                 mostrarMensaje(msg, "Inicio de sesión exitoso.", "success");
 
@@ -154,27 +160,27 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-/* =======================================================
-   SISTEMA GLOBAL DE VALIDACIÓN VISUAL
-======================================================= */
 
-function marcarInput(input, valido, msg = "", contenedorMsg = null) {
 
-    input.classList.remove("input-valid", "input-invalid", "shake");
+    /* =======================================================
+       SISTEMA GLOBAL DE VALIDACIÓN VISUAL
+    ======================================================= */
+    function marcarInput(input, valido, msg = "", contenedorMsg = null) {
+        input.classList.remove("input-valid", "input-invalid", "shake");
 
-    if (valido) {
-        input.classList.add("input-valid");
-        if (contenedorMsg) {
-            contenedorMsg.textContent = msg;
-            contenedorMsg.className = "form-msg success show";
-        }
-    } else {
-        input.classList.add("input-invalid", "shake");
-        if (contenedorMsg) {
-            contenedorMsg.textContent = msg;
-            contenedorMsg.className = "form-msg error show";
+        if (valido) {
+            input.classList.add("input-valid");
+            if (contenedorMsg) {
+                contenedorMsg.textContent = msg;
+                contenedorMsg.className = "form-msg success show";
+            }
+        } else {
+            input.classList.add("input-invalid", "shake");
+            if (contenedorMsg) {
+                contenedorMsg.textContent = msg;
+                contenedorMsg.className = "form-msg error show";
+            }
         }
     }
-}
 
 });

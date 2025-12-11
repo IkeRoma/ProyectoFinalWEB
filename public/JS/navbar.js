@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const exp = payload.exp * 1000;
 
             if (Date.now() >= exp) {
+
+                // 🔥 LIMPIAR CARRITO SI EL TOKEN EXPIRA
+                localStorage.removeItem("carrito");
+                localStorage.removeItem("enviosEquipaje");
+                localStorage.removeItem("envioEquipaje");
+
                 localStorage.removeItem("usuario");
                 localStorage.removeItem("token");
                 localStorage.removeItem("lastActivity");
@@ -64,6 +70,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (Date.now() - last > SESSION_TIMEOUT) {
+
+            // 🔥 BORRAR CARRITO POR INACTIVIDAD
+            localStorage.removeItem("carrito");
+            localStorage.removeItem("enviosEquipaje");
+            localStorage.removeItem("envioEquipaje");
+
             alert("Tu sesión ha expirado por inactividad.");
             localStorage.clear();
             window.location.href = "LogIn.html";
@@ -95,6 +107,12 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.textContent = "Cerrar sesión";
         btn.className = "btn btn--ghost nav__link--primary";
         btn.onclick = () => {
+
+            // 🔥 LIMPIAR CARRITO AL DESLOGUEAR
+            localStorage.removeItem("carrito");
+            localStorage.removeItem("enviosEquipaje");
+            localStorage.removeItem("envioEquipaje");
+
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
             localStorage.removeItem("lastActivity");
@@ -106,14 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
-        // Links comunes
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
         const usuario = JSON.parse(localStorage.getItem("usuario") || "null");
         const tokenOK = tokenValido();
 
-        // SIN SESIÓN
         if (!usuario || !tokenOK) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
@@ -124,17 +140,14 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Carrito disponible para usuarios con sesión
         navLinksContainer.appendChild(crearLink("Carrito", "Carrito.html"));
 
-        // ADMIN
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
         }
 
-        // USUARIO NORMAL
         if (usuario.Rol === 0) {
             navLinksContainer.appendChild(
                 crearLink("Mi Perfil", "MiPerfil.html")
@@ -150,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
     construirNavbar();
 
     /* ======================================================
-       NAVBAR FLOTANTE (mostrar al acercar el mouse arriba)
+       NAVBAR FLOTANTE
     ====================================================== */
     function mostrarNavbar() {
         navBar.classList.add("nav--visible");
