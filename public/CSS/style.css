@@ -1548,3 +1548,27 @@ select.input-modal {
 .input-invalid.shake {
     animation: shake 0.3s linear;
 }
+
+/* =========================================================================
+   NAVBAR FIJO + AUTO-HIDE (Opción B)
+========================================================================= */
+#mainNav {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    z-index: 9999;
+
+    background: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    transition: top 0.35s ease, background 0.3s ease;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+}
+
+/* Para evitar que el navbar tape el contenido */
+body {
+    padding-top: 90px !important;
+}
