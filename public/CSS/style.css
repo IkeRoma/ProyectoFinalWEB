@@ -1775,42 +1775,6 @@ body {
     background: linear-gradient(180deg, #00aaff, #00cc55);
 }
 
-
-/* ===== Scrollbar para Firefox ===== */
-html {
-    scrollbar-width: thin;  /* thin | auto | none */
-    scrollbar-color: #00e5ff rgba(255, 255, 255, 0.07);
-}
-
-/* Color más estilizado en hover */
-* {
-    scrollbar-color: #00e5ff #0f172a;
-}
-
-/* ===== Scrollbar Base (WebKit: Chrome, Edge, Safari) ===== */
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-/* Fondo del track — negro como tus formularios */
-::-webkit-scrollbar-track {
-    background: #1b2432; /* Ajustable según tus inputs */
-    border-radius: 12px;
-}
-
-/* Thumb — color negro inicialmente */
-::-webkit-scrollbar-thumb {
-    background: #0f172a; /* Un negro azulado, combina con tu UI */
-    border-radius: 12px;
-    transition: background 0.25s ease-in-out;
-}
-
-/* Hover — cambia al degradado tipo botón "Agregar Envío" */
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(90deg, #00a3ff, #00ffb3);
-}
-
 /* Active — tono más intenso */
 ::-web
 
