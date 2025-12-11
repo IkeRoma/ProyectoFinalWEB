@@ -33,3 +33,27 @@ exports.obtenerReseñas = (req, res) => {
         res.json({ reseñas: results });
     });
 };
+
+exports.reseñasPorUsuario = (req, res) => {
+    const idUsuario = req.params.id;
+
+    if (!idUsuario) {
+        return res.status(400).json({ message: "Falta el ID del usuario." });
+    }
+
+    const query = `
+        SELECT Reseña, Fecha
+        FROM Reseñas
+        WHERE UsuarioID = ?
+        ORDER BY Fecha DESC
+    `;
+
+    conexion.query(query, [idUsuario], (err, results) => {
+        if (err) {
+            console.error("Error al obtener reseñas del usuario:", err);
+            return res.status(500).json({ message: "Error interno del servidor." });
+        }
+
+        res.json({ reseñas: results });
+    });
+};
