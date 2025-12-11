@@ -1,30 +1,69 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
-       BANNER DE COOKIES
+       VERIFICADOR DE TOKEN JWT (NUEVO)
     ====================================================== */
-    if (!localStorage.getItem("cookiesAceptadas")) {
-        const banner = document.getElementById("cookieBanner");
-        if (banner) {
-            banner.style.display = "block";
+    function tokenValido() {
+        const token = localStorage.getItem("token");
+        if (!token) return false;
+
+        try {
+            const payload = JSON.parse(atob(token.split(".")[1]));
+            const exp = payload.exp * 1000;
+
+            if (Date.now() >= exp) {
+                // Token expirado → limpiar sesión
+                localStorage.removeItem("usuario");
+                localStorage.removeItem("token");
+                localStorage.removeItem("lastActivity");
+                return false;
+            }
+
+            return true; // token aún es válido
+
+        } catch (error) {
+            // Token corrupto
+            localStorage.removeItem("usuario");
+            localStorage.removeItem("token");
+            return false;
         }
     }
 
-    const btnAceptarCookies = document.getElementById("aceptarCookies");
-    if (btnAceptarCookies) {
-        btnAceptarCookies.addEventListener("click", () => {
-            localStorage.setItem("cookiesAceptadas", "true");
-            const banner = document.getElementById("cookieBanner");
-            if (banner) {
-                banner.style.display = "none";
-            }
-        });
+    /* ======================================================
+       AJUSTE IMPORTANTE:
+       YA NO BORRAR SESIÓN AL ABRIR LA PÁGINA
+       SOLO SE BORRARÁ SI EL TOKEN ES INVÁLIDO O EXPIRA
+    ====================================================== */
+    if (!tokenValido()) {
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("token");
     }
+
+    /* ======================================================
+       LIMPIAR SESIÓN AL CERRAR PESTAÑA / NAVEGADOR
+       (Se mantiene como pediste)
+    ====================================================== */
+    window.addEventListener("beforeunload", () => {
+        localStorage.removeItem("usuario");
+        localStorage.removeItem("lastActivity");
+        localStorage.removeItem("token");
+    });
+
+    /* ======================================================
+       BANNER DE COOKIES
+    ====================================================== */
+    if (!localStorage.getItem("cookiesAceptadas")) {
+        document.getElementById("cookieBanner").style.display = "block";
+    }
+
+    document.getElementById("aceptarCookies").addEventListener("click", () => {
+        localStorage.setItem("cookiesAceptadas", "true");
+        document.getElementById("cookieBanner").style.display = "none";
+    });
 
     /* ======================================================
        SISTEMA DE EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
     ====================================================== */
-
     const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
 
     function actualizarActividad() {
@@ -33,12 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function validarExpiracion() {
         const last = localStorage.getItem("lastActivity");
-        if (!last) return; // Si nunca se ha registrado actividad, no expirar.
+        if (!last) return;
 
         const diff = Date.now() - parseInt(last);
 
         if (diff >= SESSION_TIMEOUT) {
             localStorage.removeItem("usuario");
+            localStorage.removeItem("token");
             localStorage.removeItem("lastActivity");
             alert("Tu sesión ha expirado por inactividad. Por favor inicia sesión nuevamente.");
             window.location.href = "LogIn.html";
@@ -54,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ======================================================
        NAVBAR DINÁMICO
     ====================================================== */
-
     const nav = document.getElementById("mainNav");
     const navLinksContainer = document.querySelector('[data-nav="links"]');
 
@@ -74,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.className = "btn btn--ghost nav__link--primary";
         btn.onclick = () => {
             localStorage.removeItem("usuario");
+            localStorage.removeItem("token");
             localStorage.removeItem("lastActivity");
             window.location.href = "Index.html";
         };
@@ -83,14 +123,14 @@ document.addEventListener("DOMContentLoaded", () => {
     function construirNavbar() {
         navLinksContainer.innerHTML = "";
 
-        const usuario = JSON.parse(localStorage.getItem("usuario"));
-
-        // Links visibles para todos
         navLinksContainer.appendChild(crearLink("Inicio", "Index.html"));
         navLinksContainer.appendChild(crearLink("Vuelos", "Vuelos.html"));
 
-        // No hay sesión → Mostrar login/registro
-        if (!usuario) {
+        const usuario = JSON.parse(localStorage.getItem("usuario"));
+        const tokenOK = tokenValido();
+
+        // Si no hay usuario o token no es válido → navbar de visitante
+        if (!usuario || !tokenOK) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
             );
@@ -100,86 +140,30 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Usuario autenticado
+        // ADMIN
         if (usuario.Rol === 1) {
-            // Admin
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
-        } else {
-            // Usuario normal
+        }
+
+        // USUARIO NORMAL
+        if (usuario.Rol === 0) {
             navLinksContainer.appendChild(
-                crearLink("Mi Perfil", "MiPerfil.html", "nav__link--primary")
+                crearLink("Mi Perfil", "MiPerfil.html")
             );
         }
 
-        // Botón logout
         navLinksContainer.appendChild(crearBotonLogout());
     }
 
     construirNavbar();
 
     /* ======================================================
-       EFECTO DEL NAV AL HACER SCROLL
+       EFECTO NAVBAR AL DESPLAZAR
     ====================================================== */
-
     window.addEventListener("scroll", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");
         else nav.classList.remove("nav--scrolled");
     });
-    function isLogged() {
-        const token = localStorage.getItem("token");
-        const user = localStorage.getItem("usuario");
-
-        if (!token || !user) return false;
-
-        try {
-            const payload = JSON.parse(atob(token.split(".")[1]));
-            const exp = payload.exp * 1000;
-
-            if (Date.now() >= exp) {
-                localStorage.clear();
-                return false;
-            }
-
-            return true;
-        } catch {
-            localStorage.clear();
-            return false;
-        }
-    }
-
-    const navLinks = document.querySelector("[data-nav='links']");
-    navLinks.innerHTML = "";
-
-    if (!isLogged()) {
-        navLinks.innerHTML = `
-            <li><a href="Index.html">Inicio</a></li>
-            <li><a href="Vuelos.html">Vuelos</a></li>
-            <li><a href="LogIn.html">Iniciar sesión</a></li>
-            <li><a href="Registro.html">Registrarse</a></li>
-        `;
-        return;
-    }
-
-    const usr = JSON.parse(localStorage.getItem("usuario"));
-
-    navLinks.innerHTML = `
-        <li><a href="Index.html">Inicio</a></li>
-        <li><a href="Vuelos.html">Vuelos</a></li>
-        <li><a href="Perfil.html">Mi perfil</a></li>
-        <li><button id="logoutBtn" class="btn-logout">Cerrar sesión</button></li>
-    `;
-
-    if (usr.Rol === 1) {
-        navLinks.innerHTML += `
-            <li><a href="PanelAdmin.html" class="admin-link">Admin</a></li>
-        `;
-    }
-
-    document.getElementById("logoutBtn").onclick = () => {
-        localStorage.removeItem("usuario");
-        localStorage.removeItem("token");
-        window.location.href = "Index.html";
-    };
 });
