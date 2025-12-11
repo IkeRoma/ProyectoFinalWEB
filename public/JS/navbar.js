@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     /* ======================================================
-       VERIFICADOR DE TOKEN JWT (NUEVO)
+       VERIFICADOR DE TOKEN JWT
     ====================================================== */
     function tokenValido() {
         const token = localStorage.getItem("token");
@@ -12,17 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const exp = payload.exp * 1000;
 
             if (Date.now() >= exp) {
-                // Token expirado → limpiar sesión
                 localStorage.removeItem("usuario");
                 localStorage.removeItem("token");
                 localStorage.removeItem("lastActivity");
                 return false;
             }
 
-            return true; // token aún es válido
-
-        } catch (error) {
-            // Token corrupto
+            return true;
+        } catch {
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
             return false;
@@ -30,9 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
-       AJUSTE IMPORTANTE:
-       YA NO BORRAR SESIÓN AL ABRIR LA PÁGINA
-       SOLO SE BORRARÁ SI EL TOKEN ES INVÁLIDO O EXPIRA
+       VERIFICAR TOKEN AL CARGAR PÁGINA
     ====================================================== */
     if (!tokenValido()) {
         localStorage.removeItem("usuario");
@@ -40,17 +35,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ======================================================
-       LIMPIAR SESIÓN AL CERRAR PESTAÑA / NAVEGADOR
-       (Se mantiene como pediste)
+       CERRAR SESIÓN SOLO AL CERRAR PESTAÑA (NO EN REFRESH)
     ====================================================== */
-    window.addEventListener("beforeunload", () => {
+    window.addEventListener("pagehide", (event) => {
+        if (event.persisted) return; // 🔥 evita borrar sesión en recarga
         localStorage.removeItem("usuario");
         localStorage.removeItem("lastActivity");
         localStorage.removeItem("token");
     });
 
     /* ======================================================
-       BANNER DE COOKIES
+       BANNER COOKIES
     ====================================================== */
     if (!localStorage.getItem("cookiesAceptadas")) {
         document.getElementById("cookieBanner").style.display = "block";
@@ -62,9 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ======================================================
-       SISTEMA DE EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
+       EXPIRACIÓN POR INACTIVIDAD (2 HORAS)
     ====================================================== */
-    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 horas
+    const SESSION_TIMEOUT = 2 * 60 * 60 * 1000;
 
     function actualizarActividad() {
         localStorage.setItem("lastActivity", Date.now().toString());
@@ -80,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             localStorage.removeItem("usuario");
             localStorage.removeItem("token");
             localStorage.removeItem("lastActivity");
-            alert("Tu sesión ha expirado por inactividad. Por favor inicia sesión nuevamente.");
+            alert("Tu sesión ha expirado por inactividad.");
             window.location.href = "LogIn.html";
         }
     }
@@ -129,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const usuario = JSON.parse(localStorage.getItem("usuario"));
         const tokenOK = tokenValido();
 
-        // Si no hay usuario o token no es válido → navbar de visitante
         if (!usuario || !tokenOK) {
             navLinksContainer.appendChild(
                 crearLink("Iniciar sesión", "LogIn.html", "nav__link--primary")
@@ -140,18 +134,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ADMIN
         if (usuario.Rol === 1) {
             navLinksContainer.appendChild(
                 crearLink("Panel Admin", "PanelAdmin.html", "nav__link--primary")
             );
         }
 
-        // USUARIO NORMAL
         if (usuario.Rol === 0) {
-            navLinksContainer.appendChild(
-                crearLink("Mi Perfil", "MiPerfil.html")
-            );
+            navLinksContainer.appendChild(crearLink("Mi Perfil", "MiPerfil.html"));
+            navLinksContainer.appendChild(crearLink("Envio de Equipaje", "EnvioEquipaje.html"));
         }
 
         navLinksContainer.appendChild(crearBotonLogout());
@@ -160,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     construirNavbar();
 
     /* ======================================================
-       EFECTO NAVBAR AL DESPLAZAR
+       EFECTO SCROLL
     ====================================================== */
     window.addEventListener("scroll", () => {
         if (window.scrollY > 10) nav.classList.add("nav--scrolled");

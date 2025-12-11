@@ -13,6 +13,15 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET || "CAMBIA_ESTA_CLAVE_EN_PRODUCCION_123";
 const JWT_EXPIRES_IN = "2h";
 
+// Estados válidos de México
+const ESTADOS_MX = new Set([
+    "Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas",
+    "Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato",
+    "Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit",
+    "Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí",
+    "Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"
+]);
+
 // =========================================
 // Helper: Tokenizar tarjeta (SHA-256)
 // =========================================
@@ -354,4 +363,215 @@ exports.updatePassword = (req, res) => {
             });
         });
     });
+
+    // ================================================================
+    // OBTENER PEDIDOS PAGADOS DEL USUARIO
+    // ================================================================
+    exports.obtenerPedidosPagados = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT id_pedido, total 
+            FROM pedidos 
+            WHERE id_usuario = ? AND estado = 'PAGADO'
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
+            res.json({ error: false, pedidos: rows });
+        });
+    };
+
+    // ================================================================
+    // OBTENER DIRECCIONES REGISTRADAS DEL USUARIO
+    // ================================================================
+    exports.obtenerDireccionesUsuario = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT id_direccion, calle, ciudad, estado, cp
+            FROM direcciones
+            WHERE id_usuario = ?
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
+            res.json({ error: false, direcciones: rows });
+        });
+    };
+
+    // ================================================================
+    // CREAR UN ENVÍO DE EQUIPAJE
+    // ================================================================
+    exports.crearEnvio = (req, res) => {
+        const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
+
+        const sql = `
+            INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
+            VALUES (?, ?, ?, ?)
+        `;
+
+        db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
+            if (err) return res.json({ error: true, message: "Error al crear envío" });
+
+            res.json({ error: false, message: "Envío registrado correctamente" });
+        });
+    };
+
+    // ================================================================
+    // HISTORIAL DE ENVÍOS
+    // ================================================================
+    exports.obtenerHistorialEnvios = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT *
+            FROM envio_equipaje
+            WHERE id_usuario = ?
+            ORDER BY fecha_envio DESC
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener historial" });
+
+            res.json({ error: false, envios: rows });
+        });
+    };
+
+    // ================================================================
+    // AÑADIR DIRECCIÓN
+    // ================================================================
+    exports.agregarDireccion = (req, res) => {
+        const { id_usuario, calle, ciudad, estado, cp } = req.body;
+        if (!ESTADOS_MX.has(estado))
+            return res.json({ error: true, message: "Estado inválido" });
+
+        const sql = `
+            INSERT INTO direcciones (id_usuario, calle, ciudad, estado, cp)
+            VALUES (?, ?, ?, ?, ?)
+        `;
+
+
+        db.query(sql, [id_usuario, calle, ciudad, estado, cp], err => {
+            if (err) return res.json({ error: true, message: "Error al agregar dirección" });
+
+            res.json({ error: false, message: "Dirección agregada" });
+        });
+    };
+
+
+    // ================================================================
+    // EDITAR DIRECCIÓN
+    // ================================================================
+    exports.editarDireccion = (req, res) => {
+        const { id_direccion, calle, ciudad, estado, cp } = req.body;
+        if (!ESTADOS_MX.has(estado))
+            return res.json({ error: true, message: "Estado inválido" });
+        const sql = `
+            UPDATE direcciones
+            SET calle = ?, ciudad = ?, estado = ?, cp = ?
+            WHERE id_direccion = ?
+        `;
+
+        db.query(sql, [calle, ciudad, estado, cp, id_direccion], err => {
+            if (err) return res.json({ error: true, message: "Error al actualizar dirección" });
+
+            res.json({ error: false, message: "Dirección actualizada" });
+        });
+    };
+
+
+    // ================================================================
+    // ELIMINAR DIRECCIÓN
+    // ================================================================
+    exports.eliminarDireccion = (req, res) => {
+        const { id_direccion } = req.body;
+
+        const sql = "DELETE FROM direcciones WHERE id_direccion = ?";
+
+        db.query(sql, [id_direccion], err => {
+            if (err) return res.json({ error: true, message: "No se pudo eliminar" });
+
+            res.json({ error: false, message: "Dirección eliminada" });
+        });
+    };
+    // ================================================================
+    // OBTENER PEDIDOS PAGADOS DEL USUARIO
+    // ================================================================
+    exports.obtenerPedidosPagados = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT id_pedido, total 
+            FROM pedidos 
+            WHERE id_usuario = ? AND estado = 'PAGADO'
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
+            res.json({ error: false, pedidos: rows });
+        });
+    };
+
+    // ================================================================
+    // OBTENER DIRECCIONES DEL USUARIO
+    // (ya se usa también en Mi Perfil)
+    // ================================================================
+    exports.obtenerDireccionesUsuario = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT id_direccion, calle, ciudad, estado, cp
+            FROM direcciones
+            WHERE id_usuario = ?
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
+            res.json({ error: false, direcciones: rows });
+        });
+    };
+
+    // ================================================================
+    // CREAR UN ENVÍO DE EQUIPAJE
+    // ================================================================
+    exports.crearEnvio = (req, res) => {
+        const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
+
+        if (!id_usuario || !id_pedido || !id_direccion || !cantidad) {
+            return res.json({ error: true, message: "Datos incompletos para crear el envío" });
+        }
+
+        const sql = `
+            INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
+            VALUES (?, ?, ?, ?)
+        `;
+
+        db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
+            if (err) return res.json({ error: true, message: "Error al crear envío" });
+
+            res.json({ error: false, message: "Envío registrado correctamente" });
+        });
+    };
+
+    // ================================================================
+    // HISTORIAL DE ENVÍOS
+    // ================================================================
+    exports.obtenerHistorialEnvios = (req, res) => {
+        const { id_usuario } = req.params;
+
+        const sql = `
+            SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
+            FROM envio_equipaje
+            WHERE id_usuario = ?
+            ORDER BY fecha_envio DESC
+        `;
+
+        db.query(sql, [id_usuario], (err, rows) => {
+            if (err) return res.json({ error: true, message: "Error al obtener historial" });
+
+            res.json({ error: false, envios: rows });
+        });
+    };
+
 };

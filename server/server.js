@@ -55,6 +55,20 @@ app.post("/api/reviews/add", reviews.crearReseña);
 app.get("/api/reviews/list", reviews.obtenerReseñas);
 app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
 
+// ========================= ENVIOS DE EQUIPAJE ==========================
+app.get("/api/envio/pedidos/:id_usuario", authMiddleware, authController.obtenerPedidosPagados);
+app.get("/api/envio/direcciones/:id_usuario", authMiddleware, authController.obtenerDireccionesUsuario);
+app.post("/api/envio/crear", authMiddleware, authController.crearEnvio);
+app.get("/api/envio/historial/:id_usuario", authMiddleware, authController.obtenerHistorialEnvios);
+
+// ================== DIRECCIONES ==================
+// ========================= ENVIOS DE EQUIPAJE ==========================
+app.get("/api/envio/pedidos/:id_usuario", verificarToken, auth.obtenerPedidosPagados);
+app.get("/api/envio/direcciones/:id_usuario", verificarToken, auth.obtenerDireccionesUsuario);
+app.post("/api/envio/crear", verificarToken, auth.crearEnvio);
+app.get("/api/envio/historial/:id_usuario", verificarToken, auth.obtenerHistorialEnvios);
+
+
 // ========================
 //  Servidor HTTP
 // ========================

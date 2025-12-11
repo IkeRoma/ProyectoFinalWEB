@@ -96,7 +96,16 @@
 
                 <button id="btnHistorial" class="btn-azul">Ver historial</button>
             </div>
+            <div class="perfil-card glass">
+                <h2><i class="fa-solid fa-location-dot"></i> Direcciones de Envío</h2>
+                <p>Añade una o varias direcciones dentro de la República Mexicana.</p>
 
+                <div id="listaDirecciones" class="direcciones-container"></div>
+
+                <button id="btnAgregarDireccion" class="btn-azul mt-2">
+                    <i class="fa-solid fa-circle-plus"></i> Añadir dirección
+                </button>
+            </div>
         </section>
     </main>
 
@@ -157,6 +166,40 @@
             <h3>Historial de vuelos</h3>
             <p>Aún no implementado.</p>
             <button class="btn-cerrar" data-close>Cerrar</button>
+        </div>
+    </div>
+    <!-- ==========================================================
+            MODAL — Añadir dirección
+    ========================================================== -->
+    <div class="modal" id="modalAgregarDireccion">
+        <div class="modal-content glass">
+            <h3>Añadir dirección</h3>
+
+            <input id="dirCalle" class="input-modal" placeholder="Calle y número">
+            <input id="dirCiudad" class="input-modal" placeholder="Ciudad">
+            <input id="editDirEstado" class="input-modal">
+            <input id="dirCP" class="input-modal" placeholder="Código Postal">
+
+            <button id="guardarDireccion" class="btn-azul">Guardar</button>
+            <button class="btn-cerrar" data-close>Cancelar</button>
+        </div>
+    </div>
+    <!-- ==========================================================
+            MODAL — Editar dirección
+    ========================================================== -->
+    <div class="modal" id="modalEditarDireccion">
+        <div class="modal-content glass">
+            <h3>Editar dirección</h3>
+
+            <input id="editDirCalle" class="input-modal">
+            <input id="editDirCiudad" class="input-modal">
+            <select id="editDirEstado" class="input-modal"></select>
+            <input id="editDirCP" class="input-modal">
+
+            <input id="editDirID" type="hidden">
+
+            <button id="actualizarDireccion" class="btn-azul">Actualizar</button>
+            <button class="btn-cerrar" data-close>Cancelar</button>
         </div>
     </div>
 
