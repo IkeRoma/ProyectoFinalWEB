@@ -1,8 +1,15 @@
+/* ============================================================
+   CREACIÓN DE BASE DE DATOS
+============================================================ */
 
 DROP DATABASE IF EXISTS db_proyecto;
 CREATE DATABASE db_proyecto;
 USE db_proyecto;
 
+
+/* ============================================================
+   TABLAS DEL PROYECTO (TAL COMO LAS TENÍAS)
+============================================================ */
 
 CREATE TABLE aeropuertos (
     id_aeropuerto INT PRIMARY KEY AUTO_INCREMENT,
@@ -11,7 +18,6 @@ CREATE TABLE aeropuertos (
     estado VARCHAR(50),
     activo BOOLEAN DEFAULT 1
 );
-
 
 CREATE TABLE IF NOT EXISTS Usuarios (
     ID INT PRIMARY KEY AUTO_INCREMENT,
@@ -22,7 +28,6 @@ CREATE TABLE IF NOT EXISTS Usuarios (
     Telefono VARCHAR(10) NOT NULL,
     Rol TINYINT(1) NOT NULL DEFAULT 0
 );
-
 
 CREATE TABLE IF NOT EXISTS wallet (
     id_wallet INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,7 +42,6 @@ CREATE TABLE IF NOT EXISTS wallet (
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID)
 );
 
-
 CREATE TABLE IF NOT EXISTS Reseñas (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     UsuarioID INT NOT NULL,
@@ -45,7 +49,6 @@ CREATE TABLE IF NOT EXISTS Reseñas (
     Fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UsuarioID) REFERENCES Usuarios(ID) ON DELETE CASCADE
 );
-
 
 CREATE TABLE direcciones (
     id_direccion INT PRIMARY KEY AUTO_INCREMENT,
@@ -56,7 +59,6 @@ CREATE TABLE direcciones (
     cp VARCHAR(10) NOT NULL,
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID) ON DELETE CASCADE
 );
-
 
 CREATE TABLE vuelos (
     id_vuelo INT AUTO_INCREMENT PRIMARY KEY,
@@ -75,7 +77,6 @@ CREATE TABLE vuelos (
     FOREIGN KEY (id_destino) REFERENCES aeropuertos(id_aeropuerto) ON DELETE CASCADE
 );
 
-
 CREATE TABLE asientos (
     id_asiento INT AUTO_INCREMENT PRIMARY KEY,
     id_vuelo INT NOT NULL,
@@ -86,7 +87,6 @@ CREATE TABLE asientos (
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo) ON DELETE CASCADE
 );
 
-
 CREATE TABLE equipaje (
     id_equipaje INT AUTO_INCREMENT PRIMARY KEY,
     id_vuelo INT NOT NULL,
@@ -95,7 +95,6 @@ CREATE TABLE equipaje (
     activo BOOLEAN DEFAULT 1,
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo) ON DELETE CASCADE
 );
-
 
 CREATE TABLE pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
@@ -133,7 +132,6 @@ CREATE TABLE boletos (
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido)
 );
 
-
 CREATE TABLE detalles_pedido (
     id_detalle INT AUTO_INCREMENT PRIMARY KEY,
 
@@ -149,7 +147,6 @@ CREATE TABLE detalles_pedido (
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo),
     FOREIGN KEY (id_asiento) REFERENCES asientos(id_asiento)
 );
-
 
 CREATE TABLE pagos (
     id_pago INT AUTO_INCREMENT PRIMARY KEY,
@@ -206,6 +203,11 @@ INSERT INTO tipos_maleta (nombre, peso_max, precio_base, tarifa_kg_extra) VALUES
 ('Grande', 30, 400, 25),
 ('XL', 45, 550, 25);
 
+
+/* ============================================================
+   AEROPUERTOS (TAL COMO LOS TENÍAS)
+============================================================ */
+
 TRUNCATE TABLE aeropuertos;
 
 INSERT INTO aeropuertos (nombre, ciudad, estado) VALUES
@@ -241,3 +243,61 @@ INSERT INTO aeropuertos (nombre, ciudad, estado) VALUES
 ('Aeropuerto Internacional de Veracruz', 'Veracruz', 'Veracruz'),
 ('Aeropuerto Internacional de Mérida', 'Mérida', 'Yucatán'),
 ('Aeropuerto Internacional de Zacatecas', 'Zacatecas', 'Zacatecas');
+
+
+/* ============================================================
+   VUELOS NUEVOS — SÓLO LAS RUTAS MÁS CONCURRIDAS DE MÉXICO
+============================================================ */
+
+TRUNCATE TABLE boletos;
+TRUNCATE TABLE pagos;
+TRUNCATE TABLE pedidos;
+TRUNCATE TABLE reseñas;
+TRUNCATE TABLE equipaje;
+TRUNCATE TABLE asientos;
+TRUNCATE TABLE vuelos;
+
+INSERT INTO vuelos (
+    id_origen,
+    id_destino,
+    fecha_salida,
+    fecha_llegada,
+    escala,
+    numero_escalas,
+    activo
+) VALUES
+    -- CDMX -> Cancún (ruta #1 más transitada)
+    (9, 23, '2025-03-10 08:00:00', '2025-03-10 10:10:00', 'DIRECTO', 0, 1),
+
+    -- Cancún -> CDMX
+    (23, 9, '2025-03-10 12:00:00', '2025-03-10 14:10:00', 'DIRECTO', 0, 1),
+
+    -- CDMX -> Monterrey
+    (9, 19, '2025-03-10 07:00:00', '2025-03-10 08:35:00', 'DIRECTO', 0, 1),
+
+    -- Monterrey -> CDMX
+    (19, 9, '2025-03-10 18:00:00', '2025-03-10 19:35:00', 'DIRECTO', 0, 1),
+
+    -- CDMX -> Guadalajara
+    (9, 14, '2025-03-11 09:00:00', '2025-03-11 10:15:00', 'DIRECTO', 0, 1),
+
+    -- Guadalajara -> CDMX
+    (14, 9, '2025-03-11 17:00:00', '2025-03-11 18:15:00', 'DIRECTO', 0, 1);
+
+
+/* ============================================================
+   ASIENTOS PARA LOS NUEVOS VUELOS
+============================================================ */
+
+INSERT INTO asientos (
+    id_vuelo, tipo_asiento, precio, stock, activo
+) VALUES
+    (1, 'BASICO', 3120.00, 40, 1),
+    (1, 'REGULAR', 3900.00, 24, 1),
+    (1, 'PREMIUM', 4990.00, 12, 1),
+    (2, 'BASICO', 3120.00, 40, 1),
+    (2, 'REGULAR', 3900.00, 24, 1),
+    (2, 'PREMIUM', 4990.00, 12, 1),
+    (3, 'BASICO', 2280.00, 40, 1),
+    (3, 'REGULAR', 2850.00, 24, 1),
+    (3, 'PREMIUM', 3650.00, 12, 1)
