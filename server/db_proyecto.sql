@@ -8,7 +8,7 @@ USE db_proyecto;
 
 
 /* ============================================================
-   TABLAS DEL PROYECTO (TAL COMO LAS TENÍAS)
+   TABLAS DEL PROYECTO (SIN CAMBIOS ESTRUCTURALES)
 ============================================================ */
 
 CREATE TABLE aeropuertos (
@@ -64,15 +64,11 @@ CREATE TABLE vuelos (
     id_vuelo INT AUTO_INCREMENT PRIMARY KEY,
     id_origen INT NOT NULL,
     id_destino INT NOT NULL,
-
     fecha_salida DATETIME NOT NULL,
     fecha_llegada DATETIME NOT NULL,
-
     escala ENUM('DIRECTO','ESCALA') DEFAULT 'DIRECTO',
     numero_escalas INT DEFAULT 0,
-
     activo BOOLEAN DEFAULT 1,
-
     FOREIGN KEY (id_origen) REFERENCES aeropuertos(id_aeropuerto) ON DELETE CASCADE,
     FOREIGN KEY (id_destino) REFERENCES aeropuertos(id_aeropuerto) ON DELETE CASCADE
 );
@@ -100,12 +96,9 @@ CREATE TABLE pedidos (
     id_pedido INT AUTO_INCREMENT PRIMARY KEY,
     id_usuario INT NOT NULL,
     id_wallet INT NOT NULL,
-
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     total DECIMAL(10,2) NOT NULL,
-
     estado ENUM('PENDIENTE','PAGADO','CANCELADO') DEFAULT 'PENDIENTE',
-
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID) ON DELETE RESTRICT,
     FOREIGN KEY (id_wallet) REFERENCES wallet(id_wallet) ON DELETE RESTRICT
 );
@@ -117,14 +110,10 @@ CREATE TABLE boletos (
     id_asiento INT NOT NULL,
     id_equipaje INT DEFAULT NULL,
     id_pedido INT NOT NULL,
-    
     estado ENUM('Activo', 'Usado', 'Cancelado', 'Pendiente') DEFAULT 'Activo',
-
     codigo_boleto VARCHAR(50) UNIQUE DEFAULT (UUID()),
     precio_total DECIMAL(10,2) NOT NULL,
-
     activo BOOLEAN DEFAULT 1,
-
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID) ON DELETE CASCADE,
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo) ON DELETE CASCADE,
     FOREIGN KEY (id_asiento) REFERENCES asientos(id_asiento) ON DELETE CASCADE,
@@ -134,15 +123,12 @@ CREATE TABLE boletos (
 
 CREATE TABLE detalles_pedido (
     id_detalle INT AUTO_INCREMENT PRIMARY KEY,
-
     id_pedido INT NOT NULL,
     id_vuelo INT NOT NULL,
     id_asiento INT NOT NULL,
-
     cantidad INT NOT NULL,
     precio_unitario DECIMAL(10,2) NOT NULL,
     subtotal DECIMAL(10,2) NOT NULL,
-
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE CASCADE,
     FOREIGN KEY (id_vuelo) REFERENCES vuelos(id_vuelo),
     FOREIGN KEY (id_asiento) REFERENCES asientos(id_asiento)
@@ -164,12 +150,10 @@ CREATE TABLE envio_equipaje (
     id_usuario INT NOT NULL,
     id_pedido INT NOT NULL,
     id_direccion INT NOT NULL,
-
     cantidad INT NOT NULL DEFAULT 1,
     fecha_envio DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado_envio ENUM('PENDIENTE','EN_CAMINO','ENTREGADO','CANCELADO') DEFAULT 'PENDIENTE',
     costo_envio DECIMAL(10,2) DEFAULT 0.00,
-
     FOREIGN KEY (id_usuario) REFERENCES Usuarios(ID) ON DELETE CASCADE,
     FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido) ON DELETE CASCADE,
     FOREIGN KEY (id_direccion) REFERENCES direcciones(id_direccion) ON DELETE CASCADE
@@ -205,10 +189,11 @@ INSERT INTO tipos_maleta (nombre, peso_max, precio_base, tarifa_kg_extra) VALUES
 
 
 /* ============================================================
-   AEROPUERTOS (TAL COMO LOS TENÍAS)
+   AEROPUERTOS – SIN TRUNCATE, SOLO BORRAMOS E INSERTAMOS
 ============================================================ */
 
-TRUNCATE TABLE aeropuertos;
+DELETE FROM aeropuertos;
+ALTER TABLE aeropuertos AUTO_INCREMENT = 1;
 
 INSERT INTO aeropuertos (nombre, ciudad, estado) VALUES
 ('Aeropuerto de Aguascalientes', 'Aguascalientes', 'Aguascalientes'),
@@ -246,27 +231,32 @@ INSERT INTO aeropuertos (nombre, ciudad, estado) VALUES
 
 
 /* ============================================================
-   VUELOS NUEVOS — SÓLO LAS RUTAS MÁS CONCURRIDAS DE MÉXICO
+   LIMPIEZA SEGURA DE VUELOS, ASIENTOS, EQUIPAJE
 ============================================================ */
 
-TRUNCATE TABLE boletos;
-TRUNCATE TABLE pagos;
-TRUNCATE TABLE pedidos;
-TRUNCATE TABLE reseñas;
-TRUNCATE TABLE equipaje;
-TRUNCATE TABLE asientos;
-TRUNCATE TABLE vuelos;
+SET FOREIGN_KEY_CHECKS = 0;
+
+DELETE FROM equipaje;
+DELETE FROM asientos;
+DELETE FROM vuelos;
+
+ALTER TABLE vuelos AUTO_INCREMENT = 1;
+ALTER TABLE asientos AUTO_INCREMENT = 1;
+ALTER TABLE equipaje AUTO_INCREMENT = 1;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+/* ============================================================
+   INSERT – VUELOS MÁS CONCURRIDOS DE MÉXICO
+============================================================ */
 
 INSERT INTO vuelos (
-    id_origen,
-    id_destino,
-    fecha_salida,
-    fecha_llegada,
-    escala,
-    numero_escalas,
-    activo
+    id_origen, id_destino,
+    fecha_salida, fecha_llegada,
+    escala, numero_escalas, activo
 ) VALUES
-    -- CDMX -> Cancún (ruta #1 más transitada)
+    -- CDMX -> Cancún
     (9, 23, '2025-03-10 08:00:00', '2025-03-10 10:10:00', 'DIRECTO', 0, 1),
 
     -- Cancún -> CDMX
@@ -286,18 +276,26 @@ INSERT INTO vuelos (
 
 
 /* ============================================================
-   ASIENTOS PARA LOS NUEVOS VUELOS
+   INSERT – ASIENTOS (BÁSICO – REGULAR – PREMIUM)
 ============================================================ */
 
-INSERT INTO asientos (
-    id_vuelo, tipo_asiento, precio, stock, activo
-) VALUES
-    (1, 'BASICO', 3120.00, 40, 1),
-    (1, 'REGULAR', 3900.00, 24, 1),
-    (1, 'PREMIUM', 4990.00, 12, 1),
-    (2, 'BASICO', 3120.00, 40, 1),
-    (2, 'REGULAR', 3900.00, 24, 1),
-    (2, 'PREMIUM', 4990.00, 12, 1),
-    (3, 'BASICO', 2280.00, 40, 1),
-    (3, 'REGULAR', 2850.00, 24, 1),
-    (3, 'PREMIUM', 3650.00, 12, 1)
+INSERT INTO asientos (id_vuelo, tipo_asiento, precio, stock, activo) VALUES
+    (1,'BASICO',3120,40,1),(1,'REGULAR',3900,24,1),(1,'PREMIUM',4990,12,1),
+    (2,'BASICO',3120,40,1),(2,'REGULAR',3900,24,1),(2,'PREMIUM',4990,12,1),
+    (3,'BASICO',2280,40,1),(3,'REGULAR',2850,24,1),(3,'PREMIUM',3650,12,1),
+    (4,'BASICO',2280,40,1),(4,'REGULAR',2850,24,1),(4,'PREMIUM',3650,12,1),
+    (5,'BASICO',1800,40,1),(5,'REGULAR',2250,24,1),(5,'PREMIUM',2880,12,1),
+    (6,'BASICO',1800,40,1),(6,'REGULAR',2250,24,1),(6,'PREMIUM',2880,12,1);
+
+
+/* ============================================================
+   INSERT – EQUIPAJE
+============================================================ */
+
+INSERT INTO equipaje (id_vuelo, tipo, precio_extra, activo) VALUES
+    (1,'C',0,1),(1,'M',350,1),(1,'G',550,1),(1,'XL',750,1),(1,'XXL',950,1),
+    (2,'C',0,1),(2,'M',350,1),(2,'G',550,1),(2,'XL',750,1),(2,'XXL',950,1),
+    (3,'C',0,1),(3,'M',350,1),(3,'G',550,1),(3,'XL',750,1),(3,'XXL',950,1),
+    (4,'C',0,1),(4,'M',350,1),(4,'G',550,1),(4,'XL',750,1),(4,'XXL',950,1),
+    (5,'C',0,1),(5,'M',350,1),(5,'G',550,1),(5,'XL',750,1),(5,'XXL',950,1),
+    (6,'C',0,1),(6,'M',350,1),(6,'G',550,1),(6,'XL',750,1),(6,'XXL',950,1);
