@@ -1,5 +1,5 @@
 // =========================================
-// authController.js — Seguridad completa
+// authController.js — Controlador principal
 // =========================================
 
 const db = require("./conexion");
@@ -8,39 +8,41 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // =========================================
-// CONFIGURACIÓN JWT
+// CONFIG JWT
 // =========================================
 const JWT_SECRET = process.env.JWT_SECRET || "CAMBIA_ESTA_CLAVE_EN_PRODUCCION_123";
 const JWT_EXPIRES_IN = "2h";
 
-const query = (sql, params = []) => {
+// =========================================
+// Helper para Promesas SQL
+// =========================================
+function query(sql, params = []) {
     return new Promise((resolve, reject) => {
         db.query(sql, params, (err, rows) => {
             if (err) reject(err);
             else resolve(rows);
         });
     });
-};
+}
 
+// =========================================
 // Estados válidos de México
+// =========================================
 const ESTADOS_MX = new Set([
-    "Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas",
-    "Chihuahua","Ciudad de México","Coahuila","Colima","Durango","Guanajuato",
-    "Guerrero","Hidalgo","Jalisco","México","Michoacán","Morelos","Nayarit",
-    "Nuevo León","Oaxaca","Puebla","Querétaro","Quintana Roo","San Luis Potosí",
-    "Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala","Veracruz","Yucatán","Zacatecas"
+    "Aguascalientes","Baja California","Baja California Sur","Campeche","Chiapas","Chihuahua",
+    "Ciudad de México","Coahuila","Colima","Durango","Guanajuato","Guerrero","Hidalgo","Jalisco",
+    "México","Michoacán","Morelos","Nayarit","Nuevo León","Oaxaca","Puebla","Querétaro",
+    "Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala",
+    "Veracruz","Yucatán","Zacatecas"
 ]);
 
 // =========================================
-// Helper: Tokenizar tarjeta (SHA-256)
+// Helpers
 // =========================================
 function tokenizar(numeroTarjeta) {
     return crypto.createHash("sha256").update(numeroTarjeta).digest("hex");
 }
 
-// =========================================
-// Helper: Detectar tipo de tarjeta
-// =========================================
 function detectarTipo(numero) {
     if (/^4[0-9]{12}(?:[0-9]{3})?$/.test(numero)) return "Visa";
     if (/^5[1-5][0-9]{14}$/.test(numero)) return "MasterCard";
@@ -48,9 +50,6 @@ function detectarTipo(numero) {
     return "Desconocida";
 }
 
-// =========================================
-// Crear token JWT
-// =========================================
 function crearToken(usuario) {
     return jwt.sign(
         { id: usuario.ID, rol: usuario.Rol },
@@ -60,9 +59,9 @@ function crearToken(usuario) {
 }
 
 // =========================================
-// MIDDLEWARE — Verificar token
+// MIDDLEWARE: verificarToken
 // =========================================
-exports.verificarToken = (req, res, next) => {
+function verificarToken(req, res, next) {
     const header = req.headers["authorization"];
 
     if (!header)
@@ -80,22 +79,22 @@ exports.verificarToken = (req, res, next) => {
         req.user = { ID: decoded.id, Rol: decoded.rol };
         next();
     });
-};
+}
 
 // =========================================
-// MIDDLEWARE — Solo Admin
+// MIDDLEWARE: soloAdmin
 // =========================================
-exports.soloAdmin = (req, res, next) => {
+function soloAdmin(req, res, next) {
     if (!req.user || req.user.Rol !== 1)
         return res.status(403).json({ error: true, message: "Acceso restringido (solo admin)" });
 
     next();
-};
+}
 
 // =========================================
-// LOGIN — bcrypt + migración de texto plano
+// LOGIN
 // =========================================
-exports.login = (req, res) => {
+function login(req, res) {
     const { email, password } = req.body;
 
     db.query("SELECT * FROM Usuarios WHERE Correo = ?", [email], (err, rows) => {
@@ -106,14 +105,14 @@ exports.login = (req, res) => {
 
         const usuario = rows[0];
         const hashBD = usuario.Contrasena || "";
-        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$") || hashBD.startsWith("$2y$");
+        const esHash = hashBD.startsWith("$2");
 
-        // Caso 1: contraseña vieja guardada en texto plano
+        // Contraseña en texto plano
         if (!esHash) {
             if (hashBD !== password)
                 return res.json({ error: true, message: "Contraseña incorrecta" });
 
-            // Migrar a bcrypt
+            // Migrar contraseña
             bcrypt.hash(password, 10, (errH, nuevoHash) => {
                 if (!errH) {
                     db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, usuario.ID]);
@@ -122,19 +121,13 @@ exports.login = (req, res) => {
                 continuar(usuario, password);
             });
         } else {
-            // Ya está hasheada
             continuar(usuario, password);
         }
 
-        function continuar(usr, plainPassword) {
-            bcrypt.compare(plainPassword, usr.Contrasena, (err2, ok) => {
-                if (err2)
-                    return res.json({ error: true, message: "Error interno" });
-
+        function continuar(usr, plainPass) {
+            bcrypt.compare(plainPass, usr.Contrasena, (err2, ok) => {
                 if (!ok)
                     return res.json({ error: true, message: "Contraseña incorrecta" });
-
-                const token = crearToken(usr);
 
                 res.json({
                     error: false,
@@ -147,17 +140,17 @@ exports.login = (req, res) => {
                         Telefono: usr.Telefono,
                         Rol: usr.Rol
                     },
-                    token
+                    token: crearToken(usr)
                 });
             });
         }
     });
-};
+}
 
 // =========================================
-// REGISTRO — contraseñas seguras
+// REGISTRO
 // =========================================
-exports.registrar = (req, res) => {
+function registrar(req, res) {
     const { nombre, apellidos, email, telefono, password } = req.body;
 
     const rol = email.endsWith("@admin.com") ? 1 : 0;
@@ -178,12 +171,12 @@ exports.registrar = (req, res) => {
             res.json({ error: false, message: "Usuario registrado exitosamente" });
         });
     });
-};
+}
 
 // =========================================
-// RESET PASSWORD — bcrypt
+// RESET PASSWORD
 // =========================================
-exports.resetPassword = (req, res) => {
+function resetPassword(req, res) {
     const { email, passwordNueva } = req.body;
 
     bcrypt.hash(passwordNueva, 10, (errHash, hash) => {
@@ -191,21 +184,18 @@ exports.resetPassword = (req, res) => {
             return res.status(500).json({ error: true, message: "Error procesando contraseña" });
 
         db.query("UPDATE Usuarios SET Contrasena = ? WHERE Correo = ?", [hash, email], (err, result) => {
-            if (err)
-                return res.json({ error: true, message: "Error interno" });
-
-            if (result.affectedRows === 0)
+            if (result?.affectedRows === 0)
                 return res.json({ error: true, message: "El correo no existe" });
 
             res.json({ error: false, message: "Contraseña actualizada correctamente" });
         });
     });
-};
+}
 
 // =========================================
-
+// ADMIN — Eliminar Usuario
 // =========================================
-exports.eliminarUsuario = (req, res) => {
+function eliminarUsuario(req, res) {
     const { id } = req.body;
 
     db.query("DELETE FROM Usuarios WHERE ID = ?", [id], (err) => {
@@ -214,24 +204,24 @@ exports.eliminarUsuario = (req, res) => {
 
         res.json({ error: false, message: "Usuario eliminado" });
     });
-};
+}
 
 // =========================================
-// ADMIN — Listar usuarios
+// ADMIN — Listar Usuarios
 // =========================================
-exports.listarUsuarios = (req, res) => {
+function listarUsuarios(req, res) {
     db.query("SELECT ID, Nombre, Apellido, Correo, Telefono, Rol FROM Usuarios", (err, rows) => {
         if (err)
             return res.json({ error: true, message: "Error al listar usuarios" });
 
         res.json({ error: false, usuarios: rows });
     });
-};
+}
 
 // =========================================
 // WALLET — Listar tarjetas
 // =========================================
-exports.listarWallet = (req, res) => {
+function listarWallet(req, res) {
     const { id_usuario } = req.params;
 
     const sql = `
@@ -246,12 +236,12 @@ exports.listarWallet = (req, res) => {
 
         res.json({ error: false, wallet: rows });
     });
-};
+}
 
 // =========================================
 // WALLET — Agregar tarjeta
 // =========================================
-exports.agregarTarjeta = (req, res) => {
+function agregarTarjeta(req, res) {
     const { id_usuario, numero, titular, expiracion } = req.body;
 
     if (!numero || !titular || !expiracion)
@@ -285,12 +275,12 @@ exports.agregarTarjeta = (req, res) => {
             });
         }
     );
-};
+}
 
 // =========================================
 // WALLET — Eliminar tarjeta (soft delete)
 // =========================================
-exports.eliminarTarjeta = (req, res) => {
+function eliminarTarjeta(req, res) {
     const { id_wallet } = req.body;
 
     db.query("UPDATE wallet SET activo = 0 WHERE id_wallet = ?", [id_wallet], (err) => {
@@ -299,12 +289,12 @@ exports.eliminarTarjeta = (req, res) => {
 
         res.json({ error: false, message: "Tarjeta eliminada" });
     });
-};
+}
 
 // =========================================
 // WALLET — Actualizar tarjeta
 // =========================================
-exports.actualizarTarjeta = (req, res) => {
+function actualizarTarjeta(req, res) {
     const { id_wallet, titular, expiracion } = req.body;
 
     db.query(
@@ -317,12 +307,12 @@ exports.actualizarTarjeta = (req, res) => {
             res.json({ error: false, message: "Datos actualizados" });
         }
     );
-};
+}
 
 // =========================================
-// PERFIL — Actualizar datos
+// PERFIL — Actualizar usuario
 // =========================================
-exports.updateUser = (req, res) => {
+function updateUser(req, res) {
     const { ID, Nombre, Apellido, Correo, Telefono } = req.body;
 
     db.query(
@@ -339,12 +329,12 @@ exports.updateUser = (req, res) => {
             res.json({ success: true, message: "Datos actualizados correctamente" });
         }
     );
-};
+}
 
 // =========================================
-// PERFIL — Actualizar contraseña (soporta hash viejo y nuevo)
+// PERFIL — Actualizar contraseña
 // =========================================
-exports.updatePassword = (req, res) => {
+function updatePassword(req, res) {
     const { ID, actual, nueva } = req.body;
 
     if (!ID || !actual || !nueva)
@@ -355,9 +345,9 @@ exports.updatePassword = (req, res) => {
             return res.json({ success: false, message: "Usuario no encontrado" });
 
         const hashBD = rows[0].Contrasena || "";
-        const esHash = hashBD.startsWith("$2a$") || hashBD.startsWith("$2b$") || hashBD.startsWith("$2y$");
+        const esHash = hashBD.startsWith("$2");
 
-        // Contraseña antigua en texto plano
+        // Contraseña vieja en texto plano
         if (!esHash) {
             if (hashBD !== actual)
                 return res.json({ success: false, message: "La contraseña actual es incorrecta" });
@@ -374,18 +364,12 @@ exports.updatePassword = (req, res) => {
                 });
             });
         } else {
-            // Contraseña ya hasheada
+            // Contraseña ya hash
             bcrypt.compare(actual, hashBD, (err2, ok) => {
-                if (err2)
-                    return res.json({ success: false, message: "Error interno" });
-
                 if (!ok)
                     return res.json({ success: false, message: "La contraseña actual es incorrecta" });
 
                 bcrypt.hash(nueva, 10, (errHash, nuevoHash) => {
-                    if (errHash)
-                        return res.json({ success: false, message: "Error procesando contraseña" });
-
                     db.query("UPDATE Usuarios SET Contrasena = ? WHERE ID = ?", [nuevoHash, ID], (err3) => {
                         if (err3)
                             return res.json({ success: false, message: "Error al actualizar contraseña" });
@@ -396,16 +380,16 @@ exports.updatePassword = (req, res) => {
             });
         }
     });
-};
+}
 
-// ================================================================
-// ENVÍO DE EQUIPAJE — Obtener pedidos pagados
-// ================================================================
-exports.obtenerPedidosPagados = (req, res) => {
+// =========================================
+// ENVÍO EQUIPAJE — Pedidos pagados
+// =========================================
+function obtenerPedidosPagados(req, res) {
     const { id_usuario } = req.params;
 
     const sql = `
-        SELECT id_pedido, total 
+        SELECT id_pedido, total
         FROM pedidos 
         WHERE id_usuario = ? AND estado = 'PAGADO'
     `;
@@ -414,12 +398,12 @@ exports.obtenerPedidosPagados = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al obtener pedidos" });
         res.json({ error: false, pedidos: rows });
     });
-};
+}
 
-// ================================================================
-// ENVÍO DE EQUIPAJE — Obtener direcciones del usuario
-// ================================================================
-exports.obtenerDireccionesUsuario = (req, res) => {
+// =========================================
+// DIRECCIONES — Obtener del usuario
+// =========================================
+function obtenerDireccionesUsuario(req, res) {
     const { id_usuario } = req.params;
 
     const sql = `
@@ -432,53 +416,12 @@ exports.obtenerDireccionesUsuario = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al obtener direcciones" });
         res.json({ error: false, direcciones: rows });
     });
-};
+}
 
-// ================================================================
-// ENVÍO DE EQUIPAJE — Crear envío
-// ================================================================
-exports.crearEnvio = (req, res) => {
-    const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
-
-    if (!id_usuario || !id_pedido || !id_direccion || !cantidad)
-        return res.json({ error: true, message: "Datos incompletos para crear el envío" });
-
-    const sql = `
-        INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
-        VALUES (?, ?, ?, ?)
-    `;
-
-    db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
-        if (err) return res.json({ error: true, message: "Error al crear envío" });
-
-        res.json({ error: false, message: "Envío registrado correctamente" });
-    });
-};
-
-// ================================================================
-// ENVÍO DE EQUIPAJE — Historial
-// ================================================================
-exports.obtenerHistorialEnvios = (req, res) => {
-    const { id_usuario } = req.params;
-
-    const sql = `
-        SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
-        FROM envio_equipaje
-        WHERE id_usuario = ?
-        ORDER BY fecha_envio DESC
-    `;
-
-    db.query(sql, [id_usuario], (err, rows) => {
-        if (err) return res.json({ error: true, message: "Error al obtener historial" });
-
-        res.json({ error: false, envios: rows });
-    });
-};
-
-// ================================================================
-// DIRECCIONES — Agregar
-// ================================================================
-exports.agregarDireccion = (req, res) => {
+// =========================================
+// DIRECCIONES — Crear
+// =========================================
+function agregarDireccion(req, res) {
     const { id_usuario, calle, ciudad, estado, cp } = req.body;
 
     if (!ESTADOS_MX.has(estado))
@@ -494,12 +437,12 @@ exports.agregarDireccion = (req, res) => {
 
         res.json({ error: false, message: "Dirección agregada" });
     });
-};
+}
 
-// ================================================================
+// =========================================
 // DIRECCIONES — Editar
-// ================================================================
-exports.editarDireccion = (req, res) => {
+// =========================================
+function editarDireccion(req, res) {
     const { id_direccion, calle, ciudad, estado, cp } = req.body;
 
     if (!ESTADOS_MX.has(estado))
@@ -516,12 +459,12 @@ exports.editarDireccion = (req, res) => {
 
         res.json({ error: false, message: "Dirección actualizada" });
     });
-};
+}
 
-// ================================================================
+// =========================================
 // DIRECCIONES — Eliminar
-// ================================================================
-exports.eliminarDireccion = (req, res) => {
+// =========================================
+function eliminarDireccion(req, res) {
     const { id_direccion } = req.body;
 
     db.query("DELETE FROM direcciones WHERE id_direccion = ?", [id_direccion], err => {
@@ -529,12 +472,53 @@ exports.eliminarDireccion = (req, res) => {
 
         res.json({ error: false, message: "Dirección eliminada" });
     });
-};
+}
+
+// ================================================================
+// ENVÍO DE EQUIPAJE — Crear envío
+// ================================================================
+function crearEnvio(req, res) {
+    const { id_usuario, id_pedido, id_direccion, cantidad } = req.body;
+
+    if (!id_usuario || !id_pedido || !id_direccion || !cantidad)
+        return res.json({ error: true, message: "Datos incompletos para crear el envío" });
+
+    const sql = `
+        INSERT INTO envio_equipaje (id_usuario, id_pedido, id_direccion, cantidad)
+        VALUES (?, ?, ?, ?)
+    `;
+
+    db.query(sql, [id_usuario, id_pedido, id_direccion, cantidad], (err) => {
+        if (err) return res.json({ error: true, message: "Error al crear envío" });
+
+        res.json({ error: false, message: "Envío registrado correctamente" });
+    });
+}
+
+// ================================================================
+// ENVÍO DE EQUIPAJE — Historial
+// ================================================================
+function obtenerHistorialEnvios(req, res) {
+    const { id_usuario } = req.params;
+
+    const sql = `
+        SELECT id_envio, id_pedido, cantidad, fecha_envio, estado_envio, costo_envio
+        FROM envio_equipaje
+        WHERE id_usuario = ?
+        ORDER BY fecha_envio DESC
+    `;
+
+    db.query(sql, [id_usuario], (err, rows) => {
+        if (err) return res.json({ error: true, message: "Error al obtener historial" });
+
+        res.json({ error: false, envios: rows });
+    });
+}
 
 // ================================================================
 // VUELOS PÚBLICOS
 // ================================================================
-exports.listarVuelosPublico = async (req, res) => {
+async function listarVuelosPublico(req, res) {
     try {
         const sql = `
             SELECT 
@@ -557,9 +541,9 @@ exports.listarVuelosPublico = async (req, res) => {
         console.error(err);
         res.json({ error: true, message: "Error al listar vuelos" });
     }
-};
+}
 
-exports.detalleVuelo = async (req, res) => {
+async function detalleVuelo(req, res) {
     const { id } = req.params;
 
     try {
@@ -602,12 +586,12 @@ exports.detalleVuelo = async (req, res) => {
         console.error(err);
         res.json({ error: true, message: "Error al obtener detalle del vuelo" });
     }
-};
+}
 
 // ================================================================
 // ADMIN – Aeropuertos
 // ================================================================
-exports.listarAeropuertos = (req, res) => {
+function listarAeropuertos(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM aeropuertos";
     const params = [];
@@ -621,9 +605,9 @@ exports.listarAeropuertos = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar aeropuertos" });
         res.json({ error: false, aeropuertos: rows });
     });
-};
+}
 
-exports.crearAeropuerto = (req, res) => {
+function crearAeropuerto(req, res) {
     const { nombre, ciudad, estado } = req.body;
 
     if (!nombre || !ciudad || !estado) {
@@ -638,9 +622,9 @@ exports.crearAeropuerto = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear aeropuerto" });
         res.json({ error: false, message: "Aeropuerto creado correctamente" });
     });
-};
+}
 
-exports.actualizarAeropuerto = (req, res) => {
+function actualizarAeropuerto(req, res) {
     const { id_aeropuerto, nombre, ciudad, estado } = req.body;
 
     if (!id_aeropuerto || !nombre || !ciudad || !estado) {
@@ -656,9 +640,9 @@ exports.actualizarAeropuerto = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar aeropuerto" });
         res.json({ error: false, message: "Aeropuerto actualizado" });
     });
-};
+}
 
-exports.eliminarAeropuerto = (req, res) => {
+function eliminarAeropuerto(req, res) {
     const { id_aeropuerto } = req.body;
     if (!id_aeropuerto) return res.json({ error: true, message: "ID faltante" });
 
@@ -670,12 +654,12 @@ exports.eliminarAeropuerto = (req, res) => {
             res.json({ error: false, message: "Aeropuerto desactivado" });
         }
     );
-};
+}
 
 // ================================================================
 // ADMIN – Vuelos
 // ================================================================
-exports.listarVuelosAdmin = (req, res) => {
+function listarVuelosAdmin(req, res) {
     const { id } = req.query;
     let sql = `
         SELECT 
@@ -698,9 +682,9 @@ exports.listarVuelosAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar vuelos" });
         res.json({ error: false, vuelos: rows });
     });
-};
+}
 
-exports.crearVuelo = (req, res) => {
+function crearVuelo(req, res) {
     const { id_origen, id_destino, fecha_salida, fecha_llegada, escala, numero_escalas } = req.body;
 
     if (!id_origen || !id_destino || !fecha_salida || !fecha_llegada) {
@@ -712,13 +696,17 @@ exports.crearVuelo = (req, res) => {
         VALUES (?, ?, ?, ?, ?, ?, 1)
     `;
 
-    db.query(sql, [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0], (err) => {
-        if (err) return res.json({ error: true, message: "Error al crear vuelo" });
-        res.json({ error: false, message: "Vuelo creado correctamente" });
-    });
-};
+    db.query(
+        sql,
+        [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0],
+        (err) => {
+            if (err) return res.json({ error: true, message: "Error al crear vuelo" });
+            res.json({ error: false, message: "Vuelo creado correctamente" });
+        }
+    );
+}
 
-exports.actualizarVuelo = (req, res) => {
+function actualizarVuelo(req, res) {
     const { id_vuelo, id_origen, id_destino, fecha_salida, fecha_llegada, escala, numero_escalas } = req.body;
 
     if (!id_vuelo || !id_origen || !id_destino || !fecha_salida || !fecha_llegada) {
@@ -731,13 +719,17 @@ exports.actualizarVuelo = (req, res) => {
         WHERE id_vuelo = ?
     `;
 
-    db.query(sql, [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0, id_vuelo], (err) => {
-        if (err) return res.json({ error: true, message: "Error al actualizar vuelo" });
-        res.json({ error: false, message: "Vuelo actualizado" });
-    });
-};
+    db.query(
+        sql,
+        [id_origen, id_destino, fecha_salida, fecha_llegada, escala || "DIRECTO", numero_escalas || 0, id_vuelo],
+        (err) => {
+            if (err) return res.json({ error: true, message: "Error al actualizar vuelo" });
+            res.json({ error: false, message: "Vuelo actualizado" });
+        }
+    );
+}
 
-exports.eliminarVuelo = (req, res) => {
+function eliminarVuelo(req, res) {
     const { id_vuelo } = req.body;
     if (!id_vuelo) return res.json({ error: true, message: "ID faltante" });
 
@@ -745,12 +737,12 @@ exports.eliminarVuelo = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar vuelo" });
         res.json({ error: false, message: "Vuelo desactivado" });
     });
-};
+}
 
 // ================================================================
 // ADMIN – Asientos
 // ================================================================
-exports.listarAsientos = (req, res) => {
+function listarAsientos(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM asientos";
     const params = [];
@@ -764,9 +756,9 @@ exports.listarAsientos = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar asientos" });
         res.json({ error: false, asientos: rows });
     });
-};
+}
 
-exports.crearAsiento = (req, res) => {
+function crearAsiento(req, res) {
     const { id_vuelo, tipo_asiento, precio, stock } = req.body;
 
     if (!id_vuelo || !tipo_asiento || !precio || stock == null) {
@@ -782,9 +774,9 @@ exports.crearAsiento = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear asiento" });
         res.json({ error: false, message: "Asiento creado correctamente" });
     });
-};
+}
 
-exports.actualizarAsiento = (req, res) => {
+function actualizarAsiento(req, res) {
     const { id_asiento, id_vuelo, tipo_asiento, precio, stock } = req.body;
 
     if (!id_asiento || !id_vuelo || !tipo_asiento || !precio || stock == null) {
@@ -801,9 +793,9 @@ exports.actualizarAsiento = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar asiento" });
         res.json({ error: false, message: "Asiento actualizado" });
     });
-};
+}
 
-exports.eliminarAsiento = (req, res) => {
+function eliminarAsiento(req, res) {
     const { id_asiento } = req.body;
     if (!id_asiento) return res.json({ error: true, message: "ID faltante" });
 
@@ -811,12 +803,12 @@ exports.eliminarAsiento = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar asiento" });
         res.json({ error: false, message: "Asiento desactivado" });
     });
-};
+}
 
 // ================================================================
 // ADMIN – Equipaje
 // ================================================================
-exports.listarEquipaje = (req, res) => {
+function listarEquipaje(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM equipaje";
     const params = [];
@@ -830,9 +822,9 @@ exports.listarEquipaje = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar equipaje" });
         res.json({ error: false, equipaje: rows });
     });
-};
+}
 
-exports.crearEquipaje = (req, res) => {
+function crearEquipaje(req, res) {
     const { id_vuelo, tipo, precio_extra } = req.body;
 
     if (!id_vuelo || !tipo || !precio_extra) {
@@ -848,9 +840,9 @@ exports.crearEquipaje = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear equipaje" });
         res.json({ error: false, message: "Equipaje creado correctamente" });
     });
-};
+}
 
-exports.actualizarEquipaje = (req, res) => {
+function actualizarEquipaje(req, res) {
     const { id_equipaje, id_vuelo, tipo, precio_extra } = req.body;
 
     if (!id_equipaje || !id_vuelo || !tipo || !precio_extra) {
@@ -867,9 +859,9 @@ exports.actualizarEquipaje = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar equipaje" });
         res.json({ error: false, message: "Equipaje actualizado" });
     });
-};
+}
 
-exports.eliminarEquipaje = (req, res) => {
+function eliminarEquipaje(req, res) {
     const { id_equipaje } = req.body;
 
     if (!id_equipaje) return res.json({ error: true, message: "ID faltante" });
@@ -878,12 +870,12 @@ exports.eliminarEquipaje = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar equipaje" });
         res.json({ error: false, message: "Equipaje desactivado" });
     });
-};
+}
 
 // ================================================================
 // CARRITO / PEDIDOS / PAGOS / BOLETOS
 // ================================================================
-exports.crearPedidoDesdeCarrito = async (req, res) => {
+async function crearPedidoDesdeCarrito(req, res) {
     const { id_usuario, id_wallet, items, envio } = req.body;
 
     if (!id_usuario || !id_wallet || !Array.isArray(items) || !items.length) {
@@ -932,7 +924,7 @@ exports.crearPedidoDesdeCarrito = async (req, res) => {
             });
         }
 
-        // ---- COSTO DE ENVÍO (si viene) ----
+        // Costos de envío (si vienen)
         let costo_envio = 0;
         if (envio && envio.precio_total) {
             costo_envio = Number(envio.precio_total) || 0;
@@ -1010,12 +1002,12 @@ exports.crearPedidoDesdeCarrito = async (req, res) => {
         console.error(err);
         res.json({ error: true, message: "Error al procesar el carrito" });
     }
-};
+}
 
 // ================================================================
-// ADMIN – Tipos de maleta (envío equipaje)
+// ADMIN – Tipos de maleta
 // ================================================================
-exports.listarTiposMaleta = (req, res) => {
+function listarTiposMaleta(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM tipos_maleta";
     const params = [];
@@ -1029,9 +1021,9 @@ exports.listarTiposMaleta = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar tipos de maleta" });
         res.json({ error: false, tipos: rows });
     });
-};
+}
 
-exports.crearTipoMaleta = (req, res) => {
+function crearTipoMaleta(req, res) {
     const { nombre, peso_max, precio_base, tarifa_kg_extra } = req.body;
     if (!nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1045,9 +1037,9 @@ exports.crearTipoMaleta = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear tipo de maleta" });
         res.json({ error: false, message: "Tipo de maleta creado" });
     });
-};
+}
 
-exports.actualizarTipoMaleta = (req, res) => {
+function actualizarTipoMaleta(req, res) {
     const { id_tipo_maleta, nombre, peso_max, precio_base, tarifa_kg_extra } = req.body;
     if (!id_tipo_maleta || !nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1062,9 +1054,9 @@ exports.actualizarTipoMaleta = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar tipo de maleta" });
         res.json({ error: false, message: "Tipo de maleta actualizado" });
     });
-};
+}
 
-exports.eliminarTipoMaleta = (req, res) => {
+function eliminarTipoMaleta(req, res) {
     const { id_tipo_maleta } = req.body;
     if (!id_tipo_maleta) return res.json({ error: true, message: "ID faltante" });
 
@@ -1072,12 +1064,12 @@ exports.eliminarTipoMaleta = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar tipo de maleta" });
         res.json({ error: false, message: "Tipo de maleta eliminado" });
     });
-};
+}
 
 // ================================================================
 // ADMIN – Pedidos
 // ================================================================
-exports.listarPedidos = (req, res) => {
+function listarPedidos(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM pedidos";
     const params = [];
@@ -1091,9 +1083,9 @@ exports.listarPedidos = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar pedidos" });
         res.json({ error: false, pedidos: rows });
     });
-};
+}
 
-exports.crearPedidoAdmin = (req, res) => {
+function crearPedidoAdmin(req, res) {
     const { id_usuario, id_wallet, total, estado } = req.body;
     if (!id_usuario || !id_wallet || !total || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1107,9 +1099,9 @@ exports.crearPedidoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear pedido" });
         res.json({ error: false, message: "Pedido creado" });
     });
-};
+}
 
-exports.actualizarPedidoAdmin = (req, res) => {
+function actualizarPedidoAdmin(req, res) {
     const { id_pedido, id_usuario, id_wallet, total, estado } = req.body;
     if (!id_pedido || !id_usuario || !id_wallet || !total || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1124,9 +1116,9 @@ exports.actualizarPedidoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar pedido" });
         res.json({ error: false, message: "Pedido actualizado" });
     });
-};
+}
 
-exports.eliminarPedidoAdmin = (req, res) => {
+function eliminarPedidoAdmin(req, res) {
     const { id_pedido } = req.body;
     if (!id_pedido) return res.json({ error: true, message: "ID faltante" });
 
@@ -1134,12 +1126,12 @@ exports.eliminarPedidoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar pedido" });
         res.json({ error: false, message: "Pedido eliminado" });
     });
-};
+}
 
 // ================================================================
 // ADMIN – Pagos
 // ================================================================
-exports.listarPagos = (req, res) => {
+function listarPagos(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM pagos";
     const params = [];
@@ -1153,9 +1145,9 @@ exports.listarPagos = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar pagos" });
         res.json({ error: false, pagos: rows });
     });
-};
+}
 
-exports.crearPagoAdmin = (req, res) => {
+function crearPagoAdmin(req, res) {
     const { id_usuario, id_pedido, monto, estado } = req.body;
     if (!id_usuario || !id_pedido || !monto || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1169,9 +1161,9 @@ exports.crearPagoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al crear pago" });
         res.json({ error: false, message: "Pago creado" });
     });
-};
+}
 
-exports.actualizarPagoAdmin = (req, res) => {
+function actualizarPagoAdmin(req, res) {
     const { id_pago, id_usuario, id_pedido, monto, estado } = req.body;
     if (!id_pago || !id_usuario || !id_pedido || !monto || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1186,9 +1178,9 @@ exports.actualizarPagoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al actualizar pago" });
         res.json({ error: false, message: "Pago actualizado" });
     });
-};
+}
 
-exports.eliminarPagoAdmin = (req, res) => {
+function eliminarPagoAdmin(req, res) {
     const { id_pago } = req.body;
     if (!id_pago) return res.json({ error: true, message: "ID faltante" });
 
@@ -1196,12 +1188,12 @@ exports.eliminarPagoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar pago" });
         res.json({ error: false, message: "Pago eliminado" });
     });
-};
+}
 
 // ================================================================
 // ADMIN – Boletos
 // ================================================================
-exports.listarBoletos = (req, res) => {
+function listarBoletos(req, res) {
     const { id } = req.query;
     let sql = "SELECT * FROM boletos";
     const params = [];
@@ -1215,9 +1207,9 @@ exports.listarBoletos = (req, res) => {
         if (err) return res.json({ error: true, message: "Error al listar boletos" });
         res.json({ error: false, boletos: rows });
     });
-};
+}
 
-exports.crearBoletoAdmin = (req, res) => {
+function crearBoletoAdmin(req, res) {
     const { id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado } = req.body;
     if (!id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1227,13 +1219,17 @@ exports.crearBoletoAdmin = (req, res) => {
         INSERT INTO boletos (id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
-    db.query(sql, [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado], (err) => {
-        if (err) return res.json({ error: true, message: "Error al crear boleto" });
-        res.json({ error: false, message: "Boleto creado" });
-    });
-};
+    db.query(
+        sql,
+        [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado],
+        (err) => {
+            if (err) return res.json({ error: true, message: "Error al crear boleto" });
+            res.json({ error: false, message: "Boleto creado" });
+        }
+    );
+}
 
-exports.actualizarBoletoAdmin = (req, res) => {
+function actualizarBoletoAdmin(req, res) {
     const { id_boleto, id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado } = req.body;
     if (!id_boleto || !id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
         return res.json({ error: true, message: "Datos incompletos" });
@@ -1244,13 +1240,17 @@ exports.actualizarBoletoAdmin = (req, res) => {
         SET id_usuario = ?, id_vuelo = ?, id_asiento = ?, id_equipaje = ?, id_pedido = ?, precio_total = ?, estado = ?
         WHERE id_boleto = ?
     `;
-    db.query(sql, [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado, id_boleto], (err) => {
-        if (err) return res.json({ error: true, message: "Error al actualizar boleto" });
-        res.json({ error: false, message: "Boleto actualizado" });
-    });
-};
+    db.query(
+        sql,
+        [id_usuario, id_vuelo, id_asiento, id_equipaje || null, id_pedido, precio_total, estado, id_boleto],
+        (err) => {
+            if (err) return res.json({ error: true, message: "Error al actualizar boleto" });
+            res.json({ error: false, message: "Boleto actualizado" });
+        }
+    );
+}
 
-exports.eliminarBoletoAdmin = (req, res) => {
+function eliminarBoletoAdmin(req, res) {
     const { id_boleto } = req.body;
     if (!id_boleto) return res.json({ error: true, message: "ID faltante" });
 
@@ -1258,9 +1258,12 @@ exports.eliminarBoletoAdmin = (req, res) => {
         if (err) return res.json({ error: true, message: "No se pudo eliminar boleto" });
         res.json({ error: false, message: "Boleto eliminado" });
     });
-};
+}
 
-exports.crearUsuario = (req, res) => {
+// ================================================================
+// ADMIN – Crear Usuario (para /api/admin/usuarios/add)
+// ================================================================
+function crearUsuario(req, res) {
     const usuario = req.body;
 
     db.query("INSERT INTO Usuarios SET ?", usuario, (err) => {
@@ -1269,92 +1272,97 @@ exports.crearUsuario = (req, res) => {
 
         res.json({ error: false, message: "Usuario creado correctamente" });
     });
-};
+}
 
+// ================================================================
+// EXPORTS — Todo lo que usa server.js
+// ================================================================
 module.exports = {
+    // Middlewares
     verificarToken,
     soloAdmin,
+
+    // Auth
     login,
     registrar,
     resetPassword,
+
+    // Usuarios
     eliminarUsuario,
     listarUsuarios,
+    crearUsuario,
 
-    // WALLET
+    // Wallet
     listarWallet,
     agregarTarjeta,
     eliminarTarjeta,
     actualizarTarjeta,
 
-    // PERFIL
+    // Perfil
     updateUser,
     updatePassword,
 
-    // DIRECCIONES
+    // Direcciones / Envíos
     obtenerDireccionesUsuario,
     agregarDireccion,
     editarDireccion,
     eliminarDireccion,
-
-    // ENVÍOS
     obtenerPedidosPagados,
     crearEnvio,
     obtenerHistorialEnvios,
 
-    // VUELOS PÚBLICOS
+    // Vuelos públicos
     listarVuelosPublico,
     detalleVuelo,
 
-    // ADMIN — AEROPUERTOS
+    // Admin — Aeropuertos
     listarAeropuertos,
     crearAeropuerto,
     actualizarAeropuerto,
     eliminarAeropuerto,
 
-    // ADMIN — VUELOS
+    // Admin — Vuelos
     listarVuelosAdmin,
     crearVuelo,
     actualizarVuelo,
     eliminarVuelo,
 
-    // ADMIN — ASIENTOS
+    // Admin — Asientos
     listarAsientos,
     crearAsiento,
     actualizarAsiento,
     eliminarAsiento,
 
-    // ADMIN — EQUIPAJE
+    // Admin — Equipaje
     listarEquipaje,
     crearEquipaje,
     actualizarEquipaje,
     eliminarEquipaje,
 
-    // CARRITO
+    // Carrito / Pedido desde carrito
     crearPedidoDesdeCarrito,
 
-    // TIPOS MALETA
+    // Tipos de maleta
     listarTiposMaleta,
     crearTipoMaleta,
     actualizarTipoMaleta,
     eliminarTipoMaleta,
 
-    // PEDIDOS ADMIN
+    // Pedidos admin
     listarPedidos,
     crearPedidoAdmin,
     actualizarPedidoAdmin,
     eliminarPedidoAdmin,
 
-    // PAGOS
+    // Pagos admin
     listarPagos,
     crearPagoAdmin,
     actualizarPagoAdmin,
     eliminarPagoAdmin,
 
-    // BOLETOS
+    // Boletos admin
     listarBoletos,
     crearBoletoAdmin,
     actualizarBoletoAdmin,
-    eliminarBoletoAdmin,
-    crearUsuario,
-
+    eliminarBoletoAdmin
 };
