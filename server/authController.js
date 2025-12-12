@@ -1277,35 +1277,6 @@ router.get('/id/:id', (req, res) => {
     });
 });
 
-// Crear usuario
-router.post('/add', (req, res) => {
-    const usr = req.body;
-    db.query("INSERT INTO Usuarios SET ?", usr, (err) => {
-        if (err) return res.status(500).json({ error: true });
-        res.json({ message: "Usuario creado correctamente" });
-    });
-});
-
-// Editar usuario
-router.put('/update/:id', (req, res) => {
-    db.query(
-        "UPDATE Usuarios SET ? WHERE ID = ?",
-        [req.body, req.params.id],
-        (err) => {
-            if (err) return res.status(500).json({ error: true });
-            res.json({ message: "Usuario actualizado" });
-        }
-    );
-});
-
-// Eliminar usuario
-router.delete('/delete/:id', (req, res) => {
-    db.query("DELETE FROM Usuarios WHERE ID = ?", [req.params.id], (err) => {
-        if (err) return res.status(500).json({ error: true });
-        res.json({ message: "Usuario eliminado" });
-    });
-});
-
 exports.crearUsuario = (req, res) => {
     const usuario = req.body;
 
