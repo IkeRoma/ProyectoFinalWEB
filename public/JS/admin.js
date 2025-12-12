@@ -1,7 +1,11 @@
 /* ============================================================
-   admin.js — Panel del Administrador (con JWT)
-===============================================================*/
+   admin.js — Panel del Administrador con JWT
+   Versión optimizada y estandarizada
+=============================================================== */
 
+/* ---------------------------
+   HEADERS + SECURE FETCH
+-----------------------------*/
 function secureHeaders() {
     return {
         "Content-Type": "application/json",
@@ -11,20 +15,25 @@ function secureHeaders() {
 
 async function secureFetch(url, options = {}) {
     options.headers = secureHeaders();
+
     const res = await fetch(url, options);
 
     if (res.status === 401) {
         alert("Tu sesión expiró. Vuelve a iniciar sesión.");
         localStorage.clear();
         window.location.href = "LogIn.html";
-        throw new Error("401");
+        throw new Error("401 - Sesión expirada");
     }
 
     return res;
 }
 
+/* ============================================================
+   CARGA INICIAL
+=============================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     const usr = JSON.parse(localStorage.getItem("usuario") || "null");
+
     if (!usr || usr.Rol !== 1) {
         window.location.href = "Index.html";
         return;
@@ -32,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("adminNombre").textContent = usr.Nombre;
 
-    // Carga inicial de cada sección
+    // Cargar todas las tablas del panel
     cargarUsuarios();
     cargarWalletAdmin();
     cargarAeropuertos();
@@ -44,62 +53,59 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarPagos();
     cargarBoletos();
 
-    // ===== Filtros & botones =====
-    document.getElementById("btnFiltrarUsuarios").onclick = () => {
-        const id = document.getElementById("filtroUsuarioId").value;
-        cargarUsuarios(id || null);
-    };
-    document.getElementById("btnVerTodosUsuarios").onclick = () => cargarUsuarios();
-
-    document.getElementById("btnFiltrarAeropuertos").onclick = () => {
-        const id = document.getElementById("filtroAeropuertoId").value;
-        cargarAeropuertos(id || null);
-    };
-    document.getElementById("btnVerTodosAeropuertos").onclick = () => cargarAeropuertos();
-
-    document.getElementById("btnFiltrarVuelos").onclick = () => {
-        const id = document.getElementById("filtroVueloId").value;
-        cargarVuelosAdmin(id || null);
-    };
-    document.getElementById("btnVerTodosVuelos").onclick = () => cargarVuelosAdmin();
-
-    document.getElementById("btnFiltrarAsientos").onclick = () => {
-        const id = document.getElementById("filtroAsientoId").value;
-        cargarAsientos(id || null);
-    };
-    document.getElementById("btnVerTodosAsientos").onclick = () => cargarAsientos();
-
-    document.getElementById("btnFiltrarEquipaje").onclick = () => {
-        const id = document.getElementById("filtroEquipajeId").value;
-        cargarEquipaje(id || null);
-    };
-    document.getElementById("btnVerTodoEquipaje").onclick = () => cargarEquipaje();
-
-    document.getElementById("btnFiltrarMaletas").onclick = () => {
-        const id = document.getElementById("filtroMaletaId").value;
-        cargarTiposMaleta(id || null);
-    };
-    document.getElementById("btnVerTodasMaletas").onclick = () => cargarTiposMaleta();
-
-    document.getElementById("btnFiltrarPedidos").onclick = () => {
-        const id = document.getElementById("filtroPedidoId").value;
-        cargarPedidos(id || null);
-    };
-    document.getElementById("btnVerTodosPedidos").onclick = () => cargarPedidos();
-
-    document.getElementById("btnFiltrarPagos").onclick = () => {
-        const id = document.getElementById("filtroPagoId").value;
-        cargarPagos(id || null);
-    };
-    document.getElementById("btnVerTodosPagos").onclick = () => cargarPagos();
-
-    document.getElementById("btnFiltrarBoletos").onclick = () => {
-        const id = document.getElementById("filtroBoletoId").value;
-        cargarBoletos(id || null);
-    };
-    document.getElementById("btnVerTodosBoletos").onclick = () => cargarBoletos();
+    // Filtros
+    registrarEventosFiltros();
 
     // Formularios
+    registrarEventosFormularios();
+});
+
+/* ============================================================
+   REGISTRO DE EVENTOS
+=============================================================== */
+
+function registrarEventosFiltros() {
+    const filtros = [
+        ["btnFiltrarUsuarios", "filtroUsuarioId", cargarUsuarios],
+        ["btnVerTodosUsuarios", null, cargarUsuarios],
+
+        ["btnFiltrarAeropuertos", "filtroAeropuertoId", cargarAeropuertos],
+        ["btnVerTodosAeropuertos", null, cargarAeropuertos],
+
+        ["btnFiltrarVuelos", "filtroVueloId", cargarVuelosAdmin],
+        ["btnVerTodosVuelos", null, cargarVuelosAdmin],
+
+        ["btnFiltrarAsientos", "filtroAsientoId", cargarAsientos],
+        ["btnVerTodosAsientos", null, cargarAsientos],
+
+        ["btnFiltrarEquipaje", "filtroEquipajeId", cargarEquipaje],
+        ["btnVerTodoEquipaje", null, cargarEquipaje],
+
+        ["btnFiltrarMaletas", "filtroMaletaId", cargarTiposMaleta],
+        ["btnVerTodasMaletas", null, cargarTiposMaleta],
+
+        ["btnFiltrarPedidos", "filtroPedidoId", cargarPedidos],
+        ["btnVerTodosPedidos", null, cargarPedidos],
+
+        ["btnFiltrarPagos", "filtroPagoId", cargarPagos],
+        ["btnVerTodosPagos", null, cargarPagos],
+
+        ["btnFiltrarBoletos", "filtroBoletoId", cargarBoletos],
+        ["btnVerTodosBoletos", null, cargarBoletos]
+    ];
+
+    filtros.forEach(([btnId, inputId, fn]) => {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        btn.onclick = () => {
+            const filtro = inputId ? document.getElementById(inputId).value : null;
+            fn(filtro || null);
+        };
+    });
+}
+
+function registrarEventosFormularios() {
     document.getElementById("formAeropuerto").addEventListener("submit", guardarAeropuerto);
     document.getElementById("formVuelo").addEventListener("submit", guardarVuelo);
     document.getElementById("formAsiento").addEventListener("submit", guardarAsiento);
@@ -108,11 +114,12 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("formPedido").addEventListener("submit", guardarPedidoAdmin);
     document.getElementById("formPago").addEventListener("submit", guardarPagoAdmin);
     document.getElementById("formBoleto").addEventListener("submit", guardarBoletoAdmin);
-});
+}
 
-// ================================
-// Usuarios
-// ================================
+/* ============================================================
+   USUARIOS — CRUD REAL
+=============================================================== */
+
 async function cargarUsuarios(idFiltro = null) {
     const res = await secureFetch("/api/listar");
     const data = await res.json();
@@ -121,9 +128,7 @@ async function cargarUsuarios(idFiltro = null) {
     tbody.innerHTML = "";
 
     let lista = data.usuarios || [];
-    if (idFiltro) {
-        lista = lista.filter(u => u.ID === Number(idFiltro));
-    }
+    if (idFiltro) lista = lista.filter(u => u.ID == idFiltro);
 
     lista.forEach(u => {
         tbody.innerHTML += `
@@ -131,9 +136,11 @@ async function cargarUsuarios(idFiltro = null) {
                 <td>${u.ID}</td>
                 <td>${u.Nombre} ${u.Apellido}</td>
                 <td>${u.Correo}</td>
-                <td>${u.Rol === 1 ? "Admin" : "Usuario"}</td>
-                <button class="btnVV" onclick='abrirModalEditarUsuario(${JSON.stringify(u)})'>Editar</button>
-                <button class="btnVV-cerrar" onclick="eliminarUsuario(${u.ID})">Eliminar</button>
+                <td>${u.Rol == 1 ? "Admin" : "Usuario"}</td>
+                <td>
+                    <button class="btn-admin btn-edit" onclick='abrirModalEditarUsuario(${JSON.stringify(u)})'>Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarUsuario(${u.ID})">Eliminar</button>
+                </td>
             </tr>
         `;
     });
@@ -146,36 +153,104 @@ async function eliminarUsuario(id) {
         method: "POST",
         body: JSON.stringify({ id })
     });
-
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarUsuarios();
 }
 
-// ================================
-// Wallet global
-// ================================
+/* ---------------- MODAL: CREAR ---------------- */
+function abrirModalCrearUsuario() {
+    document.getElementById("modalCrearUsuario").classList.remove("oculto");
+}
+
+function cerrarModalCrearUsuario() {
+    document.getElementById("modalCrearUsuario").classList.add("oculto");
+}
+
+async function guardarNuevoUsuario() {
+    const usuario = {
+        nombre: document.getElementById("crearNombre").value.trim(),
+        apellidos: document.getElementById("crearApellido").value.trim(),
+        email: document.getElementById("crearCorreo").value.trim(),
+        telefono: document.getElementById("crearTelefono").value.trim(),
+        password: document.getElementById("crearPassword").value.trim()
+    };
+
+    if (!usuario.nombre || !usuario.apellidos || !usuario.email || !usuario.password)
+        return alert("Completa todos los campos obligatorios.");
+
+    const res = await secureFetch("/api/admin/usuarios/add", {
+        method: "POST",
+        body: JSON.stringify(usuario)
+    });
+
+    alert((await res.json()).message);
+    cerrarModalCrearUsuario();
+    cargarUsuarios();
+}
+
+/* ---------------- MODAL: EDITAR ---------------- */
+function abrirModalEditarUsuario(u) {
+    document.getElementById("modalEditarUsuario").classList.remove("oculto");
+
+    document.getElementById("editID").value = u.ID;
+    document.getElementById("editNombre").value = u.Nombre;
+    document.getElementById("editApellido").value = u.Apellido;
+    document.getElementById("editCorreo").value = u.Correo;
+    document.getElementById("editTelefono").value = u.Telefono;
+    document.getElementById("editRol").value = u.Rol;
+}
+
+function cerrarModalEditarUsuario() {
+    document.getElementById("modalEditarUsuario").classList.add("oculto");
+}
+
+async function guardarEdicionUsuario() {
+    const usuario = {
+        ID: document.getElementById("editID").value,
+        Nombre: document.getElementById("editNombre").value.trim(),
+        Apellido: document.getElementById("editApellido").value.trim(),
+        Correo: document.getElementById("editCorreo").value.trim(),
+        Telefono: document.getElementById("editTelefono").value.trim(),
+        Rol: Number(document.getElementById("editRol").value)
+    };
+
+    const res = await secureFetch("/api/updateUser", {
+        method: "POST",
+        body: JSON.stringify(usuario)
+    });
+
+    alert((await res.json()).message);
+    cerrarModalEditarUsuario();
+    cargarUsuarios();
+}
+
+/* ============================================================
+   WALLET ADMIN — Tarjetas con diseño moderno
+=============================================================== */
+
 async function cargarWalletAdmin() {
     const resUsuarios = await secureFetch("/api/listar");
-    const usuarios = (await resUsuarios.json()).usuarios;
+    const usuarios = (await resUsuarios.json()).usuarios || [];
 
     const tbody = document.querySelector("#tablaWallet tbody");
     tbody.innerHTML = "";
 
-    for (const user of usuarios) {
-        const res = await secureFetch(`/api/wallet/list/${user.ID}`);
+    for (const u of usuarios) {
+        const res = await secureFetch(`/api/wallet/list/${u.ID}`);
         const data = await res.json();
 
         (data.wallet || []).forEach(w => {
             tbody.innerHTML += `
                 <tr>
                     <td>${w.id_wallet}</td>
-                    <td>${user.Nombre} ${user.Apellido}</td>
+                    <td>${u.Nombre} ${u.Apellido}</td>
                     <td>${w.tipo}</td>
                     <td>${w.bin}</td>
                     <td>${w.ultimos4}</td>
                     <td>${w.fecha_expiracion}</td>
-                    <td><button onclick="adminEliminarTarjeta(${w.id_wallet})">Eliminar</button></td>
+                    <td>
+                        <button class="btn-admin btn-delete" onclick="adminEliminarTarjeta(${w.id_wallet})">Eliminar</button>
+                    </td>
                 </tr>
             `;
         });
@@ -190,17 +265,17 @@ async function adminEliminarTarjeta(id_wallet) {
         body: JSON.stringify({ id_wallet })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarWalletAdmin();
 }
 
-// ================================
-// Aeropuertos
-// ================================
+/* ============================================================
+   CRUD: AEROPUERTOS
+=============================================================== */
+
 async function cargarAeropuertos(idFiltro = null) {
     let url = "/api/admin/aeropuertos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
@@ -217,8 +292,8 @@ async function cargarAeropuertos(idFiltro = null) {
                 <td>${a.estado}</td>
                 <td>${a.activo ? "Sí" : "No"}</td>
                 <td>
-                    <button onclick='editarAeropuerto(${a.id_aeropuerto})'>Editar</button>
-                    <button onclick='eliminarAeropuerto(${a.id_aeropuerto})'>Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarAeropuerto(${a.id_aeropuerto})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarAeropuerto(${a.id_aeropuerto})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -227,9 +302,7 @@ async function cargarAeropuertos(idFiltro = null) {
 
 async function editarAeropuerto(id) {
     const res = await secureFetch(`/api/admin/aeropuertos?id=${id}`);
-    const data = await res.json();
-    const a = (data.aeropuertos || [])[0];
-    if (!a) return;
+    const a = (await res.json()).aeropuertos[0];
 
     document.getElementById("aeropuertoId").value = a.id_aeropuerto;
     document.getElementById("aeropuertoNombre").value = a.nombre;
@@ -238,52 +311,46 @@ async function editarAeropuerto(id) {
 }
 
 async function eliminarAeropuerto(id) {
-    if (!confirm("¿Eliminar aeropuerto (DELETE real)?")) return;
+    if (!confirm("¿Desactivar aeropuerto?")) return;
 
     const res = await secureFetch("/api/admin/aeropuertos/delete", {
         method: "POST",
         body: JSON.stringify({ id_aeropuerto: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarAeropuertos();
 }
 
 async function guardarAeropuerto(e) {
     e.preventDefault();
 
-    const id = document.getElementById("aeropuertoId").value;
-    const nombre = document.getElementById("aeropuertoNombre").value.trim();
-    const ciudad = document.getElementById("aeropuertoCiudad").value.trim();
-    const estado = document.getElementById("aeropuertoEstado").value.trim();
+    const info = {
+        id_aeropuerto: document.getElementById("aeropuertoId").value || null,
+        nombre: document.getElementById("aeropuertoNombre").value.trim(),
+        ciudad: document.getElementById("aeropuertoCiudad").value.trim(),
+        estado: document.getElementById("aeropuertoEstado").value.trim()
+    };
 
-    if (!nombre || !ciudad || !estado) {
-        alert("Completa todos los campos de aeropuerto.");
-        return;
-    }
-
-    const ruta = id ? "/api/admin/aeropuertos/update" : "/api/admin/aeropuertos/add";
+    const ruta = info.id_aeropuerto ? "/api/admin/aeropuertos/update" : "/api/admin/aeropuertos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({ id_aeropuerto: id || null, nombre, ciudad, estado })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
     e.target.reset();
-    document.getElementById("aeropuertoId").value = "";
     cargarAeropuertos();
 }
 
-// ================================
-// Vuelos
-// ================================
+/* ============================================================
+   CRUD: VUELOS
+=============================================================== */
+
 async function cargarVuelosAdmin(idFiltro = null) {
     let url = "/api/admin/vuelos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
@@ -302,8 +369,8 @@ async function cargarVuelosAdmin(idFiltro = null) {
                 <td>${v.escala}</td>
                 <td>${v.activo ? "Sí" : "No"}</td>
                 <td>
-                    <button onclick="editarVuelo(${v.id_vuelo})">Editar</button>
-                    <button onclick="eliminarVuelo(${v.id_vuelo})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarVuelo(${v.id_vuelo})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarVuelo(${v.id_vuelo})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -312,9 +379,7 @@ async function cargarVuelosAdmin(idFiltro = null) {
 
 async function editarVuelo(id) {
     const res = await secureFetch(`/api/admin/vuelos?id=${id}`);
-    const data = await res.json();
-    const v = (data.vuelos || [])[0];
-    if (!v) return;
+    const v = (await res.json()).vuelos[0];
 
     document.getElementById("vueloId").value = v.id_vuelo;
     document.getElementById("vueloOrigen").value = v.id_origen;
@@ -322,67 +387,53 @@ async function editarVuelo(id) {
     document.getElementById("vueloFechaSalida").value = v.fecha_salida.replace(" ", "T");
     document.getElementById("vueloFechaLlegada").value = v.fecha_llegada.replace(" ", "T");
     document.getElementById("vueloEscala").value = v.escala;
-    document.getElementById("vueloNumEscalas").value = v.numero_escalas || 0;
+    document.getElementById("vueloNumEscalas").value = v.numero_escalas;
 }
 
 async function eliminarVuelo(id) {
-    if (!confirm("¿Eliminar vuelo (DELETE real)?")) return;
+    if (!confirm("¿Desactivar vuelo?")) return;
 
     const res = await secureFetch("/api/admin/vuelos/delete", {
         method: "POST",
         body: JSON.stringify({ id_vuelo: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarVuelosAdmin();
 }
 
 async function guardarVuelo(e) {
     e.preventDefault();
 
-    const id_vuelo = document.getElementById("vueloId").value;
-    const id_origen = Number(document.getElementById("vueloOrigen").value);
-    const id_destino = Number(document.getElementById("vueloDestino").value);
-    const fecha_salida = document.getElementById("vueloFechaSalida").value;
-    const fecha_llegada = document.getElementById("vueloFechaLlegada").value;
-    const escala = document.getElementById("vueloEscala").value;
-    const numero_escalas = Number(document.getElementById("vueloNumEscalas").value || "0");
+    const info = {
+        id_vuelo: document.getElementById("vueloId").value || null,
+        id_origen: Number(document.getElementById("vueloOrigen").value),
+        id_destino: Number(document.getElementById("vueloDestino").value),
+        fecha_salida: document.getElementById("vueloFechaSalida").value,
+        fecha_llegada: document.getElementById("vueloFechaLlegada").value,
+        escala: document.getElementById("vueloEscala").value,
+        numero_escalas: Number(document.getElementById("vueloNumEscalas").value)
+    };
 
-    if (!id_origen || !id_destino || !fecha_salida || !fecha_llegada) {
-        alert("Completa todos los campos del vuelo.");
-        return;
-    }
-
-    const ruta = id_vuelo ? "/api/admin/vuelos/update" : "/api/admin/vuelos/add";
+    const ruta = info.id_vuelo ? "/api/admin/vuelos/update" : "/api/admin/vuelos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_vuelo: id_vuelo || null,
-            id_origen,
-            id_destino,
-            fecha_salida,
-            fecha_llegada,
-            escala,
-            numero_escalas
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
     e.target.reset();
-    document.getElementById("vueloId").value = "";
     cargarVuelosAdmin();
 }
 
-// ================================
-// Asientos
-// ================================
+/* ============================================================
+   CRUD: ASIENTOS
+=============================================================== */
+
 async function cargarAsientos(idFiltro = null) {
     let url = "/api/admin/asientos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
@@ -400,8 +451,8 @@ async function cargarAsientos(idFiltro = null) {
                 <td>${a.stock}</td>
                 <td>${a.activo ? "Sí" : "No"}</td>
                 <td>
-                    <button onclick="editarAsiento(${a.id_asiento})">Editar</button>
-                    <button onclick="eliminarAsiento(${a.id_asiento})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarAsiento(${a.id_asiento})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarAsiento(${a.id_asiento})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -410,9 +461,7 @@ async function cargarAsientos(idFiltro = null) {
 
 async function editarAsiento(id) {
     const res = await secureFetch(`/api/admin/asientos?id=${id}`);
-    const data = await res.json();
-    const a = (data.asientos || [])[0];
-    if (!a) return;
+    const a = (await res.json()).asientos[0];
 
     document.getElementById("asientoId").value = a.id_asiento;
     document.getElementById("asientoVuelo").value = a.id_vuelo;
@@ -422,59 +471,48 @@ async function editarAsiento(id) {
 }
 
 async function eliminarAsiento(id) {
-    if (!confirm("¿Eliminar asiento (DELETE real)?")) return;
+    if (!confirm("¿Desactivar asiento?")) return;
 
     const res = await secureFetch("/api/admin/asientos/delete", {
         method: "POST",
         body: JSON.stringify({ id_asiento: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarAsientos();
 }
 
 async function guardarAsiento(e) {
     e.preventDefault();
 
-    const id_asiento = document.getElementById("asientoId").value;
-    const id_vuelo = Number(document.getElementById("asientoVuelo").value);
-    const tipo_asiento = document.getElementById("asientoTipo").value;
-    const precio = Number(document.getElementById("asientoPrecio").value);
-    const stock = Number(document.getElementById("asientoStock").value);
+    const info = {
+        id_asiento: document.getElementById("asientoId").value || null,
+        id_vuelo: Number(document.getElementById("asientoVuelo").value),
+        tipo_asiento: document.getElementById("asientoTipo").value,
+        precio: Number(document.getElementById("asientoPrecio").value),
+        stock: Number(document.getElementById("asientoStock").value),
+    };
 
-    if (!id_vuelo || !precio || stock < 0) {
-        alert("Completa correctamente los campos del asiento.");
-        return;
-    }
-
-    const ruta = id_asiento ? "/api/admin/asientos/update" : "/api/admin/asientos/add";
+    const ruta = info.id_asiento ? "/api/admin/asientos/update" : "/api/admin/asientos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_asiento: id_asiento || null,
-            id_vuelo,
-            tipo_asiento,
-            precio,
-            stock
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
+    
     e.target.reset();
-    document.getElementById("asientoId").value = "";
     cargarAsientos();
 }
 
-// ================================
-// Equipaje Vuelo
-// ================================
+/* ============================================================
+   CRUD: EQUIPAJE
+=============================================================== */
+
 async function cargarEquipaje(idFiltro = null) {
     let url = "/api/admin/equipaje";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
@@ -491,8 +529,8 @@ async function cargarEquipaje(idFiltro = null) {
                 <td>${Number(e.precio_extra).toFixed(2)}</td>
                 <td>${e.activo ? "Sí" : "No"}</td>
                 <td>
-                    <button onclick="editarEquipaje(${e.id_equipaje})">Editar</button>
-                    <button onclick="eliminarEquipaje(${e.id_equipaje})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarEquipaje(${e.id_equipaje})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarEquipaje(${e.id_equipaje})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -501,9 +539,7 @@ async function cargarEquipaje(idFiltro = null) {
 
 async function editarEquipaje(id) {
     const res = await secureFetch(`/api/admin/equipaje?id=${id}`);
-    const data = await res.json();
-    const e = (data.equipaje || [])[0];
-    if (!e) return;
+    const e = (await res.json()).equipaje[0];
 
     document.getElementById("equipajeId").value = e.id_equipaje;
     document.getElementById("equipajeVuelo").value = e.id_vuelo;
@@ -512,57 +548,47 @@ async function editarEquipaje(id) {
 }
 
 async function eliminarEquipaje(id) {
-    if (!confirm("¿Eliminar configuración de equipaje (DELETE real)?")) return;
+    if (!confirm("¿Desactivar equipaje?")) return;
 
     const res = await secureFetch("/api/admin/equipaje/delete", {
         method: "POST",
         body: JSON.stringify({ id_equipaje: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarEquipaje();
 }
 
 async function guardarEquipaje(e) {
     e.preventDefault();
 
-    const id_equipaje = document.getElementById("equipajeId").value;
-    const id_vuelo = Number(document.getElementById("equipajeVuelo").value);
-    const tipo = document.getElementById("equipajeTipo").value;
-    const precio_extra = Number(document.getElementById("equipajePrecio").value);
+    const info = {
+        id_equipaje: document.getElementById("equipajeId").value || null,
+        id_vuelo: Number(document.getElementById("equipajeVuelo").value),
+        tipo: document.getElementById("equipajeTipo").value,
+        precio_extra: Number(document.getElementById("equipajePrecio").value)
+    };
 
-    if (!id_vuelo || !precio_extra) {
-        alert("Completa los campos de equipaje.");
-        return;
-    }
-
-    const ruta = id_equipaje ? "/api/admin/equipaje/update" : "/api/admin/equipaje/add";
+    const ruta = info.id_equipaje ? "/api/admin/equipaje/update" : "/api/admin/equipaje/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_equipaje: id_equipaje || null,
-            id_vuelo,
-            tipo,
-            precio_extra
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
+    
     e.target.reset();
-    document.getElementById("equipajeId").value = "";
     cargarEquipaje();
 }
 
-// ================================
-// Tipos de maleta (envío)
-// ================================
+/* ============================================================
+   CRUD: TIPOS DE MALETA
+=============================================================== */
+
 async function cargarTiposMaleta(idFiltro = null) {
     let url = "/api/admin/tipos-maleta";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
@@ -579,8 +605,8 @@ async function cargarTiposMaleta(idFiltro = null) {
                 <td>$${Number(t.precio_base).toFixed(2)}</td>
                 <td>$${Number(t.tarifa_kg_extra).toFixed(2)}</td>
                 <td>
-                    <button onclick="editarMaleta(${t.id_tipo_maleta})">Editar</button>
-                    <button onclick="eliminarMaleta(${t.id_tipo_maleta})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarMaleta(${t.id_tipo_maleta})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarMaleta(${t.id_tipo_maleta})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -589,9 +615,7 @@ async function cargarTiposMaleta(idFiltro = null) {
 
 async function editarMaleta(id) {
     const res = await secureFetch(`/api/admin/tipos-maleta?id=${id}`);
-    const data = await res.json();
-    const t = (data.tipos || [])[0];
-    if (!t) return;
+    const t = (await res.json()).tipos[0];
 
     document.getElementById("maletaId").value = t.id_tipo_maleta;
     document.getElementById("maletaNombre").value = t.nombre;
@@ -601,62 +625,51 @@ async function editarMaleta(id) {
 }
 
 async function eliminarMaleta(id) {
-    if (!confirm("¿Eliminar tipo de maleta (DELETE real)?")) return;
+    if (!confirm("¿Eliminar tipo de maleta?")) return;
 
     const res = await secureFetch("/api/admin/tipos-maleta/delete", {
         method: "POST",
         body: JSON.stringify({ id_tipo_maleta: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarTiposMaleta();
 }
 
 async function guardarMaleta(e) {
     e.preventDefault();
 
-    const id_tipo_maleta = document.getElementById("maletaId").value;
-    const nombre = document.getElementById("maletaNombre").value.trim();
-    const peso_max = Number(document.getElementById("maletaPesoMax").value);
-    const precio_base = Number(document.getElementById("maletaBase").value);
-    const tarifa_kg_extra = Number(document.getElementById("maletaTarifa").value);
+    const info = {
+        id_tipo_maleta: document.getElementById("maletaId").value || null,
+        nombre: document.getElementById("maletaNombre").value.trim(),
+        peso_max: Number(document.getElementById("maletaPesoMax").value),
+        precio_base: Number(document.getElementById("maletaBase").value),
+        tarifa_kg_extra: Number(document.getElementById("maletaTarifa").value)
+    };
 
-    if (!nombre || !peso_max || !precio_base || !tarifa_kg_extra) {
-        alert("Completa todos los campos del tipo de maleta.");
-        return;
-    }
-
-    const ruta = id_tipo_maleta ? "/api/admin/tipos-maleta/update" : "/api/admin/tipos-maleta/add";
+    const ruta = info.id_tipo_maleta ? "/api/admin/tipos-maleta/update" : "/api/admin/tipos-maleta/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_tipo_maleta: id_tipo_maleta || null,
-            nombre,
-            peso_max,
-            precio_base,
-            tarifa_kg_extra
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
     e.target.reset();
-    document.getElementById("maletaId").value = "";
     cargarTiposMaleta();
 }
 
-// ================================
-// PEDIDOS (admin)
-// ================================
+/* ============================================================
+   CRUD: PEDIDOS
+=============================================================== */
+
 async function cargarPedidos(idFiltro = null) {
     let url = "/api/admin/pedidos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
+
     const tbody = document.querySelector("#tablaPedidos tbody");
     tbody.innerHTML = "";
 
@@ -669,8 +682,8 @@ async function cargarPedidos(idFiltro = null) {
                 <td>$${Number(p.total).toFixed(2)}</td>
                 <td>${p.estado}</td>
                 <td>
-                    <button onclick="editarPedidoAdmin(${p.id_pedido})">Editar</button>
-                    <button onclick="eliminarPedidoAdmin(${p.id_pedido})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarPedidoAdmin(${p.id_pedido})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarPedidoAdmin(${p.id_pedido})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -679,9 +692,7 @@ async function cargarPedidos(idFiltro = null) {
 
 async function editarPedidoAdmin(id) {
     const res = await secureFetch(`/api/admin/pedidos?id=${id}`);
-    const data = await res.json();
-    const p = (data.pedidos || [])[0];
-    if (!p) return;
+    const p = (await res.json()).pedidos[0];
 
     document.getElementById("pedidoId").value = p.id_pedido;
     document.getElementById("pedidoUsuario").value = p.id_usuario;
@@ -691,62 +702,52 @@ async function editarPedidoAdmin(id) {
 }
 
 async function eliminarPedidoAdmin(id) {
-    if (!confirm("¿Eliminar pedido (DELETE real)?")) return;
+    if (!confirm("¿Eliminar pedido?")) return;
 
     const res = await secureFetch("/api/admin/pedidos/delete", {
         method: "POST",
         body: JSON.stringify({ id_pedido: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarPedidos();
 }
 
 async function guardarPedidoAdmin(e) {
     e.preventDefault();
 
-    const id_pedido = document.getElementById("pedidoId").value;
-    const id_usuario = Number(document.getElementById("pedidoUsuario").value);
-    const id_wallet = Number(document.getElementById("pedidoWallet").value);
-    const total = Number(document.getElementById("pedidoTotal").value);
-    const estado = document.getElementById("pedidoEstado").value.trim();
+    const info = {
+        id_pedido: document.getElementById("pedidoId").value || null,
+        id_usuario: Number(document.getElementById("pedidoUsuario").value),
+        id_wallet: Number(document.getElementById("pedidoWallet").value),
+        total: Number(document.getElementById("pedidoTotal").value),
+        estado: document.getElementById("pedidoEstado").value
+    };
 
-    if (!id_usuario || !id_wallet || !total || !estado) {
-        alert("Completa todos los campos del pedido.");
-        return;
-    }
-
-    const ruta = id_pedido ? "/api/admin/pedidos/update" : "/api/admin/pedidos/add";
+    const ruta = info.id_pedido ? "/api/admin/pedidos/update" : "/api/admin/pedidos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_pedido: id_pedido || null,
-            id_usuario,
-            id_wallet,
-            total,
-            estado
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
 
     e.target.reset();
-    document.getElementById("pedidoId").value = "";
     cargarPedidos();
 }
 
-// ================================
-// PAGOS (admin)
-// ================================
+/* ============================================================
+   CRUD: PAGOS
+=============================================================== */
+
 async function cargarPagos(idFiltro = null) {
     let url = "/api/admin/pagos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
+
     const tbody = document.querySelector("#tablaPagos tbody");
     tbody.innerHTML = "";
 
@@ -759,8 +760,8 @@ async function cargarPagos(idFiltro = null) {
                 <td>$${Number(p.monto).toFixed(2)}</td>
                 <td>${p.estado}</td>
                 <td>
-                    <button onclick="editarPagoAdmin(${p.id_pago})">Editar</button>
-                    <button onclick="eliminarPagoAdmin(${p.id_pago})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarPagoAdmin(${p.id_pago})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarPagoAdmin(${p.id_pago})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -769,9 +770,7 @@ async function cargarPagos(idFiltro = null) {
 
 async function editarPagoAdmin(id) {
     const res = await secureFetch(`/api/admin/pagos?id=${id}`);
-    const data = await res.json();
-    const p = (data.pagos || [])[0];
-    if (!p) return;
+    const p = (await res.json()).pagos[0];
 
     document.getElementById("pagoId").value = p.id_pago;
     document.getElementById("pagoUsuario").value = p.id_usuario;
@@ -781,62 +780,52 @@ async function editarPagoAdmin(id) {
 }
 
 async function eliminarPagoAdmin(id) {
-    if (!confirm("¿Eliminar pago (DELETE real)?")) return;
+    if (!confirm("¿Eliminar pago?")) return;
 
     const res = await secureFetch("/api/admin/pagos/delete", {
         method: "POST",
         body: JSON.stringify({ id_pago: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarPagos();
 }
 
 async function guardarPagoAdmin(e) {
     e.preventDefault();
 
-    const id_pago = document.getElementById("pagoId").value;
-    const id_usuario = Number(document.getElementById("pagoUsuario").value);
-    const id_pedido = Number(document.getElementById("pagoPedido").value);
-    const monto = Number(document.getElementById("pagoMonto").value);
-    const estado = document.getElementById("pagoEstado").value.trim();
+    const info = {
+        id_pago: document.getElementById("pagoId").value || null,
+        id_usuario: Number(document.getElementById("pagoUsuario").value),
+        id_pedido: Number(document.getElementById("pagoPedido").value),
+        monto: Number(document.getElementById("pagoMonto").value),
+        estado: document.getElementById("pagoEstado").value
+    };
 
-    if (!id_usuario || !id_pedido || !monto || !estado) {
-        alert("Completa todos los campos del pago.");
-        return;
-    }
-
-    const ruta = id_pago ? "/api/admin/pagos/update" : "/api/admin/pagos/add";
+    const ruta = info.id_pago ? "/api/admin/pagos/update" : "/api/admin/pagos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_pago: id_pago || null,
-            id_usuario,
-            id_pedido,
-            monto,
-            estado
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
 
     e.target.reset();
-    document.getElementById("pagoId").value = "";
     cargarPagos();
 }
 
-// ================================
-// BOLETOS (admin)
-// ================================
+/* ============================================================
+   CRUD: BOLETOS
+=============================================================== */
+
 async function cargarBoletos(idFiltro = null) {
     let url = "/api/admin/boletos";
-    if (idFiltro) url += `?id=${encodeURIComponent(idFiltro)}`;
+    if (idFiltro) url += `?id=${idFiltro}`;
 
     const res = await secureFetch(url);
     const data = await res.json();
+
     const tbody = document.querySelector("#tablaBoletos tbody");
     tbody.innerHTML = "";
 
@@ -852,8 +841,8 @@ async function cargarBoletos(idFiltro = null) {
                 <td>$${Number(b.precio_total).toFixed(2)}</td>
                 <td>${b.estado}</td>
                 <td>
-                    <button onclick="editarBoletoAdmin(${b.id_boleto})">Editar</button>
-                    <button onclick="eliminarBoletoAdmin(${b.id_boleto})">Eliminar</button>
+                    <button class="btn-admin btn-edit" onclick="editarBoletoAdmin(${b.id_boleto})">Editar</button>
+                    <button class="btn-admin btn-delete" onclick="eliminarBoletoAdmin(${b.id_boleto})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -862,9 +851,7 @@ async function cargarBoletos(idFiltro = null) {
 
 async function editarBoletoAdmin(id) {
     const res = await secureFetch(`/api/admin/boletos?id=${id}`);
-    const data = await res.json();
-    const b = (data.boletos || [])[0];
-    if (!b) return;
+    const b = (await res.json()).boletos[0];
 
     document.getElementById("boletoId").value = b.id_boleto;
     document.getElementById("boletoUsuario").value = b.id_usuario;
@@ -877,182 +864,41 @@ async function editarBoletoAdmin(id) {
 }
 
 async function eliminarBoletoAdmin(id) {
-    if (!confirm("¿Eliminar boleto (DELETE real)?")) return;
+    if (!confirm("¿Eliminar boleto?")) return;
 
     const res = await secureFetch("/api/admin/boletos/delete", {
         method: "POST",
         body: JSON.stringify({ id_boleto: id })
     });
 
-    const data = await res.json();
-    alert(data.message);
+    alert((await res.json()).message);
     cargarBoletos();
 }
 
 async function guardarBoletoAdmin(e) {
     e.preventDefault();
 
-    const id_boleto = document.getElementById("boletoId").value;
-    const id_usuario = Number(document.getElementById("boletoUsuario").value);
-    const id_vuelo = Number(document.getElementById("boletoVuelo").value);
-    const id_asiento = Number(document.getElementById("boletoAsiento").value);
-    const id_equipaje = document.getElementById("boletoEquipaje").value
-        ? Number(document.getElementById("boletoEquipaje").value)
-        : null;
-    const id_pedido = Number(document.getElementById("boletoPedido").value);
-    const precio_total = Number(document.getElementById("boletoPrecio").value);
-    const estado = document.getElementById("boletoEstado").value.trim();
+    const info = {
+        id_boleto: document.getElementById("boletoId").value || null,
+        id_usuario: Number(document.getElementById("boletoUsuario").value),
+        id_vuelo: Number(document.getElementById("boletoVuelo").value),
+        id_asiento: Number(document.getElementById("boletoAsiento").value),
+        id_equipaje: document.getElementById("boletoEquipaje").value
+            ? Number(document.getElementById("boletoEquipaje").value)
+            : null,
+        id_pedido: Number(document.getElementById("boletoPedido").value),
+        precio_total: Number(document.getElementById("boletoPrecio").value),
+        estado: document.getElementById("boletoEstado").value.trim()
+    };
 
-    if (!id_usuario || !id_vuelo || !id_asiento || !id_pedido || !precio_total || !estado) {
-        alert("Completa todos los campos obligatorios del boleto.");
-        return;
-    }
-
-    const ruta = id_boleto ? "/api/admin/boletos/update" : "/api/admin/boletos/add";
+    const ruta = info.id_boleto ? "/api/admin/boletos/update" : "/api/admin/boletos/add";
 
     const res = await secureFetch(ruta, {
         method: "POST",
-        body: JSON.stringify({
-            id_boleto: id_boleto || null,
-            id_usuario,
-            id_vuelo,
-            id_asiento,
-            id_equipaje,
-            id_pedido,
-            precio_total,
-            estado
-        })
+        body: JSON.stringify(info)
     });
 
-    const data = await res.json();
-    alert(data.message);
-
+    alert((await res.json()).message);
     e.target.reset();
-    document.getElementById("boletoId").value = "";
     cargarBoletos();
-}
-
-    // =====================
-    // CREAR USUARIO (modal)
-    // =====================
-    function abrirModalCrearUsuario() {
-        document.getElementById("modalCrearUsuario").classList.remove("oculto");
-    }
-
-    function cerrarModalCrearUsuario() {
-        document.getElementById("modalCrearUsuario").classList.add("oculto");
-    }
-
-    // =====================
-    // EDITAR USUARIO (modal)
-    // =====================
-    function abrirModalEditarUsuario() {
-        document.getElementById("modalEditarUsuario").classList.remove("oculto");
-    }
-
-    function cerrarModalEditarUsuario() {
-        document.getElementById("modalEditarUsuario").classList.add("oculto");
-    }
-
-    // =============================================
-// CREAR USUARIO
-// =============================================
-async function crearUsuario() {
-    const usuario = {
-        Nombre: document.getElementById("nuevoNombre").value.trim(),
-        Apellido: document.getElementById("nuevoApellido").value.trim(),
-        Correo: document.getElementById("nuevoCorreo").value.trim(),
-        Telefono: document.getElementById("nuevoTelefono").value.trim(),
-        Contrasena: document.getElementById("nuevoPassword").value,
-        Rol: Number(document.getElementById("nuevoRol").value)
-    };
-
-    if (!usuario.Nombre || !usuario.Apellido || !usuario.Correo || !usuario.Contrasena) {
-        return alert("Completa todos los campos obligatorios.");
-    }
-
-    alert("Aquí llamas a tu endpoint para crear usuario.");
-
-    cerrarModalCrearUsuario();
-    cargarUsuarios();
-}
-
-    // =============================================
-    // CARGAR USUARIO EN MODAL DE EDICIÓN
-    // =============================================
-    async function editarUsuario(id) {
-        const res = await secureFetch("/api/listar");
-        const data = await res.json();
-
-        const u = data.usuarios.find(x => x.ID === id);
-        if (!u) return alert("Usuario no encontrado.");
-
-        document.getElementById("editUserId").value = u.ID;
-        document.getElementById("editNombre").value = u.Nombre;
-        document.getElementById("editApellido").value = u.Apellido;
-        document.getElementById("editCorreo").value = u.Correo;
-        document.getElementById("editTelefono").value = u.Telefono || "";
-        document.getElementById("editRol").value = u.Rol;
-
-        abrirModalEditarUsuario();
-    }
-
-    // =============================================
-    // GUARDAR CAMBIOS DE USUARIO
-    // =============================================
-    async function guardarEdicionUsuario() {
-        const usuario = {
-            ID: Number(document.getElementById("editUserId").value),
-            Nombre: document.getElementById("editNombre").value.trim(),
-            Apellido: document.getElementById("editApellido").value.trim(),
-            Correo: document.getElementById("editCorreo").value.trim(),
-            Telefono: document.getElementById("editTelefono").value.trim(),
-            Rol: Number(document.getElementById("editRol").value)
-        };
-
-        alert("Aquí llamas a tu endpoint para actualizar usuario.");
-
-        cerrarModalEditarUsuario();
-        cargarUsuarios();
-    }
-
-    /* ============================
-   MODALES: ABRIR / CERRAR
-============================ */
-
-function abrirModalCrearUsuario() {
-    document.getElementById("modalCrearUsuario").classList.remove("oculto");
-}
-
-function cerrarModalCrearUsuario() {
-    document.getElementById("modalCrearUsuario").classList.add("oculto");
-}
-
-function abrirModalEditarUsuario(u) {
-    document.getElementById("modalEditarUsuario").classList.remove("oculto");
-
-    document.getElementById("editID").value = u.ID;
-    document.getElementById("editNombre").value = u.Nombre;
-    document.getElementById("editApellido").value = u.Apellido;
-    document.getElementById("editCorreo").value = u.Correo;
-    document.getElementById("editTelefono").value = u.Telefono;
-    document.getElementById("editRol").value = u.Rol;
-}
-
-function cerrarModalEditarUsuario() {
-    document.getElementById("modalEditarUsuario").classList.add("oculto");
-}
-
-/* ============================
-    GUARDAR USUARIO (FRONT ONLY)
-============================ */
-
-function guardarNuevoUsuario() {
-    alert("Aquí llamas a tu endpoint /add para crear usuario.");
-    cerrarModalCrearUsuario();
-}
-
-function guardarEdicionUsuario() {
-    alert("Aquí llamas a tu endpoint /update para editar usuario.");
-    cerrarModalEditarUsuario();
 }

@@ -1,6 +1,6 @@
 /* ============================================================
-   PANEL ADMINISTRATIVO
-===============================================================*/
+   PANEL ADMINISTRATIVO - ESTILOS UNIFICADOS
+============================================================ */
 
 .admin-body {
     background: var(--color-bg);
@@ -18,42 +18,128 @@
     margin-bottom: 2rem;
 }
 
+/* GRID PRINCIPAL */
 .admin-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: 2rem;
 }
 
+/* TARJETAS */
 .admin-card {
     padding: 1.6rem;
     border-radius: 18px;
     backdrop-filter: blur(8px);
 }
 
+/* ============================================================
+   TABLAS ESTANDARIZADAS
+============================================================ */
+
 .admin-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
+    background: rgba(255,255,255,0.04);
+    border-radius: 14px;
+    overflow: hidden;
 }
 
-.admin-table th,
-.admin-table td {
-    padding: .8rem;
-    background: #ffffff08;
-    border-bottom: 1px solid #ffffff20;
+.admin-table thead {
+    background: rgba(255,255,255,0.10);
 }
 
 .admin-table th {
-    background: #ffffff15;
+    padding: 15px;
+    font-weight: 600;
+    color: #fff;
+    font-size: 15px;
+    text-align: left;
 }
 
+.admin-table td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #e8e8e8;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ============================================================
+   BOTONES DE ACCIONES (EDIT / DELETE)
+============================================================ */
+
+.btn-admin {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    color: white;
+    transition: 0.2s ease;
+}
+
+.btn-edit {
+    background: #2196F3;
+}
+
+.btn-edit:hover {
+    background: #42A5F5;
+}
+
+.btn-delete {
+    background: #E53935;
+}
+
+.btn-delete:hover {
+    background: #EF5350;
+}
+
+/* ============================================================
+   BOTÓN “+ NUEVO” Y “GUARDAR”
+============================================================ */
+
+.btn-action-big {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    border-radius: 30px;
+    border: none;
+    background: linear-gradient(to right, #00aaff, #00e0b8);
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    font-size: 18px;
+    cursor: pointer;
+    transition: .25s;
+}
+
+.btn-action-big:hover {
+    opacity: 0.9;
+}
+
+/* Tamaño pequeño */
+.btnVV-small {
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: linear-gradient(to right, #00aaff, #00e0b8);
+    font-size: 13px;
+    width: auto;
+}
+
+/* ============================================================
+   FILTROS SUPERIORES
+============================================================ */
 
 .admin-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
-    margin-bottom: .6rem;
+    margin-bottom: .8rem;
 }
 
 .admin-filters {
@@ -64,58 +150,105 @@
 }
 
 .admin-filters input {
-    padding: .3rem .5rem;
+    padding: .35rem .7rem;
     border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(15,23,42,0.95);
     color: #e5e7eb;
+    font-size: 14px;
 }
 
-/* Formularios dentro del panel admin */
+/* ============================================================
+   FORMULARIOS DE AGREGAR / EDITAR (ESTANDARIZADO)
+============================================================ */
 
 .admin-form {
-    margin-top: 1rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: .7rem .9rem;
-    font-size: .85rem;
+    margin-top: 1.3rem;
+    background: rgba(255,255,255,0.05);
+    padding: 20px;
+    border-radius: 14px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 18px;
+}
+
+.admin-form div {
+    flex: 1;
+    min-width: 220px;
 }
 
 .admin-form label {
-    display: block;
-    margin-bottom: .2rem;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #f1f1f1;
     font-weight: 500;
 }
 
 .admin-form input,
 .admin-form select {
     width: 100%;
-    padding: .4rem .55rem;
+    padding: 12px;
     border-radius: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.4);
-    background: rgba(15, 23, 42, 0.9);
-    color: #e5e7eb;
+    border: none;
+    background: rgba(255,255,255,0.08);
+    color: white;
+    font-size: 15px;
 }
 
-.btn-azul--xs,
-.btn-cerrar--xs {
-    padding: .25rem .6rem;
-    font-size: .75rem;
+/* Botón dentro de formulario */
+.admin-form button {
+    flex: 1 1 100%;
+    margin-top: 5px;
 }
 
-/* --------------------
-   MODALES Vista Voyages
-----------------------*/
+/* ============================================================
+   TARJETAS WALLET (VISTA MODERNA)
+============================================================ */
+
+#walletContainer {
+    margin-top: 1rem;
+}
+
+.wallet-card {
+    background: rgba(255,255,255,0.06);
+    padding: 18px;
+    border-radius: 15px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wallet-card strong {
+    font-size: 17px;
+    color: #fff;
+}
+
+.wallet-card small {
+    color: #c9c9c9;
+    display: block;
+    margin-top: 4px;
+}
+
+.wallet-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ============================================================
+   MODALES
+============================================================ */
 
 .modalVV {
     position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    backdrop-filter: blur(5px);
-    background: rgba(0,0,0,0.55);
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
     z-index: 9999;
 }
 
@@ -127,43 +260,40 @@
     width: 380px;
     padding: 25px;
     border-radius: 18px;
-    background: rgba(30, 41, 59, 0.8);
+    background: rgba(30, 41, 59, 0.9);
     color: white;
-    box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.4);
 }
 
 .modalVV-content h2 {
     margin-bottom: 15px;
 }
 
-.modalVV-content .input-modal {
+.input-modal {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 14px;
+    border-radius: 12px;
     border: none;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.15);
     color: white;
 }
 
 .modalVV-actions {
     display: flex;
-    justify-content: space-between;
+    gap: 10px;
     margin-top: 10px;
 }
 
-/* --------------------
-   BOTONES ESTILO VV
-----------------------*/
 .btnVV {
-    padding: 10px 18px;
+    padding: 12px 18px;
+    border-radius: 25px;
+    border: none;
     background: linear-gradient(90deg, #0ea5e9, #06d6a0);
     color: white;
-    border: none;
-    border-radius: 30px;
+    font-size: 15px;
     cursor: pointer;
-    font-weight: bold;
-    transition: 0.25s;
+    transition: .25s;
 }
 
 .btnVV:hover {
@@ -171,12 +301,11 @@
 }
 
 .btnVV-cerrar {
-    padding: 10px 18px;
+    padding: 12px 18px;
     background: #475569;
-    color: white;
-    border-radius: 30px;
+    border-radius: 25px;
     cursor: pointer;
-    transition: 0.25s;
+    color: white;
 }
 
 .btnVV-cerrar:hover {
