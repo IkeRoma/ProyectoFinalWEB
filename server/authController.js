@@ -2,7 +2,6 @@
 // authController.js — Seguridad completa
 // =========================================
 
-const express = require("express");
 const db = require("./conexion");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
@@ -1261,22 +1260,6 @@ exports.eliminarBoletoAdmin = (req, res) => {
     });
 };
 
-// Obtener todos los usuarios
-router.get('/list', (req, res) => {
-    db.query("SELECT * FROM usuarios", (err, rows) => {
-        if (err) return res.status(500).json({ error: true });
-        res.json({ usuarios: rows });
-    });
-});
-
-// Buscar usuario por ID
-router.get('/id/:id', (req, res) => {
-    db.query("SELECT * FROM Usuarios WHERE ID = ?", [req.params.id], (err, rows) => {
-        if (err) return res.status(500).json({ error: true });
-        res.json({ usuario: rows[0] });
-    });
-});
-
 exports.crearUsuario = (req, res) => {
     const usuario = req.body;
 
@@ -1371,5 +1354,7 @@ module.exports = {
     listarBoletos,
     crearBoletoAdmin,
     actualizarBoletoAdmin,
-    eliminarBoletoAdmin
+    eliminarBoletoAdmin,
+    crearUsuario,
+
 };
