@@ -1477,12 +1477,10 @@ async function obtenerHistorialPedidosUsuario(req, res) {
     }
 }
 
-
-exports.listarAeropuertosPublico = (req, res) => {
+function listarAeropuertosPublico(req, res) {
     const sql = `
         SELECT 
             id_aeropuerto,
-            nombre,
             ciudad
         FROM aeropuertos
         WHERE activo = 1
@@ -1503,7 +1501,7 @@ exports.listarAeropuertosPublico = (req, res) => {
             aeropuertos: rows || []
         });
     });
-};
+}
 
 // ================================================================
 // EXPORTS — Todo lo que usa server.js
@@ -1522,7 +1520,7 @@ module.exports = {
     login,
     registrar,
     resetPassword,
-
+    listarAeropuertosPublico,
     /* =========================
        Usuarios (Admin)
     ========================== */
