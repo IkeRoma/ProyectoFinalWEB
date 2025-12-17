@@ -218,14 +218,22 @@ function eliminarUsuario(req, res) {
 // =========================================
 // ADMIN — Listar Usuarios
 // =========================================
-function listarUsuarios(req, res) {
-    db.query("SELECT ID, Nombre, Apellido, Correo, Telefono, Rol FROM Usuarios", (err, rows) => {
-        if (err)
-            return res.json({ error: true, message: "Error al listar usuarios" });
+exports.listarUsuarios = (req, res) => {
+    const sql = `
+        SELECT id_usuario AS id, Nombre, Apellido, Email, Rol
+        FROM usuarios
+        ORDER BY id_usuario DESC
+    `;
 
-        res.json({ error: false, usuarios: rows });
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.error("Error listarUsuarios:", err);
+            return res.status(500).json({ error: true, message: "Error al listar usuarios" });
+        }
+        res.json(rows || []);
     });
-}
+};
+
 
 // =========================================
 // WALLET — Listar tarjetas
