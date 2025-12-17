@@ -231,6 +231,7 @@ async function cargarUsuarios(idFiltro = null) {
     const res = await secureFetch("/api/listar");
     const data = await res.json();
     let lista = data.usuarios || [];
+    let html = "";
 
     if (idFiltro) {
         lista = lista.filter(u => u.ID == idFiltro);
@@ -325,6 +326,7 @@ async function cargarAeropuertos(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     if (!idFiltro) {
         poblarSelectAeropuertos(data.aeropuertos || []);
@@ -414,6 +416,7 @@ async function cargarVuelosAdmin(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     if (!idFiltro) {
         poblarSelectVuelos(data.vuelos || []);
@@ -529,6 +532,8 @@ async function cargarAsientos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaAsientos tbody");
+    let html = "";
+
     if (!tbody) return;
     tbody.innerHTML = "";
 
@@ -617,6 +622,7 @@ async function cargarEquipaje(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     const tbody = document.querySelector("#tablaEquipaje tbody");
     if (!tbody) return;
@@ -710,6 +716,7 @@ async function cargarTiposMaleta(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     const tbody = document.querySelector("#tablaMaletas tbody");
     if (!tbody) return;
@@ -802,6 +809,7 @@ async function cargarPedidos(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     const tbody = document.querySelector("#tablaPedidos tbody");
     if (!tbody) return;
@@ -893,6 +901,7 @@ async function cargarPagos(idFiltro = null) {
     const tbody = document.querySelector("#tablaPagos tbody");
     if (!tbody) return;
     tbody.innerHTML = "";
+let html = "";
 
     (data.pagos || []).forEach(p => {
         const metodo = (p.tipo && p.ultimos4) ? `${p.tipo} •••• ${p.ultimos4}` : "-";
@@ -979,6 +988,7 @@ async function cargarBoletos(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
+let html = "";
 
     const tbody = document.querySelector("#tablaBoletos tbody");
     if (!tbody) return;
