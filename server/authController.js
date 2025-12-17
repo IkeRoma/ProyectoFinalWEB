@@ -234,6 +234,21 @@ exports.listarUsuariosAdmin = (req, res) => {
     });
 };
 
+function listarUsuariosAdmin(req, res) {
+    const sql = `
+        SELECT id_usuario AS id, Nombre, Apellido, Email, Rol
+        FROM usuarios
+        ORDER BY id_usuario DESC
+    `;
+
+    db.query(sql, (err, rows) => {
+        if (err) {
+            console.error("Error listarUsuariosAdmin:", err);
+            return res.status(500).json({ error: true, message: "Error al listar usuarios" });
+        }
+        res.json(rows || []);
+    });
+}
 
 // =========================================
 // WALLET — Listar tarjetas
