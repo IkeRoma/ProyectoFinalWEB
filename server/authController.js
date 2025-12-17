@@ -35,7 +35,15 @@ const ESTADOS_MX = new Set([
     "Quintana Roo","San Luis Potosí","Sinaloa","Sonora","Tabasco","Tamaulipas","Tlaxcala",
     "Veracruz","Yucatán","Zacatecas"
 ]);
-
+const soloStaff = (req, res, next) => {
+    if (!req.user || ![1, 2].includes(Number(req.user.Rol))) {
+        return res.status(403).json({
+            error: true,
+            message: "Acceso denegado"
+        });
+    }
+    next();
+};
 // =========================================
 // Helpers
 // =========================================
@@ -57,7 +65,6 @@ function crearToken(usuario) {
         { expiresIn: JWT_EXPIRES_IN }
     );
 }
-
 // =========================================
 // MIDDLEWARE: verificarToken
 // =========================================
@@ -1442,7 +1449,7 @@ module.exports = {
     ========================== */
     verificarToken,
     soloAdmin,
-
+    soloStaff,
     /* =========================
        Auth
     ========================== */
