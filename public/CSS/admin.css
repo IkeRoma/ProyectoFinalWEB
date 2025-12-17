@@ -1,313 +1,227 @@
-/* ============================================================
-   PANEL ADMINISTRATIVO - ESTILOS UNIFICADOS
-============================================================ */
-
-.admin-body {
-    background: var(--color-bg);
-    color: var(--color-text);
-}
-
-.admin-container {
-    width: 95%;
-    margin: 6rem auto;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
 }
 
 .admin-header {
-    padding: 1.6rem;
-    border-radius: 18px;
-    margin-bottom: 2rem;
+    background: rgba(0,0,0,0.6);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-/* GRID PRINCIPAL */
-.admin-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
+.admin-header h1 {
+    margin: 0;
+    font-size: 28px;
 }
 
-/* TARJETAS */
+.admin-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
 .admin-card {
-    padding: 1.6rem;
-    border-radius: 18px;
-    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* ============================================================
-   TABLAS ESTANDARIZADAS
-============================================================ */
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 1rem;
-    background: rgba(255,255,255,0.04);
-    border-radius: 14px;
-    overflow: hidden;
+.admin-card h2 {
+    margin-top: 0;
+    font-size: 22px;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 10px;
 }
 
-.admin-table thead {
-    background: rgba(255,255,255,0.10);
+.admin-actions {
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.admin-table th {
-    padding: 15px;
-    font-weight: 600;
-    color: #fff;
-    font-size: 15px;
-    text-align: left;
+.admin-actions input {
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
 }
-
-.admin-table td {
-    padding: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    color: #e8e8e8;
-}
-
-.admin-table tr:last-child td {
-    border-bottom: none;
-}
-
-/* ============================================================
-   BOTONES DE ACCIONES (EDIT / DELETE)
-============================================================ */
 
 .btn-admin {
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 12px;
+    padding: 10px 15px;
+    border-radius: 25px;
     border: none;
     cursor: pointer;
-    font-weight: 500;
+    background: rgba(255,255,255,0.1);
     color: white;
-    transition: 0.2s ease;
+    font-weight: bold;
+    transition: .25s;
 }
 
-.btn-edit {
-    background: #2196F3;
+.btn-admin:hover {
+    background: rgba(255,255,255,0.2);
 }
 
-.btn-edit:hover {
-    background: #42A5F5;
-}
-
+/* Botón tipo "imagen 3" para Editar/Eliminar */
+.btn-edit,
 .btn-delete {
-    background: #E53935;
-}
-
-.btn-delete:hover {
-    background: #EF5350;
-}
-
-/* ============================================================
-   BOTÓN “+ NUEVO” Y “GUARDAR”
-============================================================ */
-
-.btn-action-big {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    border-radius: 30px;
+    padding: 10px 16px;
+    border-radius: 25px;
     border: none;
     background: linear-gradient(to right, #00aaff, #00e0b8);
     color: white;
-    font-weight: 700;
-    text-align: center;
-    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
     transition: .25s;
 }
 
-.btn-action-big:hover {
-    opacity: 0.9;
+.btn-edit:hover,
+.btn-delete:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
 }
 
-/* Tamaño pequeño */
-.btnVV-small {
-    padding: 8px 12px;
-    border-radius: 12px;
-    background: linear-gradient(to right, #00aaff, #00e0b8);
-    font-size: 13px;
-    width: auto;
+.btn-edit:active,
+.btn-delete:active {
+    transform: translateY(0);
 }
-
-/* ============================================================
-   FILTROS SUPERIORES
-============================================================ */
-
-.admin-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: .8rem;
-}
-
-.admin-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .4rem;
-    font-size: .85rem;
-}
-
-.admin-filters input {
-    padding: .35rem .7rem;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(15,23,42,0.95);
-    color: #e5e7eb;
-    font-size: 14px;
-}
-
-/* ============================================================
-   FORMULARIOS DE AGREGAR / EDITAR (ESTANDARIZADO)
-============================================================ */
 
 .admin-form {
-    margin-top: 1.3rem;
-    background: rgba(255,255,255,0.05);
-    padding: 20px;
-    border-radius: 14px;
-
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 18px;
-}
-
-.admin-form div {
-    flex: 1;
-    min-width: 220px;
-}
-
-.admin-form label {
-    font-size: 13px;
-    margin-bottom: 6px;
-    color: #f1f1f1;
-    font-weight: 500;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
 .admin-form input,
 .admin-form select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
+    flex: 1 1 180px;
+    padding: 8px;
+    border-radius: 6px;
     border: none;
-    background: rgba(255,255,255,0.08);
+    outline: none;
+}
+
+.btn-action {
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: none;
+    background: #4CAF50;
     color: white;
-    font-size: 15px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
-/* Botón dentro de formulario */
-.admin-form button {
-    flex: 1 1 100%;
-    margin-top: 5px;
+.btn-action:hover {
+    background: #66BB6A;
 }
 
-/* ============================================================
-   TARJETAS WALLET (VISTA MODERNA)
-============================================================ */
-
-#walletContainer {
-    margin-top: 1rem;
+.btn-action-big {
+    padding: 12px 18px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(to right, #00aaff, #00e0b8);
+    color: white;
+    font-weight: bold;
+    transition: .25s;
 }
 
-.wallet-card {
-    background: rgba(255,255,255,0.06);
-    padding: 18px;
-    border-radius: 15px;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.btn-action-big:hover {
+    filter: brightness(1.15);
 }
 
-.wallet-card strong {
-    font-size: 17px;
-    color: #fff;
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.wallet-card small {
-    color: #c9c9c9;
-    display: block;
-    margin-top: 4px;
+.admin-table th,
+.admin-table td {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    text-align: left;
 }
 
-.wallet-actions {
-    display: flex;
-    gap: 10px;
+.admin-table th {
+    background: rgba(0,0,0,0.4);
 }
 
-/* ============================================================
-   MODALES
-============================================================ */
-
+/* Modales */
 .modalVV {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
     display: flex;
-    align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.55);
-    backdrop-filter: blur(4px);
+    align-items: center;
     z-index: 9999;
 }
 
-.modalVV.oculto {
-    display: none;
-}
-
 .modalVV-content {
-    width: 380px;
-    padding: 25px;
-    border-radius: 18px;
-    background: rgba(30, 41, 59, 0.9);
-    color: white;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.4);
-}
-
-.modalVV-content h2 {
-    margin-bottom: 15px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
 }
 
 .input-modal {
     width: 100%;
-    padding: 12px;
-    margin-bottom: 14px;
-    border-radius: 12px;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
     border: none;
-    background: rgba(255,255,255,0.15);
+    outline: none;
+    background: rgba(255,255,255,0.1);
     color: white;
 }
 
 .modalVV-actions {
     display: flex;
     gap: 10px;
-    margin-top: 10px;
+    justify-content: flex-end;
+    margin-top: 12px;
 }
 
 .btnVV {
-    padding: 12px 18px;
-    border-radius: 25px;
+    padding: 10px 18px;
     border: none;
-    background: linear-gradient(90deg, #0ea5e9, #06d6a0);
-    color: white;
-    font-size: 15px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: .25s;
+    background: #00aaff;
+    color: white;
+    font-weight: bold;
 }
 
 .btnVV:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.1);
 }
 
 .btnVV-cerrar {
-    padding: 12px 18px;
-    background: #475569;
-    border-radius: 25px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    background: #ff5555;
     color: white;
+    font-weight: bold;
 }
 
 .btnVV-cerrar:hover {
-    background: #64748b;
+    filter: brightness(1.1);
+}
+
+.oculto {
+    display: none;
 }

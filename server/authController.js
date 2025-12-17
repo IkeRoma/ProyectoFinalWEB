@@ -1133,17 +1133,27 @@ function eliminarPedidoAdmin(req, res) {
 // ================================================================
 function listarPagos(req, res) {
     const { id } = req.query;
-    let sql = "SELECT * FROM pagos";
-    const params = [];
 
+    // Incluimos método de pago (tipo/ultimos4) mediante pedidos -> wallet
+    let sql = `
+        SELECT pa.*, w.tipo, w.ultimos4
+        FROM pagos pa
+        JOIN pedidos pe ON pa.id_pedido = pe.id_pedido
+        JOIN wallet w ON pe.id_wallet = w.id_wallet
+    `;
+
+    const params = [];
     if (id) {
-        sql += " WHERE id_pago = ?";
+        sql += " WHERE pa.id_pago = ?";
         params.push(id);
     }
 
     db.query(sql, params, (err, rows) => {
-        if (err) return res.json({ error: true, message: "Error al listar pagos" });
-        res.json({ error: false, pagos: rows });
+        if (err) {
+            console.error("Error listarPagos:", err);
+            return res.status(500).json({ error: true, message: "Error listar pagos" });
+        }
+        return res.json({ error: false, pagos: rows });
     });
 }
 
@@ -1263,21 +1273,170 @@ function eliminarBoletoAdmin(req, res) {
 // ================================================================
 // ADMIN – Crear Usuario (para /api/admin/usuarios/add)
 // ================================================================
-function crearUsuario(req, res) {
-    const usuario = req.body;
+async function crearUsuario(req, res) {
+    try {
+        const { Nombre, Apellido, Correo, Contrasena, Telefono, Rol } = req.body;
 
-    db.query("INSERT INTO Usuarios SET ?", usuario, (err) => {
-        if (err)
-            return res.json({ error: true, message: "Error al crear usuario" });
+        if (!Nombre || !Apellido || !Correo || !Contrasena || !Telefono) {
+            return res.status(400).json({ error: true, message: "Faltan campos obligatorios." });
+        }
 
-        res.json({ error: false, message: "Usuario creado correctamente" });
+        const rolNum = (Rol === 1 || Rol === "1") ? 1 : 0;
+
+        // IMPORTANTE: Guardar la contraseña hasheada para que el login (bcrypt.compare) funcione
+        const hash = await bcrypt.hash(Contrasena, 10);
+
+        const sql = `
+            INSERT INTO Usuarios (Nombre, Apellido, Correo, Contrasena, Telefono, Rol)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        db.query(sql, [Nombre, Apellido, Correo, hash, Telefono, rolNum], (err) => {
+            if (err) {
+                console.error("Error crearUsuario:", err);
+                return res.status(500).json({ error: true, message: "Error al crear usuario." });
+            }
+            return res.json({ error: false, message: "Usuario creado correctamente." });
+        });
+    } catch (err) {
+        console.error("Error crearUsuario:", err);
+        return res.status(500).json({ error: true, message: "Error al crear usuario." });
+    }
+}
+
+// =========================================
+// ADMIN: Actualizar usuario (incluye Rol)
+// =========================================
+function actualizarUsuarioAdmin(req, res) {
+    const { ID, Nombre, Apellido, Correo, Telefono, Rol } = req.body;
+
+    if (!ID || !Nombre || !Apellido || !Correo || !Telefono) {
+        return res.status(400).json({ error: true, message: "Datos incompletos para actualizar usuario." });
+    }
+
+    const rolNum = (Rol === 1 || Rol === "1") ? 1 : 0;
+
+    const sql = `
+        UPDATE Usuarios
+        SET Nombre = ?, Apellido = ?, Correo = ?, Telefono = ?, Rol = ?
+        WHERE ID = ?
+    `;
+
+    db.query(sql, [Nombre, Apellido, Correo, Telefono, rolNum, ID], (err) => {
+        if (err) {
+            console.error("Error actualizarUsuarioAdmin:", err);
+            return res.status(500).json({ error: true, message: "Error al actualizar usuario." });
+        }
+        return res.json({ error: false, message: "Usuario actualizado correctamente." });
     });
+}
+
+// =========================================
+// PERFIL: Historial de pedidos (ID_pedido) + tarjeta + boletos
+// =========================================
+async function obtenerHistorialPedidosUsuario(req, res) {
+    try {
+        const id_usuario = Number(req.params.id_usuario);
+        if (!id_usuario) {
+            return res.status(400).json({ error: true, message: "ID de usuario inválido." });
+        }
+
+        // Seguridad: el usuario solo puede ver su historial,
+        // salvo que sea admin (Rol=1)
+        if (req.user && req.user.ID !== id_usuario && req.user.Rol !== 1) {
+            return res.status(403).json({ error: true, message: "No autorizado." });
+        }
+
+        const rows = await query(`
+            SELECT 
+                p.id_pedido,
+                p.fecha,
+                p.total,
+                p.estado AS estado_pedido,
+
+                w.tipo AS tipo_tarjeta,
+                w.ultimos4 AS ultimos4_tarjeta,
+
+                pa.id_pago,
+                pa.monto,
+                pa.estado AS estado_pago,
+                pa.fecha_pago,
+
+                b.id_boleto,
+                b.id_vuelo,
+                b.id_asiento,
+                b.id_equipaje,
+
+                v.fecha_salida,
+                v.fecha_llegada,
+
+                ao.ciudad AS origen_ciudad,
+                ad.ciudad AS destino_ciudad,
+
+                a.tipo_asiento,
+                e.tipo AS tipo_equipaje
+
+            FROM pedidos p
+            JOIN wallet w ON p.id_wallet = w.id_wallet
+            LEFT JOIN pagos pa ON pa.id_pedido = p.id_pedido
+            LEFT JOIN boletos b ON b.id_pedido = p.id_pedido
+            LEFT JOIN vuelos v ON b.id_vuelo = v.id_vuelo
+            LEFT JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
+            LEFT JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
+            LEFT JOIN asientos a ON b.id_asiento = a.id_asiento
+            LEFT JOIN equipaje e ON b.id_equipaje = e.id_equipaje
+            WHERE p.id_usuario = ?
+            ORDER BY p.fecha DESC, b.id_boleto ASC
+        `, [id_usuario]);
+
+        const map = new Map();
+
+        rows.forEach(r => {
+            if (!map.has(r.id_pedido)) {
+                map.set(r.id_pedido, {
+                    id_pedido: r.id_pedido,
+                    fecha: r.fecha,
+                    total: r.total,
+                    estado_pedido: r.estado_pedido,
+                    monto: r.monto ?? r.total,
+                    tarjeta: {
+                        tipo: r.tipo_tarjeta,
+                        ultimos4: r.ultimos4_tarjeta
+                    },
+                    boletos: []
+                });
+            }
+
+            const entry = map.get(r.id_pedido);
+
+            if (r.monto != null) entry.monto = r.monto;
+
+            if (r.id_boleto != null) {
+                entry.boletos.push({
+                    id_boleto: r.id_boleto,
+                    id_vuelo: r.id_vuelo,
+                    origen_ciudad: r.origen_ciudad,
+                    destino_ciudad: r.destino_ciudad,
+                    fecha_salida: r.fecha_salida,
+                    fecha_llegada: r.fecha_llegada,
+                    tipo_asiento: r.tipo_asiento,
+                    tipo_equipaje: r.tipo_equipaje
+                });
+            }
+        });
+
+        return res.json({ error: false, historial: Array.from(map.values()) });
+    } catch (err) {
+        console.error("Error obtenerHistorialPedidosUsuario:", err);
+        return res.status(500).json({ error: true, message: "Error al obtener historial." });
+    }
 }
 
 // ================================================================
 // EXPORTS — Todo lo que usa server.js
 // ================================================================
 module.exports = {
+
     // Middlewares
     verificarToken,
     soloAdmin,
@@ -1291,6 +1450,7 @@ module.exports = {
     eliminarUsuario,
     listarUsuarios,
     crearUsuario,
+    actualizarUsuarioAdmin,
 
     // Wallet
     listarWallet,
@@ -1304,6 +1464,7 @@ module.exports = {
 
     // Direcciones / Envíos
     obtenerDireccionesUsuario,
+    obtenerHistorialPedidosUsuario,
     agregarDireccion,
     editarDireccion,
     eliminarDireccion,
