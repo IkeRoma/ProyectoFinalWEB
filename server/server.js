@@ -96,7 +96,7 @@ console.log("soloStaff:", typeof soloStaff);
 console.log("auth.listarUsuarios:", typeof auth.listarUsuarios);
 
 // Usuarios
-app.get("/api/listar", verificarToken, soloStaff, auth.listarUsuarios);
+app.get("/api/listar", verificarToken, soloStaff, auth.listarUsuariosAdmin);
 app.post("/api/eliminar", verificarToken, soloStaff, auth.eliminarUsuario);
 app.post("/api/admin/usuarios/add", verificarToken, soloStaff, auth.crearUsuario);
 app.post("/api/admin/usuarios/update", verificarToken, soloStaff, auth.actualizarUsuarioAdmin);

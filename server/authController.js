@@ -218,7 +218,7 @@ function eliminarUsuario(req, res) {
 // =========================================
 // ADMIN — Listar Usuarios
 // =========================================
-exports.listarUsuarios = (req, res) => {
+exports.listarUsuariosAdmin = (req, res) => {
     const sql = `
         SELECT id_usuario AS id, Nombre, Apellido, Email, Rol
         FROM usuarios
@@ -227,7 +227,7 @@ exports.listarUsuarios = (req, res) => {
 
     db.query(sql, (err, rows) => {
         if (err) {
-            console.error("Error listarUsuarios:", err);
+            console.error("Error listarUsuariosAdmin:", err);
             return res.status(500).json({ error: true, message: "Error al listar usuarios" });
         }
         res.json(rows || []);
@@ -1470,7 +1470,7 @@ module.exports = {
     /* =========================
        Usuarios (Admin)
     ========================== */
-    listarUsuarios,
+    listarUsuariosAdmin,
     crearUsuario,
     actualizarUsuarioAdmin,
     eliminarUsuario,
