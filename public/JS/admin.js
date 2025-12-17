@@ -226,36 +226,38 @@ function logout() {
 async function cargarUsuarios(idFiltro = null) {
     const tbody = document.querySelector("#tablaUsuarios tbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
 
     const res = await secureFetch("/api/listar");
     const data = await res.json();
+
     let lista = data.usuarios || [];
-    let html = "";
 
     if (idFiltro) {
         lista = lista.filter(u => u.ID == idFiltro);
     }
 
-    lista.forEach(u => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${u.ID}</td>
-                <td>${u.Nombre} ${u.Apellido}</td>
-                <td>${u.Correo}</td>
-                <td>${u.Rol == 1 ? "Admin" : "Usuario"}</td>
-                <td>
-                    <button class="btn-edit" onclick='abrirModalEditarUsuario(${JSON.stringify(u)})'>Editar</button>
-                    <button class="btn-delete" onclick="eliminarUsuario(${u.ID})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-    });
+    tbody.innerHTML = lista.map(u => `
+        <tr>
+            <td>${u.ID}</td>
+            <td>${u.Nombre} ${u.Apellido}</td>
+            <td>${u.Correo}</td>
+            <td>${u.Rol == 1 ? "Admin" : "Usuario"}</td>
+            <td>
+                <button class="btn-edit"
+                    onclick='abrirModalEditarUsuario(${JSON.stringify(u)})'>
+                    Editar
+                </button>
+                <button class="btn-delete"
+                    onclick="eliminarUsuario(${u.ID})">
+                    Eliminar
+                </button>
+            </td>
+        </tr>
+    `).join("");
 
-    tbody.innerHTML = html;   // ← construir primero en string
-notifyTableUpdate();     // ← dispara paginación
-
+    notifyTableUpdate();
 }
+
 
 async function eliminarUsuario(id) {
     if (!confirm("¿Eliminar usuario?")) return;
@@ -326,36 +328,29 @@ async function cargarAeropuertos(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
-let html = "";
 
-    if (!idFiltro) {
-        poblarSelectAeropuertos(data.aeropuertos || []);
-    }
+    if (!idFiltro) poblarSelectAeropuertos(data.aeropuertos || []);
 
     const tbody = document.querySelector("#tablaAeropuertos tbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
 
-    (data.aeropuertos || []).forEach(a => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${a.id_aeropuerto}</td>
-                <td>${a.nombre}</td>
-                <td>${a.ciudad}</td>
-                <td>${a.estado}</td>
-                <td>${a.activo ? "Sí" : "No"}</td>
-                <td>
-                    <button class="btn-edit" onclick="editarAeropuerto(${a.id_aeropuerto})">Editar</button>
-                    <button class="btn-delete" onclick="eliminarAeropuerto(${a.id_aeropuerto})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-    });
-    
+    tbody.innerHTML = (data.aeropuertos || []).map(a => `
+        <tr>
+            <td>${a.id_aeropuerto}</td>
+            <td>${a.nombre}</td>
+            <td>${a.ciudad}</td>
+            <td>${a.estado}</td>
+            <td>${a.activo ? "Sí" : "No"}</td>
+            <td>
+                <button class="btn-edit" onclick="editarAeropuerto(${a.id_aeropuerto})">Editar</button>
+                <button class="btn-delete" onclick="eliminarAeropuerto(${a.id_aeropuerto})">Eliminar</button>
+            </td>
+        </tr>
+    `).join("");
 
-notifyTableUpdate();     // ← dispara paginación
-
+    notifyTableUpdate();
 }
+
 
 async function guardarAeropuerto(e) {
     e.preventDefault();
@@ -416,38 +411,31 @@ async function cargarVuelosAdmin(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
-let html = "";
 
-    if (!idFiltro) {
-        poblarSelectVuelos(data.vuelos || []);
-    }
+    if (!idFiltro) poblarSelectVuelos(data.vuelos || []);
 
     const tbody = document.querySelector("#tablaVuelos tbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
 
-    (data.vuelos || []).forEach(v => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${v.id_vuelo}</td>
-                <td>${v.origen_ciudad}</td>
-                <td>${v.destino_ciudad}</td>
-                <td>${new Date(v.fecha_salida).toLocaleString()}</td>
-                <td>${new Date(v.fecha_llegada).toLocaleString()}</td>
-                <td>${v.escala}</td>
-                <td>${v.activo ? "Sí" : "No"}</td>
-                <td>
-                    <button class="btn-edit" onclick="editarVuelo(${v.id_vuelo})">Editar</button>
-                    <button class="btn-delete" onclick="eliminarVuelo(${v.id_vuelo})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-    });
-    
- 
-notifyTableUpdate();     // ← dispara paginación
+    tbody.innerHTML = (data.vuelos || []).map(v => `
+        <tr>
+            <td>${v.id_vuelo}</td>
+            <td>${v.origen_ciudad}</td>
+            <td>${v.destino_ciudad}</td>
+            <td>${new Date(v.fecha_salida).toLocaleString()}</td>
+            <td>${new Date(v.fecha_llegada).toLocaleString()}</td>
+            <td>${v.escala}</td>
+            <td>${v.activo ? "Sí" : "No"}</td>
+            <td>
+                <button class="btn-edit" onclick="editarVuelo(${v.id_vuelo})">Editar</button>
+                <button class="btn-delete" onclick="eliminarVuelo(${v.id_vuelo})">Eliminar</button>
+            </td>
+        </tr>
+    `).join("");
 
+    notifyTableUpdate();
 }
+
 
 async function guardarVuelo(e) {
     e.preventDefault();
@@ -532,32 +520,26 @@ async function cargarAsientos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaAsientos tbody");
-    let html = "";
-
     if (!tbody) return;
-    tbody.innerHTML = "";
 
-    (data.asientos || []).forEach(a => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${a.id_asiento}</td>
-                <td>${a.id_vuelo}</td>
-                <td>${a.tipo_asiento}</td>
-                <td>$${Number(a.precio).toFixed(2)}</td>
-                <td>${a.stock}</td>
-                <td>${a.activo ? "Sí" : "No"}</td>
-                <td>
-                    <button class="btn-edit" onclick="editarAsiento(${a.id_asiento})">Editar</button>
-                    <button class="btn-delete" onclick="eliminarAsiento(${a.id_asiento})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-    });
-    
- 
-notifyTableUpdate();     // ← dispara paginación
+    tbody.innerHTML = (data.asientos || []).map(a => `
+        <tr>
+            <td>${a.id_asiento}</td>
+            <td>${a.id_vuelo}</td>
+            <td>${a.tipo_asiento}</td>
+            <td>$${Number(a.precio).toFixed(2)}</td>
+            <td>${a.stock}</td>
+            <td>${a.activo ? "Sí" : "No"}</td>
+            <td>
+                <button class="btn-edit" onclick="editarAsiento(${a.id_asiento})">Editar</button>
+                <button class="btn-delete" onclick="eliminarAsiento(${a.id_asiento})">Eliminar</button>
+            </td>
+        </tr>
+    `).join("");
 
+    notifyTableUpdate();
 }
+
 
 async function guardarAsiento(e) {
     e.preventDefault();
@@ -622,32 +604,27 @@ async function cargarEquipaje(idFiltro = null) {
 
     const res = await secureFetch(url);
     const data = await res.json();
-let html = "";
 
     const tbody = document.querySelector("#tablaEquipaje tbody");
     if (!tbody) return;
-    tbody.innerHTML = "";
 
-    (data.equipaje || []).forEach(e => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${e.id_equipaje}</td>
-                <td>${e.id_vuelo}</td>
-                <td>${e.tipo}</td>
-                <td>$${Number(e.precio_extra).toFixed(2)}</td>
-                <td>${e.activo ? "Sí" : "No"}</td>
-                <td>
-                    <button class="btn-edit" onclick="editarEquipaje(${e.id_equipaje})">Editar</button>
-                    <button class="btn-delete" onclick="eliminarEquipaje(${e.id_equipaje})">Eliminar</button>
-                </td>
-            </tr>
-        `;
-    });
-   
- 
-notifyTableUpdate();     // ← dispara paginación
+    tbody.innerHTML = (data.equipaje || []).map(e => `
+        <tr>
+            <td>${e.id_equipaje}</td>
+            <td>${e.id_vuelo}</td>
+            <td>${e.tipo}</td>
+            <td>$${Number(e.precio_extra).toFixed(2)}</td>
+            <td>${e.activo ? "Sí" : "No"}</td>
+            <td>
+                <button class="btn-edit" onclick="editarEquipaje(${e.id_equipaje})">Editar</button>
+                <button class="btn-delete" onclick="eliminarEquipaje(${e.id_equipaje})">Eliminar</button>
+            </td>
+        </tr>
+    `).join("");
 
+    notifyTableUpdate();
 }
+
 
 async function guardarEquipaje(e) {
     e.preventDefault();
