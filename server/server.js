@@ -91,9 +91,6 @@ app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
    ADMIN / WRK (Staff: Rol 1 y 2)
    - PanelAdmin (Rol=1) y PanelWRK (Rol=2)
 ===============================================================*/
-console.log("verificarToken:", typeof verificarToken);
-console.log("soloStaff:", typeof soloStaff);
-console.log("auth.listarUsuarios:", typeof auth.listarUsuarios);
 
 // Usuarios
 app.get("/api/listar", verificarToken, soloStaff, auth.listarUsuariosAdmin);

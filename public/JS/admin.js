@@ -239,7 +239,7 @@ async function cargarUsuarios(idFiltro = null) {
     const res = await secureFetch("/api/listar");
     const data = await res.json();
 
-    let lista = Array.isArray(data.usuarios) ? data.usuarios : [];
+    let lista = Array.isArray(data.Usuarios) ? data.Usuarios : [];
 
     if (idFiltro) {
         lista = lista.filter(u => u.ID == idFiltro);
