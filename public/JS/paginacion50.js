@@ -38,18 +38,16 @@
 
     function applyToTable(table) {
         if (!table || !table.tBodies || !table.tBodies[0]) return;
+        if (table.dataset.paginated === "1") return;
+
         const tbody = table.tBodies[0];
         const rows = Array.from(tbody.rows || []);
 
-        // Reset: mostrar todas primero
-        rows.forEach(r => (r.style.display = ""));
-
-        removeExisting(table);
-
         if (rows.length <= PAGE_SIZE) return;
 
-        // Ocultar filas sobrantes
         rows.slice(PAGE_SIZE).forEach(r => (r.style.display = "none"));
+
+        removeExisting(table);
 
         const container = document.createElement("div");
         container.className = "loadmore-container";
@@ -59,26 +57,22 @@
         btn.type = "button";
         btn.textContent = "Ver más";
         btn.className = getButtonClass();
-        btn.dataset.shown = String(PAGE_SIZE);
+        btn.dataset.shown = PAGE_SIZE;
 
-        btn.addEventListener("click", () => {
-            const shown = Number(btn.dataset.shown || PAGE_SIZE);
+        btn.onclick = () => {
+            const shown = Number(btn.dataset.shown);
             const next = shown + PAGE_SIZE;
 
             rows.slice(shown, next).forEach(r => (r.style.display = ""));
 
-            btn.dataset.shown = String(next);
-
-            if (next >= rows.length) {
-                container.remove();
-            }
-        });
+            btn.dataset.shown = next;
+            if (next >= rows.length) container.remove();
+        };
 
         container.appendChild(btn);
-
-        // Insertar justo al final de la tabla
         table.insertAdjacentElement("afterend", container);
-        table.dataset.paginating = "0";
+
+        table.dataset.paginated = "1";
     }
 
     function initObservers() {
@@ -92,11 +86,6 @@
             const tbody = table.tBodies[0];
             if (!tbody) return;
 
-            const obs = new MutationObserver(() => {
-                applyToTable(table);
-            });
-
-            obs.observe(tbody, { childList: true });
         });
     }
 
@@ -107,6 +96,9 @@
         document.body?.textContent?.includes("Panel de Administración");
     if (!isPanelAdmin) return;
 
+    document.addEventListener("admin:table-updated", () => {
+        document.querySelectorAll("table").forEach(applyToTable);
+    });
 
     document.addEventListener("DOMContentLoaded", initObservers);
 })();
