@@ -254,7 +254,9 @@ function listarUsuariosAdmin(req, res) {
                 message: "Error al listar usuarios"
             });
         }
-        res.json(rows || []);
+        res.json({
+            usuarios: rows || []
+        });
     });
 }
 
