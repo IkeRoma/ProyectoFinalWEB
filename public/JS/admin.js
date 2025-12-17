@@ -2,48 +2,51 @@
    ADMIN.JS — Panel Admin
 ===============================================================*/
 
-async function secureFetch(url, options = {}) {
-    const token = localStorage.getItem("token");
-    options.headers = options.headers || {};
-    options.headers["Content-Type"] = "application/json";
-    if (token) options.headers["Authorization"] = `Bearer ${token}`;
+    async function secureFetch(url, options = {}) {
+        const token = localStorage.getItem("token");
+        options.headers = options.headers || {};
+        options.headers["Content-Type"] = "application/json";
+        if (token) options.headers["Authorization"] = `Bearer ${token}`;
 
-    const res = await fetch(url, options);
-    return res;
-}
+        const res = await fetch(url, options);
+        return res;
+    }
 
-/* ============================================================
-   HELPERS — Fechas, modales, selects
-===============================================================*/
-function toDatetimeLocal(value) {
-    if (!value) return "";
-    const d = new Date(value);
-    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-    return d.toISOString().slice(0, 16);
-}
+    /* ============================================================
+    HELPERS — Fechas, modales, selects
+    ===============================================================*/
+    function toDatetimeLocal(value) {
+        if (!value) return "";
+        const d = new Date(value);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
+    }
 
-function abrirModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.remove("oculto");
-}
+    function abrirModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.classList.remove("oculto");
+    }
 
-function cerrarModal(id) {
-    const m = document.getElementById(id);
-    if (m) m.classList.add("oculto");
-}
+    function cerrarModal(id) {
+        const m = document.getElementById(id);
+        if (m) m.classList.add("oculto");
+    }
 
-function setInputValue(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.value = val ?? "";
-}
+    function setInputValue(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? "";
+    }
 
-function setSelectValue(id, val) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const v = (val ?? "").toString();
-    el.value = v;
-}
+    function setSelectValue(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const v = (val ?? "").toString();
+        el.value = v;
+    }
 
+    function notifyTableUpdate() {
+        document.dispatchEvent(new Event("admin:table-updated"));
+    }
 let __cacheAeropuertos = [];
 let __cacheVuelos = [];
 
@@ -247,6 +250,7 @@ async function cargarUsuarios(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
 }
 
 async function eliminarUsuario(id) {
@@ -257,7 +261,8 @@ async function eliminarUsuario(id) {
     });
     const data = await res.json();
     alert(data.message || "Usuario eliminado");
-    
+    notifyTableUpdate();
+
     //await cargarUsuarios();
     //await cargarWalletAdmin();
 }
@@ -306,6 +311,8 @@ async function eliminarWalletAdmin(id_wallet) {
     const data = await res.json();
     alert(data.message || "Tarjeta eliminada");
     await cargarWalletAdmin();
+    notifyTableUpdate();
+
 }
 
 /* ============================================================
@@ -341,6 +348,8 @@ async function cargarAeropuertos(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function guardarAeropuerto(e) {
@@ -366,6 +375,8 @@ async function guardarAeropuerto(e) {
     document.getElementById("aeropuertoId").value = "";
 
     await cargarAeropuertos();
+    notifyTableUpdate();
+
 }
 
 async function editarAeropuerto(id) {
@@ -388,6 +399,8 @@ async function eliminarAeropuerto(id) {
     const data = await res.json();
     alert(data.message || "Eliminado");
     await cargarAeropuertos();
+    notifyTableUpdate();
+
 }
 
 /* ============================================================
@@ -425,6 +438,8 @@ async function cargarVuelosAdmin(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function guardarVuelo(e) {
@@ -529,6 +544,8 @@ async function cargarAsientos(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function guardarAsiento(e) {
@@ -614,6 +631,8 @@ async function cargarEquipaje(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function guardarEquipaje(e) {
@@ -703,6 +722,8 @@ async function cargarTiposMaleta(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function guardarMaleta(e) {
@@ -792,6 +813,8 @@ async function cargarPedidos(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function editarPedidoAdmin(id) {
@@ -878,6 +901,8 @@ async function cargarPagos(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function editarPagoAdmin(id) {
@@ -963,6 +988,8 @@ async function cargarBoletos(idFiltro = null) {
             </tr>
         `;
     });
+    notifyTableUpdate();
+
 }
 
 async function editarBoletoAdmin(id) {
@@ -1237,3 +1264,4 @@ async function guardarEdicionUsuario(e) {
         await cargarWalletAdmin();
     }
 }
+
