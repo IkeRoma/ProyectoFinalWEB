@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     asignarEventos();
 
     await cargarUsuarios();
-    await cargarWalletAdmin();
+    //await cargarWalletAdmin();
 
     await cargarAeropuertos();
     await cargarVuelosAdmin();
@@ -257,13 +257,14 @@ async function eliminarUsuario(id) {
     });
     const data = await res.json();
     alert(data.message || "Usuario eliminado");
-    await cargarUsuarios();
-    await cargarWalletAdmin();
+    
+    //await cargarUsuarios();
+    //await cargarWalletAdmin();
 }
 
 /* ============================================================
    WALLET ADMIN
-===============================================================*/
+===============================================================
 async function cargarWalletAdmin() {
     const filtro = document.getElementById("filtroWalletUsuarioId");
     const idUsuario = filtro ? filtro.value : "";
@@ -294,7 +295,7 @@ async function cargarWalletAdmin() {
             </tr>
         `;
     });
-}
+}*/
 
 async function eliminarWalletAdmin(id_wallet) {
     if (!confirm("¿Eliminar tarjeta?")) return;
