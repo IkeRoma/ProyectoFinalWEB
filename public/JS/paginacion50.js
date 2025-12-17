@@ -70,19 +70,22 @@
 
         // Insertar justo al final de la tabla
         table.insertAdjacentElement("afterend", container);
+        table.dataset.paginating = "0";
     }
 
     function initObservers() {
-        const tables = Array.from(document.querySelectorAll("table.admin-table"));
+        const tables = Array.from(document.querySelectorAll("table")).filter(table => {
+            const tbody = table.tBodies && table.tBodies[0];
+            return tbody && tbody.rows.length > 50;
+        });
 
         tables.forEach(table => {
             applyToTable(table);
 
-            const tbody = table.tBodies && table.tBodies[0];
+            const tbody = table.tBodies[0];
             if (!tbody) return;
 
             const obs = new MutationObserver(() => {
-                // Re-aplicar después de que admin.js cambie el contenido
                 applyToTable(table);
             });
 
@@ -90,9 +93,12 @@
         });
     }
 
+
     // Solo en PanelAdmin
-    const isPanelAdmin = /PanelAdmin\.html/i.test(location.pathname) || document.body?.textContent?.includes("Panel de Administración");
+    const isPanelAdmin = /PanelAdmin\.html/i.test(location.pathname) || 
+        document.body?.textContent?.includes("Panel de Administración");
     if (!isPanelAdmin) return;
+
 
     document.addEventListener("DOMContentLoaded", initObservers);
 })();
