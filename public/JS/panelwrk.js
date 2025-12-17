@@ -50,6 +50,9 @@
                 </tr>
             `;
         });
+            notifyTableUpdate();
+    tbody.innerHTML = html;   // ← construir primero en string
+    notifyTableUpdate();   
     }
 
     async function guardarEnvio(e) {
@@ -148,6 +151,9 @@
                 </tr>
             `;
         });
+            notifyTableUpdate();
+    tbody.innerHTML = html;   // ← construir primero en string
+    notifyTableUpdate();   
     }
 
     async function guardarResena(e) {

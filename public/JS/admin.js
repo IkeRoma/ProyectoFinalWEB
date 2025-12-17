@@ -251,6 +251,9 @@ async function cargarUsuarios(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+    tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
+
 }
 
 async function eliminarUsuario(id) {
@@ -261,7 +264,6 @@ async function eliminarUsuario(id) {
     });
     const data = await res.json();
     alert(data.message || "Usuario eliminado");
-    notifyTableUpdate();
 
     //await cargarUsuarios();
     //await cargarWalletAdmin();
@@ -310,8 +312,7 @@ async function eliminarWalletAdmin(id_wallet) {
     });
     const data = await res.json();
     alert(data.message || "Tarjeta eliminada");
-    await cargarWalletAdmin();
-    notifyTableUpdate();
+    await cargarWalletAdmin(); // ← dispara paginación
 
 }
 
@@ -349,6 +350,8 @@ async function cargarAeropuertos(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -375,7 +378,6 @@ async function guardarAeropuerto(e) {
     document.getElementById("aeropuertoId").value = "";
 
     await cargarAeropuertos();
-    notifyTableUpdate();
 
 }
 
@@ -439,6 +441,8 @@ async function cargarVuelosAdmin(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -545,6 +549,8 @@ async function cargarAsientos(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -632,6 +638,8 @@ async function cargarEquipaje(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -723,6 +731,8 @@ async function cargarTiposMaleta(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -814,6 +824,8 @@ async function cargarPedidos(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -902,6 +914,8 @@ async function cargarPagos(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+tbody.innerHTML = html;   // ← construir primero en string
+notifyTableUpdate();     // ← dispara paginación
 
 }
 
@@ -989,6 +1003,8 @@ async function cargarBoletos(idFiltro = null) {
         `;
     });
     notifyTableUpdate();
+    tbody.innerHTML = html;   // ← construir primero en string
+    notifyTableUpdate();     // ← dispara paginación
 
 }
 
