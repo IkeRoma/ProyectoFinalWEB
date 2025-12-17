@@ -258,6 +258,7 @@ function listarUsuariosAdmin(req, res) {
             usuarios: rows || []
         });
     });
+    console.log("USER:", req.user);
 }
 
 
