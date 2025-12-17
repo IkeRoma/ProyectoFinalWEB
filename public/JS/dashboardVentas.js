@@ -1,19 +1,17 @@
 /* ============================================================
-   Dashboard de ventas (PanelAdmin y PanelWRK) — INTEGRADO PRO
+   Dashboard de ventas (PanelAdmin y PanelWRK) — ESTABLE FINAL
 ===============================================================*/
-
 (function () {
     let chartInstance = null;
 
     /* ============================
        FETCH CON TOKEN
     ============================ */
-    async function secureFetch(url, options = {}) {
+    async function secureFetch(url) {
         const token = localStorage.getItem("token");
-        options.headers = options.headers || {};
-        options.headers["Content-Type"] = "application/json";
-        if (token) options.headers["Authorization"] = `Bearer ${token}`;
-        return fetch(url, options);
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        return fetch(url, { headers });
     }
 
     /* ============================
@@ -24,44 +22,26 @@
 
     function normalizarTotalesPorMes(input) {
         const totales = Array(12).fill(0);
-        if (!input) return totales;
+        if (!Array.isArray(input)) return totales;
 
         // Caso backend: [100,200,...]
-        if (Array.isArray(input) && typeof input[0] === "number") {
+        if (typeof input[0] === "number") {
             return input.map(v => Number(v) || 0);
         }
 
         // Caso backend: [{ mes: 1, total: 500 }]
-        if (Array.isArray(input) && typeof input[0] === "object") {
-            const mesesTexto = {
-                ene:0,feb:1,mar:2,abr:3,may:4,jun:5,
-                jul:6,ago:7,sep:8,oct:9,nov:10,dic:11
-            };
-
-            input.forEach(r => {
-                let idx = -1;
-                if (typeof r.mes === "number") idx = r.mes - 1;
-                else if (typeof r.mes === "string")
-                    idx = mesesTexto[r.mes.toLowerCase().slice(0,3)];
-
-                if (idx >= 0 && idx < 12)
-                    totales[idx] += Number(r.total) || 0;
-            });
-        }
+        input.forEach(r => {
+            const m = Number(r.mes);
+            if (m >= 1 && m <= 12) {
+                totales[m - 1] += Number(r.total) || 0;
+            }
+        });
 
         return totales;
     }
 
     function calcularTotalAnual(totales) {
-        return totales.reduce((a,b)=>a+b,0);
-    }
-
-    function calcularMejorMes(totales) {
-        let max = 0, idx = -1;
-        totales.forEach((v,i)=>{
-            if (v > max) { max = v; idx = i; }
-        });
-        return idx >= 0 ? { mes: MONTHS[idx], total: max } : null;
+        return totales.reduce((a, b) => a + b, 0);
     }
 
     function acumulado(arr) {
@@ -80,9 +60,10 @@
         return {
             yearSel: document.getElementById("ventasYear"),
             canvas: document.getElementById("ventasChart"),
-            total: document.getElementById("ventasTotalAnual"),
-            mejor: document.getElementById("ventasMejorMes"),
-            comparativa: document.getElementById("ventasComparativa")
+            totalAnual: document.getElementById("ventasTotalAnual"),
+            ticket: document.getElementById("ventasTicketPromedio"),
+            topRutas: document.getElementById("ventasTopRutas"),
+            topUsuarios: document.getElementById("ventasTopUsuarios")
         };
     }
 
@@ -92,13 +73,13 @@
     function waitForChartJS() {
         return new Promise((resolve, reject) => {
             let tries = 0;
-            const interval = setInterval(() => {
+            const i = setInterval(() => {
                 if (window.Chart) {
-                    clearInterval(interval);
+                    clearInterval(i);
                     resolve();
                 }
                 if (++tries > 40) {
-                    clearInterval(interval);
+                    clearInterval(i);
                     reject("Chart.js no cargó");
                 }
             }, 100);
@@ -109,18 +90,33 @@
        API
     ============================ */
     async function cargarAnios() {
-        const res = await secureFetch("/api/dashboard/ventas/anios");
-        const data = await res.json();
-        return data.anios || [];
+        const r = await secureFetch("/api/dashboard/ventas/anios");
+        const j = await r.json();
+        return j.anios || [];
     }
 
     async function cargarVentas(anio) {
-        const res = await secureFetch(`/api/dashboard/ventas?anio=${anio}`);
-        return res.json();
+        const r = await secureFetch(`/api/dashboard/ventas?anio=${anio}`);
+        return r.json();
+    }
+
+    async function cargarTopRutas(anio) {
+        const r = await secureFetch(`/api/dashboard/top-rutas?anio=${anio}`);
+        return r.json();
+    }
+
+    async function cargarTicketPromedio(anio) {
+        const r = await secureFetch(`/api/dashboard/ticket-promedio?anio=${anio}`);
+        return r.json();
+    }
+
+    async function cargarTopUsuarios(anio) {
+        const r = await secureFetch(`/api/dashboard/top-usuarios?anio=${anio}`);
+        return r.json();
     }
 
     /* ============================
-       RENDER CHART
+       CHART
     ============================ */
     function renderChart(canvas, anio, mensuales) {
         if (chartInstance) chartInstance.destroy();
@@ -131,7 +127,7 @@
                 datasets: [
                     {
                         type: "bar",
-                        label: `Ventas ${anio} (MXN)`,
+                        label: `Ventas ${anio}`,
                         data: mensuales
                     },
                     {
@@ -145,9 +141,7 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                },
+                scales: { y: { beginAtZero: true } },
                 plugins: {
                     tooltip: {
                         callbacks: {
@@ -160,14 +154,69 @@
     }
 
     /* ============================
+       FUNCIÓN CENTRAL
+    ============================ */
+    async function actualizar(anio) {
+        const els = ensureElements();
+
+        try {
+            /* Ventas */
+            const data = await cargarVentas(anio);
+            if (data?.error) return;
+
+            const totales = normalizarTotalesPorMes(data.totales);
+            renderChart(els.canvas, anio, totales);
+
+            /* Total anual */
+            if (els.totalAnual) {
+                els.totalAnual.textContent =
+                    `Total anual ${anio}: ${formatoMXN(calcularTotalAnual(totales))}`;
+            }
+
+            /* Ticket promedio */
+            const ticket = await cargarTicketPromedio(anio);
+            if (els.ticket) {
+                els.ticket.textContent = ticket && !ticket.error
+                    ? `Ticket promedio: ${formatoMXN(ticket.promedio)}`
+                    : "Ticket promedio: $0.00";
+            }
+
+            /* Top rutas */
+            if (els.topRutas) {
+                const rutas = await cargarTopRutas(anio);
+                els.topRutas.innerHTML = "";
+                (rutas?.rutas || []).forEach(r => {
+                    const li = document.createElement("li");
+                    li.textContent = `${r.origen} → ${r.destino}: ${formatoMXN(r.total)}`;
+                    els.topRutas.appendChild(li);
+                });
+                if (!rutas?.rutas?.length) els.topRutas.innerHTML = "<li>Sin datos</li>";
+            }
+
+            /* Top usuarios */
+            if (els.topUsuarios) {
+                const usuarios = await cargarTopUsuarios(anio);
+                els.topUsuarios.innerHTML = "";
+                (usuarios?.usuarios || []).forEach(u => {
+                    const li = document.createElement("li");
+                    li.textContent =
+                        `${u.nombre} (${u.pedidos} pedidos): ${formatoMXN(u.total)}`;
+                    els.topUsuarios.appendChild(li);
+                });
+                if (!usuarios?.usuarios?.length)
+                    els.topUsuarios.innerHTML = "<li>Sin datos</li>";
+            }
+
+        } catch (e) {
+            console.error("Dashboard error:", e);
+        }
+    }
+
+    /* ============================
        INIT
     ============================ */
     async function init() {
-        const {
-            yearSel, canvas,
-            total, mejor, comparativa
-        } = ensureElements();
-
+        const { yearSel, canvas } = ensureElements();
         if (!yearSel || !canvas) return;
 
         canvas.style.minHeight = "320px";
@@ -184,90 +233,12 @@
             yearSel.appendChild(opt);
         });
 
-        async function actualizarDashboard(anio) {
-        // =========================
-        // Ventas mensuales
-        // =========================
-        const data = await cargarVentas(anio);
-        const totales = normalizarTotalesPorMes(data.totales || []);
-        const totalAnual = calcularTotalAnual(totales);
-
-        renderChart(canvas, anio, totales);
-        renderResumen(resumen, anio, totalAnual);
-
-        // =========================
-        // Ticket promedio
-        // =========================
-        const ticket = await cargarTicketPromedio(anio);
-        const elTicket = document.getElementById("ventasTicketPromedio");
-        if (elTicket && !ticket.error) {
-            elTicket.textContent =
-                `Ticket promedio: ${formatoMXN(ticket.promedio)}`;
-        }
-
-        // =========================
-        // Top rutas
-        // =========================
-        const rutas = await cargarTopRutas(anio);
-        const ulRutas = document.getElementById("ventasTopRutas");
-        if (ulRutas) {
-            ulRutas.innerHTML = "";
-
-            (rutas.rutas || []).forEach(r => {
-                const li = document.createElement("li");
-                li.textContent =
-                    `${r.origen} → ${r.destino}: ${formatoMXN(r.total)}`;
-                ulRutas.appendChild(li);
-            });
-
-            if (!rutas.rutas?.length) {
-                ulRutas.innerHTML = "<li>Sin datos</li>";
-            }
-        }
-
-        // =========================
-        // Top usuarios
-        // =========================
-        const usuarios = await cargarTopUsuarios(anio);
-        const ulUsuarios = document.getElementById("ventasTopUsuarios");
-        if (ulUsuarios) {
-            ulUsuarios.innerHTML = "";
-
-            (usuarios.usuarios || []).forEach(u => {
-                const li = document.createElement("li");
-                li.textContent =
-                    `${u.nombre}: ${formatoMXN(u.total)}`;
-                ulUsuarios.appendChild(li);
-            });
-
-            if (!usuarios.usuarios?.length) {
-                ulUsuarios.innerHTML = "<li>Sin datos</li>";
-            }
-        }
-    }
-
-
         yearSel.value = anios[0];
         await actualizar(anios[0]);
 
         yearSel.addEventListener("change", () => {
-            actualizar(yearSel.value);
+            actualizar(Number(yearSel.value));
         });
-    }
-
-    async function cargarTopRutas(anio) {
-    const res = await secureFetch(`/api/dashboard/top-rutas?anio=${anio}`);
-    return res.json();
-    }
-
-    async function cargarTicketPromedio(anio) {
-        const res = await secureFetch(`/api/dashboard/ticket-promedio?anio=${anio}`);
-        return res.json();
-    }
-
-    async function cargarTopUsuarios(anio) {
-    const res = await secureFetch(`/api/dashboard/top-usuarios?anio=${anio}`);
-    return res.json();
     }
 
     document.addEventListener("DOMContentLoaded", init);
