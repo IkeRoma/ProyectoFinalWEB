@@ -237,10 +237,11 @@ exports.listarUsuariosAdmin = (req, res) => {
 function listarUsuariosAdmin(req, res) {
     const sql = `
         SELECT 
-            ID AS id,
+            ID,
             Nombre,
             Apellido,
-            Correo AS Email,
+            Correo,
+            Telefono,
             Rol
         FROM Usuarios
         ORDER BY ID DESC
@@ -255,11 +256,11 @@ function listarUsuariosAdmin(req, res) {
             });
         }
         res.json({
-            usuarios: rows || []
+            Usuarios: rows || []
         });
     });
-    console.log("USER:", req.user);
 }
+
 
 
 // =========================================
