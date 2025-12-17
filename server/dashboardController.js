@@ -2,14 +2,19 @@ const db = require("./conexion");
 
 /**
  * Dashboard de ventas:
- * - Se basa en tabla pagos (monto) y fecha_pago
- * - Por defecto toma pagos con estado='APROBADO'
+ * - Ventas por mes: tabla pagos (monto) por fecha_pago, estado='APROBADO'
+ * - Ticket promedio: tabla pedidos (total) por fecha, estado='PAGADO'
+ * - Top rutas / Top usuarios: se calculan desde pedidos+boletos, evitando depender de campos inexistentes
  */
 
+/* ============================================================
+   AÑOS DISPONIBLES (basado en pagos aprobados)
+=============================================================== */
 exports.ventasAniosDisponibles = (req, res) => {
     const sql = `
         SELECT DISTINCT YEAR(fecha_pago) AS anio
         FROM pagos
+        WHERE estado = 'APROBADO'
         ORDER BY anio DESC
     `;
 
@@ -18,54 +23,65 @@ exports.ventasAniosDisponibles = (req, res) => {
             console.error("Error ventasAniosDisponibles:", err);
             return res.status(500).json({ error: true, message: "Error al obtener años" });
         }
-        res.json({ error: false, anios: (rows || []).map(r => r.anio).filter(Boolean) });
+
+        res.json({
+            error: false,
+            anios: (rows || []).map(r => r.anio).filter(Boolean)
+        });
     });
 };
 
+/* ============================================================
+   VENTAS POR MES (pagos aprobados)
+=============================================================== */
 exports.ventasPorMes = (req, res) => {
-    const anio = Number(req.query.anio);
-    const year = Number.isFinite(anio) ? anio : new Date().getFullYear();
+    const anio = Number(req.query.anio) || new Date().getFullYear();
 
     const sql = `
         SELECT MONTH(fecha_pago) AS mes, SUM(monto) AS total
         FROM pagos
-        WHERE estado = 'APROBADO' AND YEAR(fecha_pago) = ?
-        GROUP BY MONTH(fecha_pago)
-        ORDER BY mes ASC
+        WHERE estado = 'APROBADO'
+          AND YEAR(fecha_pago) = ?
+        GROUP BY mes
+        ORDER BY mes
     `;
 
-    db.query(sql, [year], (err, rows) => {
+    db.query(sql, [anio], (err, rows) => {
         if (err) {
             console.error("Error ventasPorMes:", err);
             return res.status(500).json({ error: true, message: "Error al obtener ventas" });
         }
 
-        // Normalizar a 12 meses
-        const totales = Array.from({ length: 12 }, () => 0);
+        const totales = Array(12).fill(0);
         (rows || []).forEach(r => {
             const m = Number(r.mes);
             if (m >= 1 && m <= 12) totales[m - 1] = Number(r.total || 0);
         });
 
-        res.json({ error: false, anio: year, totales });
+        res.json({ error: false, anio, totales });
     });
 };
 
-// dashboardController.js
+/* ============================================================
+   TOP RUTAS (por ventas)
+   - Se basa en pedidos PAGADO del año y suma precio_total de boletos
+=============================================================== */
 exports.topRutas = (req, res) => {
     const anio = Number(req.query.anio);
-    if (!anio) return res.json({ error: true });
+    if (!anio) return res.json({ error: true, message: "Falta anio" });
 
     const sql = `
         SELECT 
             ao.ciudad AS origen,
             ad.ciudad AS destino,
             SUM(b.precio_total) AS total
-        FROM boletos b
+        FROM pedidos p
+        JOIN boletos b ON b.id_pedido = p.id_pedido
         JOIN vuelos v ON b.id_vuelo = v.id_vuelo
         JOIN aeropuertos ao ON v.id_origen = ao.id_aeropuerto
         JOIN aeropuertos ad ON v.id_destino = ad.id_aeropuerto
-        WHERE YEAR(b.fecha_compra) = ?
+        WHERE p.estado = 'PAGADO'
+          AND YEAR(p.fecha) = ?
         GROUP BY origen, destino
         ORDER BY total DESC
         LIMIT 5
@@ -73,16 +89,20 @@ exports.topRutas = (req, res) => {
 
     db.query(sql, [anio], (err, rows) => {
         if (err) {
-            console.error(err);
-            return res.json({ error: true });
+            console.error("Error topRutas:", err);
+            return res.status(500).json({ error: true, message: "Error top rutas" });
         }
-        res.json({ error: false, rutas: rows });
+        res.json({ error: false, rutas: rows || [] });
     });
 };
 
+/* ============================================================
+   TICKET PROMEDIO
+   - Promedio = SUM(total) / COUNT(pedidos)
+=============================================================== */
 exports.ticketPromedio = (req, res) => {
     const anio = Number(req.query.anio);
-    if (!anio) return res.json({ error: true });
+    if (!anio) return res.json({ error: true, message: "Falta anio" });
 
     const sql = `
         SELECT 
@@ -95,43 +115,48 @@ exports.ticketPromedio = (req, res) => {
 
     db.query(sql, [anio], (err, rows) => {
         if (err) {
-            console.error(err);
-            return res.json({ error: true });
+            console.error("Error ticketPromedio:", err);
+            return res.status(500).json({ error: true, message: "Error ticket promedio" });
         }
 
-        const pedidos = rows[0].pedidos || 0;
-        const total = rows[0].total || 0;
+        const pedidos = Number(rows?.[0]?.pedidos || 0);
+        const total = Number(rows?.[0]?.total || 0);
         const promedio = pedidos ? total / pedidos : 0;
 
-        res.json({
-            error: false,
-            pedidos,
-            total,
-            promedio
-        });
+        res.json({ error: false, pedidos, total, promedio });
     });
 };
 
-// Ticket promedio
-const ticket = await cargarTicketPromedio(anio);
-if (!ticket.error) {
-    document.getElementById("ventasTicketPromedio").textContent =
-        `Ticket promedio: ${formatoMXN(ticket.promedio)}`;
-}
+/* ============================================================
+   TOP USUARIOS (por ventas)
+   - Suma total de pedidos PAGADO por usuario en el año
+=============================================================== */
+exports.topUsuarios = (req, res) => {
+    const anio = Number(req.query.anio);
+    if (!anio) return res.json({ error: true, message: "Falta anio" });
 
-// Top rutas
-const rutas = await cargarTopRutas(anio);
-const ul = document.getElementById("ventasTopRutas");
-if (ul) {
-    ul.innerHTML = "";
-    (rutas.rutas || []).forEach(r => {
-        const li = document.createElement("li");
-        li.textContent =
-            `${r.origen} → ${r.destino}: ${formatoMXN(r.total)}`;
-        ul.appendChild(li);
+    const sql = `
+        SELECT
+            u.ID AS id_usuario,
+            CONCAT(u.Nombre, ' ', u.Apellido) AS nombre,
+            u.Correo AS correo,
+            COUNT(p.id_pedido) AS pedidos,
+            SUM(p.total) AS total
+        FROM pedidos p
+        JOIN Usuarios u ON u.ID = p.id_usuario
+        WHERE p.estado = 'PAGADO'
+          AND YEAR(p.fecha) = ?
+        GROUP BY u.ID, u.Nombre, u.Apellido, u.Correo
+        ORDER BY total DESC
+        LIMIT 5
+    `;
+
+    db.query(sql, [anio], (err, rows) => {
+        if (err) {
+            console.error("Error topUsuarios:", err);
+            return res.status(500).json({ error: true, message: "Error top usuarios" });
+        }
+
+        res.json({ error: false, usuarios: rows || [] });
     });
-
-    if (!rutas.rutas?.length) {
-        ul.innerHTML = "<li>Sin datos</li>";
-    }
-}
+};
