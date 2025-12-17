@@ -2,9 +2,9 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 
-const auth = require("./authController");
-const reviews = require("./reviewsController");
-const dashboard = require("./dashboardController");
+const auth = require("./authController.js");
+const reviews = require("./reviewsController.js");
+const dashboard = require("./dashboardController.js");
 
 const { verificarToken, soloAdmin, soloStaff } = auth;
 
@@ -91,6 +91,10 @@ app.get("/api/reviews/byUser/:id", reviews.reseñasPorUsuario);
    ADMIN / WRK (Staff: Rol 1 y 2)
    - PanelAdmin (Rol=1) y PanelWRK (Rol=2)
 ===============================================================*/
+console.log("verificarToken:", typeof verificarToken);
+console.log("soloStaff:", typeof soloStaff);
+console.log("auth.listarUsuarios:", typeof auth.listarUsuarios);
+
 // Usuarios
 app.get("/api/listar", verificarToken, soloStaff, auth.listarUsuarios);
 app.post("/api/eliminar", verificarToken, soloStaff, auth.eliminarUsuario);
