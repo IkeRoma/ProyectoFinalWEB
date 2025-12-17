@@ -1437,91 +1437,128 @@ async function obtenerHistorialPedidosUsuario(req, res) {
 // ================================================================
 module.exports = {
 
-    // Middlewares
+    /* =========================
+       Middlewares
+    ========================== */
     verificarToken,
     soloAdmin,
 
-    // Auth
+    /* =========================
+       Auth
+    ========================== */
     login,
     registrar,
     resetPassword,
 
-    // Usuarios
-    eliminarUsuario,
+    /* =========================
+       Usuarios (Admin)
+    ========================== */
     listarUsuarios,
     crearUsuario,
     actualizarUsuarioAdmin,
+    eliminarUsuario,
 
-    // Wallet
+    /* =========================
+       Wallet
+    ========================== */
     listarWallet,
     agregarTarjeta,
-    eliminarTarjeta,
     actualizarTarjeta,
+    eliminarTarjeta,
 
-    // Perfil
+    /* =========================
+       Perfil usuario
+    ========================== */
     updateUser,
     updatePassword,
 
-    // Direcciones / Envíos
+    /* =========================
+       Direcciones / Envíos
+    ========================== */
     obtenerDireccionesUsuario,
-    obtenerHistorialPedidosUsuario,
     agregarDireccion,
     editarDireccion,
     eliminarDireccion,
+
     obtenerPedidosPagados,
     crearEnvio,
     obtenerHistorialEnvios,
 
-    // Vuelos públicos
+    /* =========================
+       Historial (MiPerfil)
+    ========================== */
+    obtenerHistorialPedidosUsuario,
+
+    /* =========================
+       Vuelos públicos
+    ========================== */
     listarVuelosPublico,
     detalleVuelo,
 
-    // Admin — Aeropuertos
+    /* =========================
+       Admin — Aeropuertos
+    ========================== */
     listarAeropuertos,
     crearAeropuerto,
     actualizarAeropuerto,
     eliminarAeropuerto,
 
-    // Admin — Vuelos
+    /* =========================
+       Admin — Vuelos
+    ========================== */
     listarVuelosAdmin,
     crearVuelo,
     actualizarVuelo,
     eliminarVuelo,
 
-    // Admin — Asientos
+    /* =========================
+       Admin — Asientos
+    ========================== */
     listarAsientos,
     crearAsiento,
     actualizarAsiento,
     eliminarAsiento,
 
-    // Admin — Equipaje
+    /* =========================
+       Admin — Equipaje
+    ========================== */
     listarEquipaje,
     crearEquipaje,
     actualizarEquipaje,
     eliminarEquipaje,
 
-    // Carrito / Pedido desde carrito
+    /* =========================
+       Carrito / Pedido
+    ========================== */
     crearPedidoDesdeCarrito,
 
-    // Tipos de maleta
+    /* =========================
+       Tipos de maleta
+    ========================== */
     listarTiposMaleta,
     crearTipoMaleta,
     actualizarTipoMaleta,
     eliminarTipoMaleta,
 
-    // Pedidos admin
+    /* =========================
+       Admin — Pedidos
+    ========================== */
     listarPedidos,
     crearPedidoAdmin,
     actualizarPedidoAdmin,
     eliminarPedidoAdmin,
 
-    // Pagos admin
+    /* =========================
+       Admin — Pagos
+    ========================== */
     listarPagos,
     crearPagoAdmin,
     actualizarPagoAdmin,
     eliminarPagoAdmin,
 
-    // Boletos admin
+    /* =========================
+       Admin — Boletos
+    ========================== */
     listarBoletos,
     crearBoletoAdmin,
     actualizarBoletoAdmin,
