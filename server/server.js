@@ -47,7 +47,7 @@ app.post("/api/wallet/update", verificarToken, auth.actualizarTarjeta);
 app.post("/api/wallet/delete", verificarToken, auth.eliminarTarjeta);
 
 // Wallet (ADMIN/WRK)
-app.get("/api/wallet/admin", verificarToken, soloStaff, auth.walletAdminListar);
+//app.get("/api/wallet/admin", verificarToken, soloStaff, auth.walletAdminListar);
 
 /* ============================================================
    DIRECCIONES / ENVÍO (MiPerfil)
@@ -150,10 +150,10 @@ app.post("/api/admin/boletos/update", verificarToken, soloStaff, auth.actualizar
 app.post("/api/admin/boletos/delete", verificarToken, soloStaff, auth.eliminarBoletoAdmin);
 
 // Envíos (ADMIN/WRK)
-app.get("/api/admin/envios", verificarToken, soloStaff, auth.listarEnviosAdmin);
-app.post("/api/admin/envios/add", verificarToken, soloStaff, auth.crearEnvioAdmin);
-app.post("/api/admin/envios/update", verificarToken, soloStaff, auth.actualizarEnvioAdmin);
-app.post("/api/admin/envios/delete", verificarToken, soloStaff, auth.eliminarEnvioAdmin);
+//app.get("/api/admin/envios", verificarToken, soloStaff, auth.listarEnviosAdmin);
+//app.post("/api/admin/envios/add", verificarToken, soloStaff, auth.crearEnvioAdmin);
+//app.post("/api/admin/envios/update", verificarToken, soloStaff, auth.actualizarEnvioAdmin);
+//app.post("/api/admin/envios/delete", verificarToken, soloStaff, auth.eliminarEnvioAdmin);
 
 // Reseñas (ADMIN/WRK) — CRUD
 app.get("/api/admin/reviews", verificarToken, soloStaff, reviews.adminListarReseñas);
