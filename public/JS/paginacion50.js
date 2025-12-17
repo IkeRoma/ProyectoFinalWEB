@@ -6,6 +6,14 @@
  */
 
 (function () {
+        document.addEventListener("admin:table-updated", () => {
+        const tables = Array.from(document.querySelectorAll("table")).filter(
+            t => t.tBodies && t.tBodies[0]
+        );
+
+        tables.forEach(applyToTable);
+    });
+
     const PAGE_SIZE = 50;
 
     function getButtonClass() {
@@ -74,10 +82,9 @@
     }
 
     function initObservers() {
-        const tables = Array.from(document.querySelectorAll("table")).filter(table => {
-            const tbody = table.tBodies && table.tBodies[0];
-            return tbody && tbody.rows.length > 50;
-        });
+        const tables = Array.from(document.querySelectorAll("table")).filter(
+            t => t.tBodies && t.tBodies[0]
+        );
 
         tables.forEach(table => {
             applyToTable(table);
@@ -89,9 +96,10 @@
                 applyToTable(table);
             });
 
-            obs.observe(tbody, { childList: true, subtree: true });
+            obs.observe(tbody, { childList: true });
         });
     }
+
 
 
     // Solo en PanelAdmin
