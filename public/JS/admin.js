@@ -250,7 +250,7 @@ async function cargarUsuarios(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+   
     tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -349,7 +349,7 @@ async function cargarAeropuertos(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -440,7 +440,7 @@ async function cargarVuelosAdmin(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -548,7 +548,7 @@ async function cargarAsientos(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -637,7 +637,7 @@ async function cargarEquipaje(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+   
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -730,7 +730,7 @@ async function cargarTiposMaleta(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+   
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -823,7 +823,7 @@ async function cargarPedidos(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -913,7 +913,7 @@ async function cargarPagos(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
 tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -1002,7 +1002,7 @@ async function cargarBoletos(idFiltro = null) {
             </tr>
         `;
     });
-    notifyTableUpdate();
+    
     tbody.innerHTML = html;   // ← construir primero en string
     notifyTableUpdate();     // ← dispara paginación
 

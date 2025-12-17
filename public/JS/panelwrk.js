@@ -50,7 +50,7 @@
                 </tr>
             `;
         });
-            notifyTableUpdate();
+            
     tbody.innerHTML = html;   // ← construir primero en string
     notifyTableUpdate();   
     }
@@ -151,7 +151,7 @@
                 </tr>
             `;
         });
-            notifyTableUpdate();
+           
     tbody.innerHTML = html;   // ← construir primero en string
     notifyTableUpdate();   
     }
