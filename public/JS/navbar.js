@@ -148,6 +148,13 @@ document.addEventListener("DOMContentLoaded", () => {
             );
         }
 
+
+        if (usuario.Rol === 2) {
+            navLinksContainer.appendChild(
+                crearLink("Panel WRK", "PanelWRK.html", "nav__link--primary")
+            );
+        }
+
         if (usuario.Rol === 0) {
             navLinksContainer.appendChild(
                 crearLink("Mi Perfil", "MiPerfil.html")

@@ -89,7 +89,10 @@ function poblarSelectVuelos(lista) {
 ===============================================================*/
 document.addEventListener("DOMContentLoaded", async () => {
     const usr = JSON.parse(localStorage.getItem("usuario"));
-    if (usr) document.getElementById("adminNombre").textContent = usr.Nombre;
+    if (usr) {
+        const elNombre = document.getElementById("adminNombre");
+        if (elNombre) elNombre.textContent = usr.Nombre;
+    }
 
     asignarEventos();
 
@@ -177,6 +180,16 @@ function asignarEventos() {
     const formEditarBoleto = document.getElementById("formEditarBoleto");
     if (formEditarBoleto) formEditarBoleto.onsubmit = guardarBoletoAdmin;
 
+    // formularios (modales) — CREAR (CRUD completo)
+    const formCrearPedido = document.getElementById("formCrearPedido");
+    if (formCrearPedido) formCrearPedido.onsubmit = guardarNuevoPedidoAdmin;
+
+    const formCrearPago = document.getElementById("formCrearPago");
+    if (formCrearPago) formCrearPago.onsubmit = guardarNuevoPagoAdmin;
+
+    const formCrearBoleto = document.getElementById("formCrearBoleto");
+    if (formCrearBoleto) formCrearBoleto.onsubmit = guardarNuevoBoletoAdmin;
+
     // UX: si el vuelo es DIRECTO, forzar número de escalas = 0
     const selEscala = document.getElementById("vueloEscala");
     const inpNumEscalas = document.getElementById("vueloNumEscalas");
@@ -209,6 +222,7 @@ function logout() {
 ===============================================================*/
 async function cargarUsuarios(idFiltro = null) {
     const tbody = document.querySelector("#tablaUsuarios tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     const res = await secureFetch("/api/listar");
@@ -258,6 +272,7 @@ async function cargarWalletAdmin() {
     if (idUsuario) url += `?id_usuario=${idUsuario}`;
 
     const tbody = document.querySelector("#tablaWallet tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     const res = await secureFetch(url);
@@ -307,6 +322,7 @@ async function cargarAeropuertos(idFiltro = null) {
     }
 
     const tbody = document.querySelector("#tablaAeropuertos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.aeropuertos || []).forEach(a => {
@@ -388,6 +404,7 @@ async function cargarVuelosAdmin(idFiltro = null) {
     }
 
     const tbody = document.querySelector("#tablaVuelos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.vuelos || []).forEach(v => {
@@ -492,6 +509,7 @@ async function cargarAsientos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaAsientos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.asientos || []).forEach(a => {
@@ -577,6 +595,7 @@ async function cargarEquipaje(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaEquipaje tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.equipaje || []).forEach(e => {
@@ -649,7 +668,13 @@ async function eliminarEquipaje(id) {
 }
 
 /* ============================================================
-   TIPOS DE MALETA
+   TIPOS DE MALETA (envío equipaje) — Tabla tipos_maleta
+   Campos (DB):
+     - id_tipo_maleta
+     - nombre
+     - peso_max
+     - precio_base
+     - tarifa_kg_extra
 ===============================================================*/
 async function cargarTiposMaleta(idFiltro = null) {
     let url = "/api/admin/tipos-maleta";
@@ -659,18 +684,20 @@ async function cargarTiposMaleta(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaMaletas tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.tipos || []).forEach(t => {
         tbody.innerHTML += `
             <tr>
-                <td>${t.id_tipo}</td>
-                <td>${t.tipo}</td>
-                <td>$${Number(t.precio).toFixed(2)}</td>
-                <td>${t.activo ? "Sí" : "No"}</td>
+                <td>${t.id_tipo_maleta}</td>
+                <td>${t.nombre}</td>
+                <td>${t.peso_max}</td>
+                <td>$${Number(t.precio_base).toFixed(2)}</td>
+                <td>$${Number(t.tarifa_kg_extra).toFixed(2)}</td>
                 <td>
-                    <button class="btn-edit" onclick="editarMaleta(${t.id_tipo})">Editar</button>
-                    <button class="btn-delete" onclick="eliminarMaleta(${t.id_tipo})">Eliminar</button>
+                    <button class="btn-edit" onclick="editarMaleta(${t.id_tipo_maleta})">Editar</button>
+                    <button class="btn-delete" onclick="eliminarMaleta(${t.id_tipo_maleta})">Eliminar</button>
                 </td>
             </tr>
         `;
@@ -681,11 +708,20 @@ async function guardarMaleta(e) {
     e.preventDefault();
 
     const id = document.getElementById("maletaId").value;
-    const tipo = document.getElementById("maletaTipo").value;
-    const precio = Number(document.getElementById("maletaPrecio").value);
+    const nombre = document.getElementById("maletaNombre").value.trim();
+    const peso_max = Number(document.getElementById("maletaPesoMax").value);
+    const precio_base = Number(document.getElementById("maletaPrecioBase").value);
+    const tarifa_kg_extra = Number(document.getElementById("maletaTarifaKgExtra").value);
+
+    if (!nombre || !Number.isFinite(peso_max) || !Number.isFinite(precio_base) || !Number.isFinite(tarifa_kg_extra)) {
+        return alert("Completa todos los campos de tipo de maleta.");
+    }
 
     const endpoint = id ? "/api/admin/tipos-maleta/update" : "/api/admin/tipos-maleta/add";
-    const payload = id ? { id_tipo: Number(id), tipo, precio } : { tipo, precio };
+
+    const payload = id
+        ? { id_tipo_maleta: Number(id), nombre, peso_max, precio_base, tarifa_kg_extra }
+        : { nombre, peso_max, precio_base, tarifa_kg_extra };
 
     const res = await secureFetch(endpoint, {
         method: "POST",
@@ -702,19 +738,23 @@ async function guardarMaleta(e) {
 
 async function editarMaleta(id) {
     const res = await secureFetch(`/api/admin/tipos-maleta?id=${id}`);
-    const t = (await res.json()).tipos[0];
+    const data = await res.json();
+    const t = (data.tipos || [])[0];
     if (!t) return;
 
-    document.getElementById("maletaId").value = t.id_tipo;
-    document.getElementById("maletaTipo").value = t.tipo;
-    document.getElementById("maletaPrecio").value = t.precio;
+    document.getElementById("maletaId").value = t.id_tipo_maleta;
+    document.getElementById("maletaNombre").value = t.nombre;
+    document.getElementById("maletaPesoMax").value = t.peso_max;
+    document.getElementById("maletaPrecioBase").value = t.precio_base;
+    document.getElementById("maletaTarifaKgExtra").value = t.tarifa_kg_extra;
 }
 
 async function eliminarMaleta(id) {
     if (!confirm("¿Eliminar tipo de maleta?")) return;
+
     const res = await secureFetch("/api/admin/tipos-maleta/delete", {
         method: "POST",
-        body: JSON.stringify({ id_tipo: id })
+        body: JSON.stringify({ id_tipo_maleta: id })
     });
     const data = await res.json();
     alert(data.message || "Eliminado");
@@ -732,6 +772,7 @@ async function cargarPedidos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaPedidos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.pedidos || []).forEach(p => {
@@ -814,6 +855,7 @@ async function cargarPagos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaPagos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.pagos || []).forEach(p => {
@@ -899,6 +941,7 @@ async function cargarBoletos(idFiltro = null) {
     const data = await res.json();
 
     const tbody = document.querySelector("#tablaBoletos tbody");
+    if (!tbody) return;
     tbody.innerHTML = "";
 
     (data.boletos || []).forEach(b => {
@@ -1022,6 +1065,119 @@ function cerrarModalEditarPago() {
 
 function cerrarModalEditarBoleto() {
     cerrarModal("modalEditarBoleto");
+}
+
+
+/* ============================================================
+   MODALES: CREAR (CRUD completo: pedidos/pagos/boletos)
+===============================================================*/
+function abrirModalCrearPedido() {
+    const form = document.getElementById("formCrearPedido");
+    if (form) form.reset();
+    abrirModal("modalCrearPedido");
+}
+
+function cerrarModalCrearPedido() {
+    cerrarModal("modalCrearPedido");
+}
+
+function abrirModalCrearPago() {
+    const form = document.getElementById("formCrearPago");
+    if (form) form.reset();
+    abrirModal("modalCrearPago");
+}
+
+function cerrarModalCrearPago() {
+    cerrarModal("modalCrearPago");
+}
+
+function abrirModalCrearBoleto() {
+    const form = document.getElementById("formCrearBoleto");
+    if (form) form.reset();
+    abrirModal("modalCrearBoleto");
+}
+
+function cerrarModalCrearBoleto() {
+    cerrarModal("modalCrearBoleto");
+}
+
+async function guardarNuevoPedidoAdmin(e) {
+    e.preventDefault();
+
+    const id_usuario = Number(document.getElementById("nuevoPedidoUsuario").value);
+    const id_wallet = Number(document.getElementById("nuevoPedidoWallet").value);
+    const total = Number(document.getElementById("nuevoPedidoTotal").value);
+    const estado = document.getElementById("nuevoPedidoEstado").value;
+
+    if (!id_usuario || !id_wallet || !Number.isFinite(total) || !estado) {
+        return alert("Completa los datos del pedido.");
+    }
+
+    const res = await secureFetch("/api/admin/pedidos/add", {
+        method: "POST",
+        body: JSON.stringify({ id_usuario, id_wallet, total, estado })
+    });
+    const data = await res.json();
+    alert(data.message || "Pedido creado");
+
+    if (!data.error) {
+        cerrarModalCrearPedido();
+        await cargarPedidos();
+    }
+}
+
+async function guardarNuevoPagoAdmin(e) {
+    e.preventDefault();
+
+    const id_usuario = Number(document.getElementById("nuevoPagoUsuario").value);
+    const id_pedido = Number(document.getElementById("nuevoPagoPedido").value);
+    const monto = Number(document.getElementById("nuevoPagoMonto").value);
+    const estado = document.getElementById("nuevoPagoEstado").value;
+
+    if (!id_usuario || !id_pedido || !Number.isFinite(monto) || !estado) {
+        return alert("Completa los datos del pago.");
+    }
+
+    const res = await secureFetch("/api/admin/pagos/add", {
+        method: "POST",
+        body: JSON.stringify({ id_usuario, id_pedido, monto, estado })
+    });
+    const data = await res.json();
+    alert(data.message || "Pago creado");
+
+    if (!data.error) {
+        cerrarModalCrearPago();
+        await cargarPagos();
+    }
+}
+
+async function guardarNuevoBoletoAdmin(e) {
+    e.preventDefault();
+
+    const id_usuario = Number(document.getElementById("nuevoBoletoUsuario").value);
+    const id_vuelo = Number(document.getElementById("nuevoBoletoVuelo").value);
+    const id_asiento = Number(document.getElementById("nuevoBoletoAsiento").value);
+    const id_equipaje_raw = document.getElementById("nuevoBoletoEquipaje").value;
+    const id_equipaje = id_equipaje_raw ? Number(id_equipaje_raw) : null;
+    const id_pedido = Number(document.getElementById("nuevoBoletoPedido").value);
+    const precio_total = Number(document.getElementById("nuevoBoletoPrecio").value);
+    const estado = document.getElementById("nuevoBoletoEstado").value;
+
+    if (!id_usuario || !id_vuelo || !id_asiento || !id_pedido || !Number.isFinite(precio_total) || !estado) {
+        return alert("Completa los datos del boleto.");
+    }
+
+    const res = await secureFetch("/api/admin/boletos/add", {
+        method: "POST",
+        body: JSON.stringify({ id_usuario, id_vuelo, id_asiento, id_equipaje, id_pedido, precio_total, estado })
+    });
+    const data = await res.json();
+    alert(data.message || "Boleto creado");
+
+    if (!data.error) {
+        cerrarModalCrearBoleto();
+        await cargarBoletos();
+    }
 }
 
 async function guardarNuevoUsuario(e) {

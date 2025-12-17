@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vista Voyages | Panel WRK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Estilos base -->
+  <link rel="stylesheet" href="CSS/variables.css" />
+  <link rel="stylesheet" href="CSS/style.css" />
+
+  <!-- Estilos del panel -->
+  <link rel="stylesheet" href="CSS/admin.css" />
+  <link rel="stylesheet" href="CSS/panelwrk.css" />
+
+  <script>
+    // Solo Rol=2 puede ver PanelWRK
+    const u = JSON.parse(localStorage.getItem("usuario") || "null");
+    if (!u || u.Rol != 2) window.location.href = "Index.html";
+  </script>
+</head>
+
+<body>
+  <!-- NAVBAR (dinámico, navbar.js) -->
+  <header class="header header--compact">
+    <nav class="nav glass" id="mainNav">
+      <div class="nav__brand">
+        <img src="imagenes/logosinfondo.png" alt="Vista Voyages" class="nav__logo">
+        <span class="nav__title">Vista Voyages</span>
+      </div>
+      <ul class="nav__links" data-nav="links">
+        <!-- navbar.js rellena -->
+      </ul>
+    </nav>
+  </header>
+
+  <main class="admin-container">
+    <section class="admin-header">
+      <h1>Panel WRK</h1>
+      <p>Bienvenido, <span id="adminNombre"></span></p>
+    </section>
+
+    <!-- ==========================================================
+         USUARIOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Usuarios</h2>
+
+      <button class="btn-action-big" onclick="abrirModalCrearUsuario()">＋ Nuevo usuario</button>
+
+      <table class="admin-table" id="tablaUsuarios">
+        <thead>
+          <tr>
+            <th>ID</th><th>Nombre</th><th>Apellido</th><th>Correo</th><th>Rol</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         VUELOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Vuelos</h2>
+
+      <form class="admin-form" id="formVuelo">
+        <input type="hidden" id="vueloId">
+        <input type="text" id="vueloNumero" placeholder="Número de vuelo" required>
+
+        <select id="vueloOrigen" required></select>
+        <select id="vueloDestino" required></select>
+
+        <input type="datetime-local" id="vueloSalida" required>
+        <input type="datetime-local" id="vueloLlegada" required>
+
+        <label>
+          <input type="checkbox" id="vueloActivo" checked>
+          Activo
+        </label>
+
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaVuelos">
+        <thead>
+          <tr>
+            <th>ID</th><th>Número</th><th>Origen</th><th>Destino</th><th>Salida</th><th>Llegada</th><th>Activo</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         ASIENTOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Asientos</h2>
+
+      <form class="admin-form" id="formAsiento">
+        <input type="hidden" id="asientoId">
+
+        <select id="asientoVueloId" required></select>
+
+        <input type="text" id="asientoNumero" placeholder="Número de asiento" required>
+
+        <select id="asientoTipo" required>
+          <option value="BASICO">BÁSICO</option>
+          <option value="REGULAR">REGULAR</option>
+          <option value="PREMIUM">PREMIUM</option>
+        </select>
+
+        <input type="number" id="asientoPrecio" min="0" step="0.01" placeholder="Precio" required>
+
+        <label>
+          <input type="checkbox" id="asientoDisponible" checked>
+          Disponible
+        </label>
+
+        <label>
+          <input type="checkbox" id="asientoActivo" checked>
+          Activo
+        </label>
+
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaAsientos">
+        <thead>
+          <tr>
+            <th>ID</th><th>ID Vuelo</th><th>Asiento</th><th>Tipo</th><th>Precio</th><th>Disponible</th><th>Activo</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         EQUIPAJE
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Equipaje</h2>
+
+      <form class="admin-form" id="formEquipaje">
+        <input type="hidden" id="equipajeId">
+
+        <select id="equipajeTipo" required>
+          <option value="C">C (Cabina)</option>
+          <option value="M">M</option>
+          <option value="G">G</option>
+          <option value="XL">XL</option>
+          <option value="XXL">XXL</option>
+        </select>
+
+        <input type="number" id="equipajePrecio" min="0" step="0.01" placeholder="Precio extra" required>
+
+        <label>
+          <input type="checkbox" id="equipajeActivo" checked>
+          Activo
+        </label>
+
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaEquipaje">
+        <thead>
+          <tr>
+            <th>ID</th><th>Tipo</th><th>Precio extra</th><th>Activo</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         PEDIDOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Pedidos</h2>
+
+      <div class="admin-actions">
+        <input id="filtroPedidoId" type="number" min="1" placeholder="ID pedido">
+        <button class="btn-admin" id="btnFiltrarPedidos">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodosPedidos">Ver todos</button>
+        <button class="btn-admin" onclick="abrirModalCrearPedido()">＋ Nuevo pedido</button>
+      </div>
+
+      <table class="admin-table" id="tablaPedidos">
+        <thead>
+          <tr>
+            <th>ID</th><th>Usuario</th><th>Wallet</th><th>Total</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         PAGOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Pagos</h2>
+
+      <div class="admin-actions">
+        <input id="filtroPagoId" type="number" min="1" placeholder="ID pago">
+        <button class="btn-admin" id="btnFiltrarPagos">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodosPagos">Ver todos</button>
+        <button class="btn-admin" onclick="abrirModalCrearPago()">＋ Nuevo pago</button>
+      </div>
+
+      <table class="admin-table" id="tablaPagos">
+        <thead>
+          <tr>
+            <th>ID</th><th>Usuario</th><th>Pedido</th><th>Monto</th><th>Método</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         BOLETOS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Boletos</h2>
+
+      <div class="admin-actions">
+        <input id="filtroBoletoId" type="number" min="1" placeholder="ID boleto">
+        <button class="btn-admin" id="btnFiltrarBoletos">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodosBoletos">Ver todos</button>
+        <button class="btn-admin" onclick="abrirModalCrearBoleto()">＋ Nuevo boleto</button>
+      </div>
+
+      <table class="admin-table" id="tablaBoletos">
+        <thead>
+          <tr>
+            <th>ID</th><th>Usuario</th><th>Vuelo</th><th>Asiento</th><th>Equipaje</th><th>Pedido</th><th>Precio</th><th>Estado</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         ENVÍO DE EQUIPAJE
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Envío de equipaje</h2>
+
+      <div class="admin-actions">
+        <input id="filtroEnvioId" type="number" min="1" placeholder="ID envío">
+        <button class="btn-admin" id="btnFiltrarEnvios">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodosEnvios">Ver todos</button>
+      </div>
+
+      <form class="admin-form" id="formEnvio">
+        <input type="hidden" id="envioId">
+        <input type="number" id="envioUsuario" min="1" placeholder="ID usuario" required>
+        <input type="number" id="envioPedido" min="1" placeholder="ID pedido" required>
+        <input type="number" id="envioDireccion" min="1" placeholder="ID dirección" required>
+        <input type="number" id="envioCantidad" min="1" placeholder="Cantidad" required>
+        <input type="number" id="envioCosto" min="0" step="0.01" placeholder="Costo envío" required>
+
+        <select id="envioEstado" required>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="EN_TRANSITO">EN_TRANSITO</option>
+          <option value="ENTREGADO">ENTREGADO</option>
+        </select>
+
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaEnvios">
+        <thead>
+          <tr>
+            <th>ID</th><th>Usuario</th><th>Pedido</th><th>Dirección</th><th>Cantidad</th><th>Fecha</th><th>Estado</th><th>Costo</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         TIPOS DE MALETA
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Tipos de maleta</h2>
+
+      <div class="admin-actions">
+        <input id="filtroMaletaId" type="number" min="1" placeholder="ID tipo">
+        <button class="btn-admin" id="btnFiltrarMaletas">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodosMaletas">Ver todos</button>
+      </div>
+
+      <form class="admin-form" id="formMaleta">
+        <input type="hidden" id="maletaId">
+        <input type="text" id="maletaNombre" placeholder="Nombre" required>
+        <input type="number" id="maletaPesoMax" min="0" step="0.01" placeholder="Peso máximo (kg)" required>
+        <input type="number" id="maletaPrecioBase" min="0" step="0.01" placeholder="Precio base" required>
+        <input type="number" id="maletaTarifaKgExtra" min="0" step="0.01" placeholder="Tarifa por kg extra" required>
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaMaletas">
+        <thead>
+          <tr>
+            <th>ID</th><th>Nombre</th><th>Peso max (kg)</th><th>Precio base</th><th>Tarifa kg extra</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         RESEÑAS
+    =========================================================== -->
+    <section class="admin-card">
+      <h2>Reseñas</h2>
+
+      <div class="admin-actions">
+        <input id="filtroResenaId" type="number" min="1" placeholder="ID reseña">
+        <input id="filtroResenaUsuario" type="number" min="1" placeholder="ID usuario">
+        <button class="btn-admin" id="btnFiltrarResenas">Filtrar</button>
+        <button class="btn-admin" id="btnVerTodasResenas">Ver todas</button>
+      </div>
+
+      <form class="admin-form" id="formResena">
+        <input type="hidden" id="resenaId">
+        <input type="number" id="resenaUsuario" min="1" placeholder="ID usuario" required>
+        <input type="text" id="resenaTexto" placeholder="Texto de la reseña" required>
+        <button type="submit" class="btn-action">Guardar</button>
+      </form>
+
+      <table class="admin-table" id="tablaResenas">
+        <thead>
+          <tr>
+            <th>ID</th><th>Usuario</th><th>Nombre</th><th>Apellido</th><th>Reseña</th><th>Fecha</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ==========================================================
+         DASHBOARD
+    =========================================================== -->
+    <section class="admin-card" id="dashboardVentas">
+      <h2>Dashboard de ventas</h2>
+
+      <div class="dashboard-controls">
+        <label for="ventasYear">Año:</label>
+        <select id="ventasYear"></select>
+      </div>
+
+      <div class="dashboard-chart">
+        <canvas id="ventasChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==========================================================
+       MODALES (reutiliza admin.js)
+  =========================================================== -->
+
+  <!-- Modal: Crear usuario -->
+  <div class="modalVV oculto" id="modalCrearUsuario">
+    <div class="modalVV-content">
+      <h2>Nuevo usuario</h2>
+      <form id="formCrearUsuario">
+        <input id="nuevoUsuarioNombre" class="input-modal" type="text" placeholder="Nombre" required>
+        <input id="nuevoUsuarioApellido" class="input-modal" type="text" placeholder="Apellido" required>
+        <input id="nuevoUsuarioCorreo" class="input-modal" type="email" placeholder="Correo" required>
+        <input id="nuevoUsuarioPassword" class="input-modal" type="password" placeholder="Contraseña" required>
+
+        <select id="nuevoUsuarioRol" class="input-modal">
+          <option value="0">Usuario</option>
+          <option value="1">Admin</option>
+          <option value="2">WRK</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Crear</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearUsuario()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar usuario -->
+  <div class="modalVV oculto" id="modalEditarUsuario">
+    <div class="modalVV-content">
+      <h2>Editar usuario</h2>
+      <form id="formEditarUsuario">
+        <input id="editarUsuarioId" class="input-modal" type="text" readonly>
+        <input id="editarUsuarioNombre" class="input-modal" type="text" placeholder="Nombre" required>
+        <input id="editarUsuarioApellido" class="input-modal" type="text" placeholder="Apellido" required>
+        <input id="editarUsuarioCorreo" class="input-modal" type="email" placeholder="Correo" required>
+
+        <select id="editarUsuarioRol" class="input-modal">
+          <option value="0">Usuario</option>
+          <option value="1">Admin</option>
+          <option value="2">WRK</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Guardar</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalEditarUsuario()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Crear pedido -->
+  <div class="modalVV oculto" id="modalCrearPedido">
+    <div class="modalVV-content">
+      <h2>Nuevo pedido</h2>
+      <form id="formCrearPedido">
+        <input id="nuevoPedidoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+        <input id="nuevoPedidoWallet" class="input-modal" type="number" placeholder="ID wallet" required>
+        <input id="nuevoPedidoTotal" class="input-modal" type="number" min="0" step="0.01" placeholder="Total" required>
+
+        <select id="nuevoPedidoEstado" class="input-modal" required>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="PAGADO">PAGADO</option>
+          <option value="CANCELADO">CANCELADO</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Crear</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearPedido()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Crear pago -->
+  <div class="modalVV oculto" id="modalCrearPago">
+    <div class="modalVV-content">
+      <h2>Nuevo pago</h2>
+      <form id="formCrearPago">
+        <input id="nuevoPagoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+        <input id="nuevoPagoPedido" class="input-modal" type="number" placeholder="ID pedido" required>
+        <input id="nuevoPagoMonto" class="input-modal" type="number" min="0" step="0.01" placeholder="Monto" required>
+
+        <select id="nuevoPagoEstado" class="input-modal" required>
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="APROBADO">APROBADO</option>
+          <option value="RECHAZADO">RECHAZADO</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Crear</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearPago()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Crear boleto -->
+  <div class="modalVV oculto" id="modalCrearBoleto">
+    <div class="modalVV-content">
+      <h2>Nuevo boleto</h2>
+      <form id="formCrearBoleto">
+        <input id="nuevoBoletoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+        <input id="nuevoBoletoVuelo" class="input-modal" type="number" placeholder="ID vuelo" required>
+        <input id="nuevoBoletoAsiento" class="input-modal" type="number" placeholder="ID asiento" required>
+        <input id="nuevoBoletoEquipaje" class="input-modal" type="number" placeholder="ID equipaje (opcional)">
+        <input id="nuevoBoletoPedido" class="input-modal" type="number" placeholder="ID pedido" required>
+        <input id="nuevoBoletoPrecio" class="input-modal" type="number" min="0" step="0.01" placeholder="Precio total" required>
+
+        <select id="nuevoBoletoEstado" class="input-modal" required>
+          <option value="Activo">Activo</option>
+          <option value="Usado">Usado</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Crear</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearBoleto()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar pedido -->
+  <div class="modalVV oculto" id="modalEditarPedido">
+    <div class="modalVV-content">
+      <h2>Editar pedido</h2>
+      <form id="formEditarPedido">
+        <input id="pedidoIdModal" class="input-modal" type="text" readonly>
+        <input id="pedidoUsuarioModal" class="input-modal" type="text" readonly>
+        <input id="pedidoWalletModal" class="input-modal" type="text" readonly>
+        <input id="pedidoTotalModal" class="input-modal" type="text" readonly>
+
+        <select id="pedidoEstadoModal" class="input-modal">
+          <option value="PENDIENTE">PENDIENTE</option>
+          <option value="PAGADO">PAGADO</option>
+          <option value="CANCELADO">CANCELADO</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Guardar</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalEditarPedido()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar pago -->
+  <div class="modalVV oculto" id="modalEditarPago">
+    <div class="modalVV-content">
+      <h2>Editar pago</h2>
+      <form id="formEditarPago">
+        <input id="pagoIdModal" class="input-modal" type="text" readonly>
+        <input id="pagoUsuarioModal" class="input-modal" type="text" readonly>
+        <input id="pagoPedidoModal" class="input-modal" type="text" readonly>
+        <input id="pagoMontoModal" class="input-modal" type="text" readonly>
+
+        <select id="pagoEstadoModal" class="input-modal">
+          <option value="APROBADO">APROBADO</option>
+          <option value="RECHAZADO">RECHAZADO</option>
+          <option value="PENDIENTE">PENDIENTE</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Guardar</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalEditarPago()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Editar boleto -->
+  <div class="modalVV oculto" id="modalEditarBoleto">
+    <div class="modalVV-content">
+      <h2>Editar boleto</h2>
+      <form id="formEditarBoleto">
+        <input id="boletoIdModal" class="input-modal" type="text" readonly>
+        <input id="boletoUsuarioModal" class="input-modal" type="text" readonly>
+        <input id="boletoVueloModal" class="input-modal" type="text" readonly>
+        <input id="boletoAsientoModal" class="input-modal" type="text" readonly>
+        <input id="boletoEquipajeModal" class="input-modal" type="text" readonly>
+        <input id="boletoPedidoModal" class="input-modal" type="text" readonly>
+        <input id="boletoPrecioModal" class="input-modal" type="text" readonly>
+
+        <select id="boletoEstadoModal" class="input-modal">
+          <option value="Activo">Activo</option>
+          <option value="Usado">Usado</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="Pendiente">Pendiente</option>
+        </select>
+
+        <div class="modalVV-actions">
+          <button type="submit" class="btnVV">Guardar</button>
+          <button type="button" class="btnVV-cerrar" onclick="cerrarModalEditarBoleto()">Cerrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="JS/navbar.js"></script>
+  <script src="JS/admin.js"></script>
+  <script src="JS/panelwrk.js"></script>
+
+  <!-- Chart.js (Dashboard) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="JS/dashboardVentas.js"></script>
+</body>
+</html>

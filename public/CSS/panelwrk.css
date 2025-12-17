@@ -1,0 +1,19 @@
+/* Panel WRK: ajustes ligeros sobre admin.css + style.css */
+
+.header--compact {
+    padding-bottom: 10px;
+}
+
+.admin-container {
+    padding-top: 10px;
+}
+
+/* Para que los inputs de filtro no se vean demasiado apretados */
+.admin-actions input {
+    min-width: 180px;
+}
+
+/* Opcional: separar secciones */
+.admin-card + .admin-card {
+    margin-top: 20px;
+}

@@ -225,3 +225,30 @@ body {
 .oculto {
     display: none;
 }
+
+/* Paginación 'Ver más' */
+.loadmore-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+
+/* Dashboard ventas */
+.dashboard-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.dashboard-controls select {
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    outline: none;
+}
+
+.dashboard-chart {
+    width: 100%;
+    overflow-x: auto;
+}

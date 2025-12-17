@@ -172,9 +172,9 @@
       <select id="asientoVuelo" required></select>
 
       <select id="asientoTipo" required>
-        <option value="Económico">Económico</option>
-        <option value="Business">Business</option>
-        <option value="Primera">Primera</option>
+        <option value="BASICO">BÁSICO</option>
+        <option value="REGULAR">REGULAR</option>
+        <option value="PREMIUM">PREMIUM</option>
       </select>
 
       <input type="number" id="asientoPrecio" min="0" placeholder="Precio" required>
@@ -215,8 +215,11 @@
       <select id="equipajeVuelo" required></select>
 
       <select id="equipajeTipo" required>
-        <option value="Mano">Mano</option>
-        <option value="Documentada">Documentada</option>
+        <option value="C">C (Cabina)</option>
+        <option value="M">M</option>
+        <option value="G">G</option>
+        <option value="XL">XL</option>
+        <option value="XXL">XXL</option>
       </select>
 
       <input type="number" id="equipajePrecio" min="0" placeholder="Precio extra" required>
@@ -251,8 +254,10 @@
 
     <form class="admin-form" id="formMaleta">
       <input type="hidden" id="maletaId">
-      <input type="text" id="maletaTipo" placeholder="Tipo" required>
-      <input type="number" id="maletaPrecio" min="0" placeholder="Precio" required>
+      <input type="text" id="maletaNombre" placeholder="Nombre" required>
+      <input type="number" id="maletaPesoMax" min="0" step="0.01" placeholder="Peso máximo (kg)" required>
+      <input type="number" id="maletaPrecioBase" min="0" step="0.01" placeholder="Precio base" required>
+      <input type="number" id="maletaTarifaKgExtra" min="0" step="0.01" placeholder="Tarifa por kg extra" required>
       <button type="submit" class="btn-action">Guardar</button>
     </form>
 
@@ -260,9 +265,10 @@
       <thead>
         <tr>
           <th>ID</th>
-          <th>Tipo</th>
-          <th>Precio</th>
-          <th>Activo</th>
+          <th>Nombre</th>
+          <th>Peso max (kg)</th>
+          <th>Precio base</th>
+          <th>Tarifa kg extra</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -278,6 +284,7 @@
       <input type="number" id="filtroPedidoId" placeholder="Buscar por ID">
       <button class="btn-admin btn-edit" id="btnFiltrarPedidos">Buscar</button>
       <button class="btn-admin" id="btnVerTodosPedidos">Ver todos</button>
+      <button class="btn-admin" onclick="abrirModalCrearPedido()">＋ Nuevo pedido</button>
     </div>
 
     <!-- Se quitó el formulario grande: ahora se edita desde el botón Editar de la tabla (modal) -->
@@ -305,6 +312,7 @@
       <input type="number" id="filtroPagoId" placeholder="Buscar por ID">
       <button class="btn-admin btn-edit" id="btnFiltrarPagos">Buscar</button>
       <button class="btn-admin" id="btnVerTodosPagos">Ver todos</button>
+      <button class="btn-admin" onclick="abrirModalCrearPago()">＋ Nuevo pago</button>
     </div>
 
     <!-- Se quitó el formulario grande: ahora se edita desde el botón Editar de la tabla (modal) -->
@@ -333,6 +341,7 @@
       <input type="number" id="filtroBoletoId" placeholder="Buscar por ID">
       <button class="btn-admin btn-edit" id="btnFiltrarBoletos">Buscar</button>
       <button class="btn-admin" id="btnVerTodosBoletos">Ver todos</button>
+      <button class="btn-admin" onclick="abrirModalCrearBoleto()">＋ Nuevo boleto</button>
     </div>
 
     <!-- Se quitó el formulario grande: ahora se edita desde el botón Editar de la tabla (modal) -->
@@ -353,6 +362,21 @@
       </thead>
       <tbody></tbody>
     </table>
+  </section>
+
+
+  <!-- Dashboard de ventas -->
+  <section class="admin-card" id="dashboardVentas">
+    <h2>Dashboard de ventas</h2>
+
+    <div class="dashboard-controls">
+      <label for="ventasYear">Año:</label>
+      <select id="ventasYear"></select>
+    </div>
+
+    <div class="dashboard-chart">
+      <canvas id="ventasChart"></canvas>
+    </div>
   </section>
 
 </main>
@@ -376,6 +400,7 @@
       <select id="nuevoUsuarioRol" class="input-modal" required>
         <option value="0">Usuario</option>
         <option value="1">Admin</option>
+        <option value="2">WRK</option>
       </select>
 
       <div class="modalVV-actions">
@@ -402,11 +427,89 @@
       <select id="editarUsuarioRol" class="input-modal" required>
         <option value="0">Usuario</option>
         <option value="1">Admin</option>
+        <option value="2">WRK</option>
       </select>
 
       <div class="modalVV-actions">
         <button type="submit" class="btnVV">Guardar cambios</button>
         <button type="button" class="btnVV-cerrar" onclick="cerrarModalEditarUsuario()">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal: Crear pedido -->
+<div class="modalVV oculto" id="modalCrearPedido">
+  <div class="modalVV-content">
+    <h2>Nuevo pedido</h2>
+
+    <form id="formCrearPedido">
+      <input id="nuevoPedidoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+      <input id="nuevoPedidoWallet" class="input-modal" type="number" placeholder="ID wallet" required>
+      <input id="nuevoPedidoTotal" class="input-modal" type="number" min="0" step="0.01" placeholder="Total" required>
+
+      <select id="nuevoPedidoEstado" class="input-modal" required>
+        <option value="PENDIENTE">PENDIENTE</option>
+        <option value="PAGADO">PAGADO</option>
+        <option value="CANCELADO">CANCELADO</option>
+      </select>
+
+      <div class="modalVV-actions">
+        <button type="submit" class="btnVV">Crear</button>
+        <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearPedido()">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Crear pago -->
+<div class="modalVV oculto" id="modalCrearPago">
+  <div class="modalVV-content">
+    <h2>Nuevo pago</h2>
+
+    <form id="formCrearPago">
+      <input id="nuevoPagoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+      <input id="nuevoPagoPedido" class="input-modal" type="number" placeholder="ID pedido" required>
+      <input id="nuevoPagoMonto" class="input-modal" type="number" min="0" step="0.01" placeholder="Monto" required>
+
+      <select id="nuevoPagoEstado" class="input-modal" required>
+        <option value="PENDIENTE">PENDIENTE</option>
+        <option value="APROBADO">APROBADO</option>
+        <option value="RECHAZADO">RECHAZADO</option>
+      </select>
+
+      <div class="modalVV-actions">
+        <button type="submit" class="btnVV">Crear</button>
+        <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearPago()">Cerrar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Crear boleto -->
+<div class="modalVV oculto" id="modalCrearBoleto">
+  <div class="modalVV-content">
+    <h2>Nuevo boleto</h2>
+
+    <form id="formCrearBoleto">
+      <input id="nuevoBoletoUsuario" class="input-modal" type="number" placeholder="ID usuario" required>
+      <input id="nuevoBoletoVuelo" class="input-modal" type="number" placeholder="ID vuelo" required>
+      <input id="nuevoBoletoAsiento" class="input-modal" type="number" placeholder="ID asiento" required>
+      <input id="nuevoBoletoEquipaje" class="input-modal" type="number" placeholder="ID equipaje (opcional)">
+      <input id="nuevoBoletoPedido" class="input-modal" type="number" placeholder="ID pedido" required>
+      <input id="nuevoBoletoPrecio" class="input-modal" type="number" min="0" step="0.01" placeholder="Precio total" required>
+
+      <select id="nuevoBoletoEstado" class="input-modal" required>
+        <option value="Activo">Activo</option>
+        <option value="Usado">Usado</option>
+        <option value="Cancelado">Cancelado</option>
+        <option value="Pendiente">Pendiente</option>
+      </select>
+
+      <div class="modalVV-actions">
+        <button type="submit" class="btnVV">Crear</button>
+        <button type="button" class="btnVV-cerrar" onclick="cerrarModalCrearBoleto()">Cerrar</button>
       </div>
     </form>
   </div>
@@ -499,6 +602,11 @@
 <!-- Scripts -->
 <script src="JS/wallet.js"></script>
 <script src="JS/admin.js"></script>
+<script src="JS/paginacion50.js"></script>
+
+<!-- Chart.js (Dashboard) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="JS/dashboardVentas.js"></script>
 
 </body>
 </html>
