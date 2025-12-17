@@ -224,16 +224,38 @@ function logout() {
    USUARIOS
 ===============================================================*/
 async function cargarUsuarios(idFiltro = null) {
-    const tbody = document.querySelector("#tablaUsuarios tbody");
-    if (!tbody) return;
+    const tabla = document.getElementById("tablaUsuarios");
+    if (!tabla) {
+        console.warn("No existe #tablaUsuarios");
+        return;
+    }
+
+    const tbody = tabla.querySelector("tbody");
+    if (!tbody) {
+        console.warn("La tablaUsuarios no tiene <tbody>");
+        return;
+    }
 
     const res = await secureFetch("/api/listar");
     const data = await res.json();
 
-    let lista = data.usuarios || [];
+    let lista = Array.isArray(data.usuarios) ? data.usuarios : [];
 
     if (idFiltro) {
         lista = lista.filter(u => u.ID == idFiltro);
+    }
+
+    // 👇 CASO SIN DATOS
+    if (lista.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align:center;">
+                    Sin usuarios para mostrar
+                </td>
+            </tr>
+        `;
+        notifyTableUpdate();
+        return;
     }
 
     tbody.innerHTML = lista.map(u => `
@@ -257,6 +279,7 @@ async function cargarUsuarios(idFiltro = null) {
 
     notifyTableUpdate();
 }
+
 
 
 async function eliminarUsuario(id) {
