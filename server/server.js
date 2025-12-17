@@ -100,7 +100,7 @@ app.post("/api/admin/usuarios/update", verificarToken, soloStaff, auth.actualiza
 
 // Aeropuertos
 app.get("/api/admin/aeropuertos", verificarToken, soloStaff, auth.listarAeropuertos);
-app.get("/api/aeropuertos", publicCtrl.listarAeropuertosPublico);
+app.get("/api/aeropuertos", auth.listarAeropuertosPublico);
 app.post("/api/admin/aeropuertos/add", verificarToken, soloStaff, auth.crearAeropuerto);
 app.post("/api/admin/aeropuertos/update", verificarToken, soloStaff, auth.actualizarAeropuerto);
 app.post("/api/admin/aeropuertos/delete", verificarToken, soloStaff, auth.eliminarAeropuerto);
