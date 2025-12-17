@@ -251,7 +251,7 @@ async function cargarUsuarios(idFiltro = null) {
             </tr>
         `;
     });
-   
+
     tbody.innerHTML = html;   // ← construir primero en string
 notifyTableUpdate();     // ← dispara paginación
 
@@ -352,7 +352,7 @@ let html = "";
         `;
     });
     
-tbody.innerHTML = html;   // ← construir primero en string
+
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -444,7 +444,7 @@ let html = "";
         `;
     });
     
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -554,7 +554,7 @@ async function cargarAsientos(idFiltro = null) {
         `;
     });
     
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -644,7 +644,7 @@ let html = "";
         `;
     });
    
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -738,7 +738,7 @@ let html = "";
         `;
     });
    
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -832,7 +832,7 @@ let html = "";
         `;
     });
     
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -923,7 +923,7 @@ let html = "";
         `;
     });
     
-tbody.innerHTML = html;   // ← construir primero en string
+ 
 notifyTableUpdate();     // ← dispara paginación
 
 }
@@ -1013,7 +1013,7 @@ let html = "";
         `;
     });
     
-    tbody.innerHTML = html;   // ← construir primero en string
+ 
     notifyTableUpdate();     // ← dispara paginación
 
 }
