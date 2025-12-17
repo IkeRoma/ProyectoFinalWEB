@@ -221,7 +221,7 @@ function eliminarUsuario(req, res) {
 exports.listarUsuariosAdmin = (req, res) => {
     const sql = `
         SELECT id_usuario AS id, Nombre, Apellido, Email, Rol
-        FROM usuarios
+        FROM Usuarios
         ORDER BY id_usuario DESC
     `;
 
@@ -237,7 +237,7 @@ exports.listarUsuariosAdmin = (req, res) => {
 function listarUsuariosAdmin(req, res) {
     const sql = `
         SELECT id_usuario AS id, Nombre, Apellido, Email, Rol
-        FROM usuarios
+        FROM Usuarios
         ORDER BY id_usuario DESC
     `;
 
