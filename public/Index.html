@@ -70,20 +70,18 @@
                     <form class="hero__form" id="formBusquedaIndex">
                         <div class="form-group">
                             <label>Origen</label>
-                            <input 
-                                type="text" 
-                                id="origen" 
-                                placeholder="Ciudad de origen" 
-                                required>
+                            <select id="origen" required>
+                                <option value="">Selecciona origen</option>
+                            </select>
                         </div>
+
                         <div class="form-group">
                             <label>Destino</label>
-                            <input 
-                                type="text" 
-                                id="destino" 
-                                placeholder="Ciudad de destino" 
-                                required>
+                            <select id="destino" required>
+                                <option value="">Selecciona destino</option>
+                            </select>
                         </div>
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Salida</label>
@@ -228,6 +226,8 @@
     <script src="JS/reviews.js"></script>
     <!-- Nuevo script solo para la búsqueda del hero -->
     <script src="JS/indexBusqueda.js"></script>
+    <script src="JS/aeropuertosSelect.js"></script>
+
 
     <script>
         document.getElementById("year").textContent = new Date().getFullYear();

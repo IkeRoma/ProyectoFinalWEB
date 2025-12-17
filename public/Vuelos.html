@@ -40,21 +40,17 @@
             <form class="search-form" id="formBusquedaVuelos">
                 <div class="form-group">
                     <label for="inputOrigen">Origen</label>
-                    <input id="inputOrigen" type="text" placeholder="Ej. CDMX" required>
+                    <select id="inputOrigen" required>
+                        <option value="">Selecciona origen</option>
+                    </select>
                 </div>
+
                 <div class="form-group">
                     <label for="inputDestino">Destino</label>
-                    <input id="inputDestino" type="text" placeholder="Ej. Cancún" required>
+                    <select id="inputDestino" required>
+                        <option value="">Selecciona destino</option>
+                    </select>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="inputFechaSalida">Fecha de salida</label>
-                        <input id="inputFechaSalida" type="date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="inputFechaRegreso">Regreso (opcional)</label>
-                        <input id="inputFechaRegreso" type="date">
-                    </div>
                     <div class="form-group">
                         <label for="inputPasajeros">Pasajeros</label>
                         <input id="inputPasajeros" type="number" min="1" value="1" required>
@@ -99,5 +95,9 @@
 </script>
 <script src="JS/navbar.js"></script>
 <script src="JS/vuelos.js"></script>
+<script src="JS/aeropuertosSelect.js"></script>
+<script src="JS/aeropuertosSelect.js"></script>
+
+
 </body>
 </html>
