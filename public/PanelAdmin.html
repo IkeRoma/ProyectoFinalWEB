@@ -368,13 +368,26 @@
   <!-- Dashboard de ventas -->
   <section class="admin-card" id="dashboardVentas">
     <h2>Dashboard de ventas</h2>
-    <div id="ventasResumen" class="ventas-total">
-    Total anual: $0
-  </div>
-    <div class="dashboard-controls">
-      <label for="ventasYear">Año:</label>
-      <select id="ventasYear"></select>
+
+    <p id="ventasTotalAnual">Total anual: $0.00</p>
+    <p id="ventasMejorMes">Mejor mes: -</p>
+    <p id="ventasComparativa">Variación vs año anterior: -</p>
+    
+    <label>Año:</label>
+    <select id="ventasYear"></select>
+
+    <div style="height:360px">
+      <canvas id="ventasChart"></canvas>
     </div>
+    <h4>Monto promedio por ticket.</h4>
+    <h4 id="ventasTicketPromedio"></h4>
+
+    <h4>Top usuarios</h4>
+    <ul id="ventasTopUsuarios"></ul>
+
+    <h4>Top rutas</h4>
+    <ul id="ventasTopRutas"></ul>
+
 
     <div class="dashboard-chart">
       <canvas id="ventasChart"></canvas>

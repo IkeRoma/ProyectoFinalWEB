@@ -163,6 +163,9 @@ app.post("/api/admin/reviews/delete", verificarToken, soloStaff, reviews.adminEl
 ===============================================================*/
 app.get("/api/dashboard/ventas/anios", verificarToken, soloStaff, dashboard.ventasAniosDisponibles);
 app.get("/api/dashboard/ventas", verificarToken, soloStaff, dashboard.ventasPorMes);
+app.get("/api/dashboard/top-rutas", verificarToken, soloStaff, dashboard.topRutas);
+app.get("/api/dashboard/ticket-promedio", verificarToken, soloStaff, dashboard.ticketPromedio);
+app.get("/api/dashboard/top-usuarios",verificarToken,soloStaff,dashboard.topUsuarios);
 
 /* ============================================================
    START
